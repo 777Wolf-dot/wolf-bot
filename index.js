@@ -4397,6 +4397,8 @@ import antivideo from './commands/group/antivideo.js';
 import antiaudio from './commands/group/antiaudio.js';
 import antistatusmention from './commands/group/antistatusmention.js';
 import antigrouplink from './commands/group/antigroup.js';
+import imagine from './commands/imagegen/imagine.js';
+
 
 // ====== ENVIRONMENT SETUP ======
 dotenv.config({ path: './.env' });

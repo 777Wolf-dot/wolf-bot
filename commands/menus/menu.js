@@ -1753,160 +1753,161 @@ export default {
           break;
         }
 
-        case 3: {
-          // ... existing style 3 code (no info by default) ...
-          const text = `│────── WOLF MENU ──────
+//         case 3: {
+//           // ... existing style 3 code (no info by default) ...
+//           const text = `│────── WOLF MENU ──────
 
-│ ┌── GROUP MANAGEMENT ──
-│ │ add
-│ │ promote
-│ │ demote
-│ │ kick
-│ │ ban
-│ │ unban
-│ │ banlist
-│ │ clearbanlist
-│ │ warn
-│ │ mute
-│ │ unmute
-│ │ gctime
-│ │ antisticker
-│ │ groupinfo
-│ │ tagadmin
-│ │ tagall
-│ │ hidetag
-│ │ link
-│ │ invite
-│ │ revoke
-│ │ setdesc
-│ │ fangtrace
-│ │ disp
-│ │ kickall
-│ │ getgpp
-│ │ vcf
-│ └─────────────────
+// │ ┌── GROUP MANAGEMENT ──
+// │ │ add
+// │ │ promote
+// │ │ demote
+// │ │ kick
+// │ │ ban
+// │ │ unban
+// │ │ banlist
+// │ │ clearbanlist
+// │ │ warn
+// │ │ mute
+// │ │ unmute
+// │ │ gctime
+// │ │ antisticker
+// │ │ groupinfo
+// │ │ tagadmin
+// │ │ tagall
+// │ │ hidetag
+// │ │ link
+// │ │ invite
+// │ │ revoke
+// │ │ setdesc
+// │ │ fangtrace
+// │ │ disp
+// │ │ kickall
+// │ │ getgpp
+// │ │ vcf
+// │ └─────────────────
 
-│ ┌── OWNER CONTROLS ──
-│ │ setprefix
-│ │ block
-│ │ unblock
-│ │ silent
-│ │ setownername
-│ │ setpp
-│ │ restart
-│ │ autotype
-│ └─────────────────
+// │ ┌── OWNER CONTROLS ──
+// │ │ setprefix
+// │ │ block
+// │ │ unblock
+// │ │ silent
+// │ │ setownername
+// │ │ setpp
+// │ │ restart
+// │ │ autotype
+// │ └─────────────────
 
-│ ┌── GENERAL UTILITIES ─
-│ │ ping
-│ │ time
-│ │ uptime
-│ │ about
-│ │ repo
-│ │ alive
-│ │ define
-│ │ wiki
-│ │ news
-│ │ weather
-│ │ covid
-│ │ quote
-│ │ translate
-│ │ shorturl
-│ │ qrencode
-│ │ qrdecode
-│ │ reverseimage
-│ │ toaudio
-│ │ tovoice
-│ │ save
-│ │ goodmorning
-│ │ goodnight
-│ └─────────────────
+// │ ┌── GENERAL UTILITIES ─
+// │ │ ping
+// │ │ time
+// │ │ uptime
+// │ │ about
+// │ │ repo
+// │ │ alive
+// │ │ define
+// │ │ wiki
+// │ │ news
+// │ │ weather
+// │ │ covid
+// │ │ quote
+// │ │ translate
+// │ │ shorturl
+// │ │ qrencode
+// │ │ qrdecode
+// │ │ reverseimage
+// │ │ toaudio
+// │ │ tovoice
+// │ │ save
+// │ │ goodmorning
+// │ │ goodnight
+// │ └─────────────────
 
-│ ┌── MUSIC & FUN ──
-│ │ play
-│ │ song
-│ │ bassboost
-│ │ trebleboost
-│ └─────────────────
+// │ ┌── MUSIC & FUN ──
+// │ │ play
+// │ │ song
+// │ │ bassboost
+// │ │ trebleboost
+// │ └─────────────────
 
-│ ┌── MEDIA & AI ──
-│ │ tiktokdl
-│ │ gemini
-│ │ gpt
-│ │ deepseek
-│ │ wolfbot
-│ └─────────────────
+// │ ┌── MEDIA & AI ──
+// │ │ tiktokdl
+// │ │ gemini
+// │ │ gpt
+// │ │ deepseek
+// │ │ wolfbot
+// │ └─────────────────
 
-│ ┌── SECURITY & HACKING ──
-│ │ ipinfo
-│ │ shodan
-│ │ iplookup
-│ │ getip
-│ └─────────────────
+// │ ┌── SECURITY & HACKING ──
+// │ │ ipinfo
+// │ │ shodan
+// │ │ iplookup
+// │ │ getip
+// │ └─────────────────
 
-│ ┌── LOGO DESIGN ──
-│ │ goldlogo
-│ │ silverlogo
-│ │ platinumlogo
-│ │ chromelogo
-│ │ diamondlogo
-│ │ bronzelogo
-│ │ steelogo
-│ │ copperlogo
-│ │ titaniumlogo
-│ │ firelogo
-│ │ icelogo
-│ │ iceglowlogo
-│ │ lightninglogo
-│ │ aqualogo
-│ │ rainbowlogo
-│ │ sunlogo
-│ │ moonlogo
-│ │ volcanologo
-│ │ thunderlogo
-│ │ windlogo
-│ │ earthlogo
-│ │ waterlogo
-│ │ forestlogo
-│ │ dragonlogo
-│ │ phoenixlogo
-│ │ wizardlogo
-│ │ crystallogo
-│ │ magiclogo
-│ │ darkmagiclogo
-│ │ shadowlogo
-│ │ smokelogo
-│ │ bloodlogo
-│ │ shadowflamelogo
-│ │ venomlogo
-│ │ skullogo
-│ │ nightlogo
-│ │ hellfirelogo
-│ │ neonlogo
-│ │ glowlogo
-│ │ lightlogo
-│ │ neonflamelogo
-│ │ cyberlogo
-│ │ matrixlogo
-│ │ techlogo
-│ │ hologramlogo
-│ │ vaporlogo
-│ │ pixelogo
-│ │ futuristiclogo
-│ │ digitalogo
-│ │ cartoonlogo
-│ │ comiclogo
-│ │ graffitilogo
-│ │ retrologo
-│ │ popartlogo
-│ └─────────────────
+// │ ┌── LOGO DESIGN ──
+// │ │ goldlogo
+// │ │ silverlogo
+// │ │ platinumlogo
+// │ │ chromelogo
+// │ │ diamondlogo
+// │ │ bronzelogo
+// │ │ steelogo
+// │ │ copperlogo
+// │ │ titaniumlogo
+// │ │ firelogo
+// │ │ icelogo
+// │ │ iceglowlogo
+// │ │ lightninglogo
+// │ │ aqualogo
+// │ │ rainbowlogo
+// │ │ sunlogo
+// │ │ moonlogo
+// │ │ volcanologo
+// │ │ thunderlogo
+// │ │ windlogo
+// │ │ earthlogo
+// │ │ waterlogo
+// │ │ forestlogo
+// │ │ dragonlogo
+// │ │ phoenixlogo
+// │ │ wizardlogo
+// │ │ crystallogo
+// │ │ magiclogo
+// │ │ darkmagiclogo
+// │ │ shadowlogo
+// │ │ smokelogo
+// │ │ bloodlogo
+// │ │ shadowflamelogo
+// │ │ venomlogo
+// │ │ skullogo
+// │ │ nightlogo
+// │ │ hellfirelogo
+// │ │ neonlogo
+// │ │ glowlogo
+// │ │ lightlogo
+// │ │ neonflamelogo
+// │ │ cyberlogo
+// │ │ matrixlogo
+// │ │ techlogo
+// │ │ hologramlogo
+// │ │ vaporlogo
+// │ │ pixelogo
+// │ │ futuristiclogo
+// │ │ digitalogo
+// │ │ cartoonlogo
+// │ │ comiclogo
+// │ │ graffitilogo
+// │ │ retrologo
+// │ │ popartlogo
+// │ └─────────────────
 
-│── 🐺 POWERED BY WOLFTECH 🐺 ──
+// │── 🐺 POWERED BY WOLFTECH 🐺 ──
 
-`
- await sock.sendMessage(jid, { text }, { quoted: m });
-          break;
-        }
+// `
+//  await sock.sendMessage(jid, { text }, { quoted: m });
+//           break;
+//         }
+
         case 4: {
           // 🖼️ Full info + image + commands
 
@@ -2987,6 +2988,14 @@ case 7: {
 │ setdesc                 
 │ fangtrace               
 │ getgpp                  
+└────────────────
+
+┌────────────────
+│ 🎨 MENU COMMANDS 🎨
+├────────────────
+│ togglemenuinfo
+│ setmenuimage
+│ resetmenuinfo
 └────────────────
 
 ┌────────────────
