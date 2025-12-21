@@ -3,3 +3,10 @@ export default {
     storeWriteInterval: 10000,
       updateZipUrl: "https://github.com/777Wolf-dot/wolf-bot/archive/refs/heads/main.zip"
 };
+
+
+
+
+
+
+
