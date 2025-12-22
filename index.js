@@ -9,12 +9,31 @@ import path from 'path';
 import dotenv from 'dotenv';
 import chalk from 'chalk';
 import readline from 'readline';
+// // For auto reactions
+// import { handleAutoReact } from './commands/automation/autoreactstatus.js';
+
+// // For auto viewing
+// import { handleAutoView } from './commands/automation/autoviewstatus.js';
+
+
+
+// In your index.js, change the import to:
+import { handleAutoReact } from './commands/automation/autoreactstatus.js';
+
+// Add these imports near the top (around line 16)
+
+import { handleAutoView } from './commands/automation/autoviewstatus.js';
+
+
+
 
 // ====== ENVIRONMENT SETUP ======
 dotenv.config({ path: './.env' });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+// Add this near the top of your index.js after other imports
+
 
 // ====== CONFIGURATION ======
 const SESSION_DIR = './session';
@@ -1472,16 +1491,22 @@ async function startBot(loginMode = 'pair', phoneNumber = null) {
             
             lastActivityTime = Date.now();
             
-            // Handle status detection
-            if (msg.key?.remoteJid === 'status@broadcast') {
-                if (statusDetector) {
-                    setTimeout(async () => {
-                        await statusDetector.detectStatusUpdate(msg);
-                    }, 300);
-                }
-                return;
-            }
+if (msg.key?.remoteJid === 'status@broadcast') {
+    if (statusDetector) {
+        setTimeout(async () => {
+            // 1. Your existing status detection
+            await statusDetector.detectStatusUpdate(msg);
             
+            // 2. Auto view status (mark as seen) - FIRST
+            await handleAutoView(sock, msg.key);
+            
+            // 3. Auto react to status (with emoji) - SECOND
+            await handleAutoReact(sock, msg.key);
+            
+        }, 1500); // Increased delay for both actions
+    }
+    return;
+}
             const messageId = msg.key.id;
             
             if (store) {
@@ -1555,6 +1580,18 @@ async function handleSuccessfulConnection(sock, loginMode, phoneNumber) {
     
     const isFirstConnection = !fs.existsSync(OWNER_FILE);
     
+
+// In handleSuccessfulConnection function, after sock is connected:
+if (statusDetector) {
+    setTimeout(async () => {
+        // Start antidelete system automatically
+        await startAntidelete(sock, {
+            OWNER_JID: sock.user.id,
+            OWNER_NUMBER: OWNER_NUMBER || sock.user.id.split('@')[0]
+        });
+    }, 3000);
+}
+
     if (isFirstConnection) {
         jidManager.setNewOwner(OWNER_JID, false);
     } else {
@@ -1921,3 +1958,9 @@ setInterval(() => {
         }
     }
 }, 60000);
+
+
+
+
+
+

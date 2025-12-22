@@ -1,0 +1,60 @@
+{
+  "enabled": true,
+  "logs": [
+    {
+      "sender": "254703397679",
+      "action": "viewed",
+      "timestamp": 1766437127618
+    },
+    {
+      "sender": "254703397679",
+      "action": "viewed",
+      "timestamp": 1766437476908
+    },
+    {
+      "sender": "254703397679",
+      "action": "viewed",
+      "timestamp": 1766437477960
+    },
+    {
+      "sender": "254703397679",
+      "action": "viewed",
+      "timestamp": 1766439461018
+    },
+    {
+      "sender": "254703397679",
+      "action": "viewed",
+      "timestamp": 1766439953329
+    },
+    {
+      "sender": "254703397679",
+      "action": "viewed",
+      "timestamp": 1766441991472
+    },
+    {
+      "sender": "254703397679",
+      "action": "viewed",
+      "timestamp": 1766442011049
+    },
+    {
+      "sender": "254703397679",
+      "action": "viewed",
+      "timestamp": 1766442012352
+    }
+  ],
+  "totalViewed": 8,
+  "lastViewed": {
+    "sender": "254703397679",
+    "action": "viewed",
+    "timestamp": 1766442012352
+  },
+  "consecutiveViews": 8,
+  "lastSender": "254703397679",
+  "settings": {
+    "rateLimitDelay": 1000,
+    "viewToAll": true,
+    "ignoreConsecutiveLimit": true,
+    "markAsSeen": true,
+    "noHourlyLimit": true
+  }
+}

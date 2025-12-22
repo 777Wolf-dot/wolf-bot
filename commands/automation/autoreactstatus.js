@@ -1,690 +1,582 @@
-// commands/fun/autoreactstatus.js
+// commands/status/autoreactstatus.js
 
-// AutoReactStatus Manager (State Management)
-const autoReactStatusConfig = {
-  enabled: false,
-  reactions: ["❤️", "👍", "🔥", "🎉", "😂", "😮"], // Default reactions for status
-  randomReaction: true,
-  reactionChance: 80, // Percentage chance to react to a status
-  cooldown: 30000, // 30 seconds cooldown per user
-  maxReactionsPerDay: 50, // Maximum reactions per day per user
-  smartReact: true, // Analyze status content
-  statusTypeReactions: {
-    text: ["❤️", "👍", "🔥", "👏"], // Reactions for text status
-    image: ["😍", "👌", "🔥", "🎨"], // Reactions for image status
-    video: ["🎬", "👏", "🔥", "👍"], // Reactions for video status
-    link: ["🔗", "👍", "👀", "🔥"] // Reactions for link status
-  },
-  keywordReactions: [
-    { keywords: ["happy", "birthday", "celebration", "party"], reaction: "🎉" },
-    { keywords: ["love", "heart", "romantic", "couple"], reaction: "❤️" },
-    { keywords: ["funny", "joke", "comedy", "lol"], reaction: "😂" },
-    { keywords: ["sad", "cry", "miss", "pain"], reaction: "😢" },
-    { keywords: ["achievement", "success", "win", "goal"], reaction: "🏆" },
-    { keywords: ["food", "eat", "cooking", "recipe"], reaction: "🍕" },
-    { keywords: ["travel", "vacation", "holiday", "beach"], reaction: "✈️" },
-    { keywords: ["music", "song", "concert", "festival"], reaction: "🎵" },
-    { keywords: ["sport", "game", "match", "exercise"], reaction: "⚽" },
-    { keywords: ["work", "business", "office", "job"], reaction: "💼" },
-    { keywords: ["study", "exam", "school", "learn"], reaction: "📚" },
-    { keywords: ["art", "draw", "paint", "creative"], reaction: "🎨" },
-    { keywords: ["nature", "sunset", "mountain", "flower"], reaction: "🌺" },
-    { keywords: ["animal", "pet", "cat", "dog"], reaction: "🐾" },
-    { keywords: ["technology", "code", "app", "software"], reaction: "💻" }
-  ],
-  dailyReactions: new Map(), // userId -> {count: number, date: string}
-  userCooldowns: new Map(), // userId -> lastReactionTime
-  botSock: null,
-  isHooked: false,
-  lastStatusCheck: 0,
-  checkInterval: 60000 // Check for new status every 1 minute
-};
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-class AutoReactStatusManager {
-  static initialize(sock) {
-    if (!autoReactStatusConfig.isHooked && sock) {
-      autoReactStatusConfig.botSock = sock;
-      this.hookIntoStatusEvents();
-      this.startStatusChecker();
-      autoReactStatusConfig.isHooked = true;
-      console.log('📱 Auto-react to status system initialized!');
-    }
-  }
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-  static hookIntoStatusEvents() {
-    if (!autoReactStatusConfig.botSock || !autoReactStatusConfig.botSock.ev) {
-      console.log('⚠️ Could not hook into bot events for status reactions');
-      return;
-    }
+// Configuration file path
+const CONFIG_FILE = './data/autoReactConfig.json';
 
-    // Note: WhatsApp Web doesn't have direct status update events
-    // We'll use periodic checking instead
-    console.log('✅ Auto-status-react will use periodic checking');
-  }
-
-  static startStatusChecker() {
-    // Start periodic status checker
-    setInterval(async () => {
-      if (!autoReactStatusConfig.enabled || !autoReactStatusConfig.botSock) return;
-      
-      try {
-        await this.checkForNewStatuses();
-      } catch (err) {
-        console.error("Status check error:", err);
-      }
-    }, autoReactStatusConfig.checkInterval);
-    
-    console.log(`🔄 Status checker started (every ${autoReactStatusConfig.checkInterval / 1000}s)`);
-  }
-
-  static async checkForNewStatuses() {
-    try {
-      const sock = autoReactStatusConfig.botSock;
-      
-      // Get contacts who might have status updates
-      // Note: This is a simulation since WhatsApp Web API doesn't provide direct status access
-      // In a real implementation, you would use sock.fetchStatus() or similar
-      
-      // For simulation, we'll use a list of contacts from recent chats
-      const contacts = await this.getRecentContacts(sock);
-      
-      for (const contact of contacts) {
-        if (!autoReactStatusConfig.enabled) break;
-        
-        // Simulate checking if contact has new status
-        const hasNewStatus = this.simulateNewStatus(contact);
-        
-        if (hasNewStatus) {
-          await this.reactToContactStatus(sock, contact);
-        }
-        
-        // Small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      
-      autoReactStatusConfig.lastStatusCheck = Date.now();
-      
-    } catch (err) {
-      console.error("Failed to check statuses:", err);
-    }
-  }
-
-  static async getRecentContacts(sock) {
-    // Get recent chats to check for status updates
-    // This is a simulation - real implementation would be different
-    const contacts = [];
-    
-    // Add some example contacts for simulation
-    contacts.push({
-      jid: "1234567890@s.whatsapp.net",
-      name: "Friend 1",
-      lastStatusTime: Date.now() - 3600000 // 1 hour ago
-    });
-    
-    contacts.push({
-      jid: "0987654321@s.whatsapp.net", 
-      name: "Friend 2",
-      lastStatusTime: Date.now() - 7200000 // 2 hours ago
-    });
-    
-    return contacts;
-  }
-
-  static simulateNewStatus(contact) {
-    // Simulate 20% chance of new status
-    const hoursSinceLastStatus = (Date.now() - contact.lastStatusTime) / 3600000;
-    return Math.random() < 0.2 && hoursSinceLastStatus > 1;
-  }
-
-  static async reactToContactStatus(sock, contact) {
-    try {
-      const userJid = contact.jid;
-      
-      // Check cooldown
-      const now = Date.now();
-      const lastReaction = autoReactStatusConfig.userCooldowns.get(userJid);
-      if (lastReaction && now - lastReaction < autoReactStatusConfig.cooldown) {
-        return;
-      }
-      
-      // Check daily limit
-      const today = new Date().toDateString();
-      const userStats = autoReactStatusConfig.dailyReactions.get(userJid) || { count: 0, date: today };
-      
-      if (userStats.date !== today) {
-        userStats.count = 0;
-        userStats.date = today;
-      }
-      
-      if (userStats.count >= autoReactStatusConfig.maxReactionsPerDay) {
-        console.log(`Daily limit reached for ${userJid}`);
-        return;
-      }
-      
-      // Check reaction chance
-      if (Math.random() * 100 > autoReactStatusConfig.reactionChance) {
-        return;
-      }
-      
-      // Simulate status type (text, image, video, link)
-      const statusTypes = ['text', 'image', 'video', 'link'];
-      const statusType = statusTypes[Math.floor(Math.random() * statusTypes.length)];
-      
-      // Simulate status content
-      const statusContent = this.generateMockStatusContent(statusType);
-      
-      // Determine reaction
-      const reaction = this.determineStatusReaction(statusType, statusContent);
-      
-      if (!reaction) return;
-      
-      // Simulate sending reaction to status
-      console.log(`Reacting to ${contact.name}'s status with ${reaction}`);
-      
-      // Update stats
-      userStats.count++;
-      autoReactStatusConfig.dailyReactions.set(userJid, userStats);
-      autoReactStatusConfig.userCooldowns.set(userJid, now);
-      
-      // Log the reaction
-      if (process.env.DEBUG) {
-        console.log(`📱 Reacted to ${contact.name}'s ${statusType} status with ${reaction}`);
-      }
-      
-      return {
-        success: true,
-        contact: contact.name,
-        statusType: statusType,
-        reaction: reaction,
-        dailyCount: userStats.count
-      };
-      
-    } catch (err) {
-      console.error("Failed to react to status:", err);
-      return { success: false, error: err.message };
-    }
-  }
-
-  static generateMockStatusContent(statusType) {
-    const mockContents = {
-      text: [
-        "Having a great day! 😊",
-        "Feeling blessed 🙏",
-        "Missing someone special 💕",
-        "New achievement unlocked! 🏆",
-        "Food coma after that meal 🍕",
-        "Travel dreams ✈️",
-        "Music is life 🎵",
-        "Work hard, play harder 💼",
-        "Study session complete 📚",
-        "Nature is healing 🌿"
-      ],
-      image: ["Photo of sunset", "Selfie", "Food picture", "Pet photo", "Artwork"],
-      video: ["Funny clip", "Travel vlog", "Cooking tutorial", "Workout video", "Music cover"],
-      link: ["Article about tech", "YouTube video", "Recipe blog", "News article", "Shopping site"]
-    };
-    
-    const contents = mockContents[statusType] || mockContents.text;
-    return contents[Math.floor(Math.random() * contents.length)];
-  }
-
-  static determineStatusReaction(statusType, content) {
-    let reaction = null;
-    const contentLower = content.toLowerCase();
-    
-    // Smart reaction based on content
-    if (autoReactStatusConfig.smartReact) {
-      // Check keyword-based reactions
-      for (const rule of autoReactStatusConfig.keywordReactions) {
-        if (rule.keywords.some(keyword => contentLower.includes(keyword.toLowerCase()))) {
-          reaction = rule.reaction;
-          break;
-        }
-      }
-      
-      // If no keyword match, use status type default
-      if (!reaction && autoReactStatusConfig.statusTypeReactions[statusType]) {
-        const possibleReactions = autoReactStatusConfig.statusTypeReactions[statusType];
-        reaction = possibleReactions[Math.floor(Math.random() * possibleReactions.length)];
-      }
+// Initialize config directory and file
+function initConfig() {
+    const configDir = path.dirname(CONFIG_FILE);
+    if (!fs.existsSync(configDir)) {
+        fs.mkdirSync(configDir, { recursive: true });
     }
     
-    // Fallback to random reaction from list
-    if (!reaction && autoReactStatusConfig.randomReaction) {
-      reaction = autoReactStatusConfig.reactions[Math.floor(Math.random() * autoReactStatusConfig.reactions.length)];
-    } else if (!reaction && autoReactStatusConfig.reactions.length > 0) {
-      reaction = autoReactConfig.reactions[0];
+    if (!fs.existsSync(CONFIG_FILE)) {
+        const defaultConfig = {
+            enabled: true, // ON BY DEFAULT
+            mode: 'fixed', // fixed mode by default
+            fixedEmoji: '🐺', // WOLF EMOJI AS DEFAULT
+            reactions: ["🐺", "❤️", "👍", "🔥", "🎉", "😂", "😮", "👏", "🎯", "💯", "🌟", "✨", "⚡", "💥", "🫶"],
+            logs: [],
+            totalReacted: 0,
+            lastReacted: null,
+            consecutiveReactions: 0,
+            lastSender: null,
+            settings: {
+                rateLimitDelay: 500, // Faster reaction
+                reactToAll: true, // React to all statuses
+                ignoreConsecutiveLimit: true, // React to consecutive statuses
+                noHourlyLimit: true // NO HOURLY LIMIT
+            }
+        };
+        fs.writeFileSync(CONFIG_FILE, JSON.stringify(defaultConfig, null, 2));
     }
-    
-    return reaction;
-  }
-
-  static async simulateManualReaction(sock, contactJid, statusType = 'text') {
-    try {
-      // Simulate reacting to a specific contact's status
-      const contact = {
-        jid: contactJid,
-        name: contactJid.split('@')[0],
-        lastStatusTime: Date.now() - 3600000
-      };
-      
-      const result = await this.reactToContactStatus(sock, contact);
-      
-      if (result.success) {
-        // Send notification to user
-        await sock.sendMessage(contactJid, {
-          text: `✅ *Status Reaction Sent!*\n\nI reacted to ${contact.name}'s ${result.statusType} status with ${result.reaction}!\n\n📊 Today's reactions to this user: ${result.dailyCount}/${autoReactStatusConfig.maxReactionsPerDay}`
-        });
-      }
-      
-      return result;
-    } catch (err) {
-      console.error("Manual status reaction error:", err);
-      throw err;
-    }
-  }
-
-  static toggle() {
-    autoReactStatusConfig.enabled = !autoReactStatusConfig.enabled;
-    console.log(`Auto-react to status ${autoReactStatusConfig.enabled ? 'ENABLED' : 'DISABLED'}`);
-    
-    if (!autoReactStatusConfig.enabled) {
-      this.clearCooldowns();
-    }
-    
-    return autoReactStatusConfig.enabled;
-  }
-
-  static status() {
-    const today = new Date().toDateString();
-    let totalToday = 0;
-    
-    autoReactStatusConfig.dailyReactions.forEach(stats => {
-      if (stats.date === today) {
-        totalToday += stats.count;
-      }
-    });
-    
-    return {
-      enabled: autoReactStatusConfig.enabled,
-      reactions: [...autoReactStatusConfig.reactions],
-      randomReaction: autoReactStatusConfig.randomReaction,
-      reactionChance: autoReactStatusConfig.reactionChance,
-      cooldown: autoReactStatusConfig.cooldown,
-      maxReactionsPerDay: autoReactStatusConfig.maxReactionsPerDay,
-      smartReact: autoReactStatusConfig.smartReact,
-      checkInterval: autoReactStatusConfig.checkInterval,
-      lastCheck: autoReactStatusConfig.lastStatusCheck,
-      dailyReactions: totalToday,
-      activeUsers: autoReactStatusConfig.userCooldowns.size,
-      isHooked: autoReactStatusConfig.isHooked
-    };
-  }
-
-  static addReaction(reaction) {
-    if (!autoReactStatusConfig.reactions.includes(reaction) && reaction.length <= 2) {
-      autoReactStatusConfig.reactions.push(reaction);
-      return true;
-    }
-    return false;
-  }
-
-  static removeReaction(reaction) {
-    const index = autoReactStatusConfig.reactions.indexOf(reaction);
-    if (index > -1) {
-      autoReactStatusConfig.reactions.splice(index, 1);
-      return true;
-    }
-    return false;
-  }
-
-  static setChance(percentage) {
-    if (percentage >= 0 && percentage <= 100) {
-      autoReactStatusConfig.reactionChance = percentage;
-      return true;
-    }
-    return false;
-  }
-
-  static setCooldown(seconds) {
-    const ms = seconds * 1000;
-    if (ms >= 10000 && ms <= 3600000) { // 10s to 1 hour
-      autoReactStatusConfig.cooldown = ms;
-      return true;
-    }
-    return false;
-  }
-
-  static setDailyLimit(limit) {
-    if (limit >= 1 && limit <= 1000) {
-      autoReactStatusConfig.maxReactionsPerDay = limit;
-      return true;
-    }
-    return false;
-  }
-
-  static setCheckInterval(seconds) {
-    const ms = seconds * 1000;
-    if (ms >= 30000 && ms <= 3600000) { // 30s to 1 hour
-      autoReactStatusConfig.checkInterval = ms;
-      return true;
-    }
-    return false;
-  }
-
-  static toggleRandom() {
-    autoReactStatusConfig.randomReaction = !autoReactStatusConfig.randomReaction;
-    return autoReactStatusConfig.randomReaction;
-  }
-
-  static toggleSmart() {
-    autoReactStatusConfig.smartReact = !autoReactStatusConfig.smartReact;
-    return autoReactStatusConfig.smartReact;
-  }
-
-  static clearCooldowns() {
-    autoReactStatusConfig.userCooldowns.clear();
-  }
-
-  static resetDailyStats() {
-    autoReactStatusConfig.dailyReactions.clear();
-  }
-
-  static getUserStats(userJid) {
-    const today = new Date().toDateString();
-    const userStats = autoReactStatusConfig.dailyReactions.get(userJid);
-    
-    if (userStats && userStats.date === today) {
-      return {
-        dailyCount: userStats.count,
-        limit: autoReactStatusConfig.maxReactionsPerDay,
-        remaining: autoReactStatusConfig.maxReactionsPerDay - userStats.count
-      };
-    }
-    
-    return {
-      dailyCount: 0,
-      limit: autoReactStatusConfig.maxReactionsPerDay,
-      remaining: autoReactStatusConfig.maxReactionsPerDay
-    };
-  }
-
-  static async bulkReactToStatuses(sock, count = 5) {
-    try {
-      const contacts = await this.getRecentContacts(sock);
-      const results = [];
-      
-      for (let i = 0; i < Math.min(count, contacts.length); i++) {
-        if (!autoReactStatusConfig.enabled) break;
-        
-        const contact = contacts[i];
-        const result = await this.reactToContactStatus(sock, contact);
-        
-        if (result.success) {
-          results.push(result);
-        }
-        
-        // Delay between reactions
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-      
-      return results;
-    } catch (err) {
-      console.error("Bulk react error:", err);
-      throw err;
-    }
-  }
 }
 
-// Main Command Export
-export default {
-  name: "autoreactstatus",
-  alias: ["statusreact", "statreact", "reactstatus", "sreact", "statusreaction"],
-  desc: "Automatically react to WhatsApp status updates 📱",
-  category: "Fun",
-  usage: ".autoreactstatus [on/off/stats/chance/cooldown/limit/interval/simulate/bulk/reset]",
-  
-  async execute(sock, m, args) {
-    try {
-      const targetJid = m.key.remoteJid;
-      
-      // Initialize on first command use
-      if (!autoReactStatusConfig.isHooked) {
-        autoReactStatusConfig.botSock = sock;
-        AutoReactStatusManager.initialize(sock);
-        autoReactStatusConfig.isHooked = true;
-        console.log('📱 Auto-react to status system initialized!');
-      }
-      
-      if (args.length === 0) {
-        // Show status
-        const status = AutoReactStatusManager.status();
-        const statusText = status.enabled ? "✅ *ENABLED*" : "❌ *DISABLED*";
-        const reactionsList = status.reactions.join(' ');
-        const lastCheck = status.lastCheck ? 
-          new Date(status.lastCheck).toLocaleTimeString() : 'Never';
+initConfig();
+
+// Auto React Manager
+class AutoReactManager {
+    constructor() {
+        this.config = this.loadConfig();
+        this.reactionQueue = [];
+        this.lastReactionTime = 0;
         
-        await sock.sendMessage(targetJid, {
-          text: `📱 *Auto-React to Status Manager*\n\n${statusText}\n\n📊 *Status:*\n• Active: ${status.enabled ? 'ON 🟢' : 'OFF 🔴'}\n• Reactions: ${reactionsList}\n• Smart React: ${status.smartReact ? 'ON 🤖' : 'OFF ⚙️'}\n• Random: ${status.randomReaction ? 'ON 🎲' : 'OFF 📝'}\n• Chance: ${status.reactionChance}%\n• Cooldown: ${status.cooldown / 1000}s\n• Daily Limit: ${status.maxReactionsPerDay}\n• Check Interval: ${status.checkInterval / 1000}s\n• Last Check: ${lastCheck}\n• Today's Reactions: ${status.dailyReactions}\n• Active Users: ${status.activeUsers}\n\n📝 *Commands:*\n.autoreactstatus on - Enable\n.autoreactstatus off - Disable\n.autoreactstatus stats - Show statistics\n.autoreactstatus chance 75 - Set 75% chance\n.autoreactstatus cooldown 60 - 60s cooldown\n.autoreactstatus limit 100 - Set daily limit\n.autoreactstatus interval 120 - Check every 2min\n.autoreactstatus simulate - Test with fake status\n.autoreactstatus bulk 5 - React to 5 statuses\n.autoreactstatus reset - Reset daily stats\n.autoreactstatus help - Show this message`
-        }, { quoted: m });
-        return;
-      }
-      
-      const arg = args[0].toLowerCase();
-      
-      // Show detailed stats
-      if (arg === 'stats' || arg === 'statistics' || arg === 'info') {
-        const status = AutoReactStatusManager.status();
-        const userStats = AutoReactStatusManager.getUserStats(m.key.participant || m.key.remoteJid);
-        
-        await sock.sendMessage(targetJid, {
-          text: `📊 *Status Reaction Statistics*\n\n• System Status: ${status.enabled ? '🟢 ACTIVE' : '🔴 INACTIVE'}\n• Today's Total Reactions: ${status.dailyReactions}\n• Your Daily Reactions: ${userStats.dailyCount}/${userStats.limit}\n• Your Remaining: ${userStats.remaining}\n• Reaction Chance: ${status.reactionChance}%\n• Cooldown: ${status.cooldown / 1000} seconds\n• Check Interval: ${status.checkInterval / 1000}s\n• Active Users Tracked: ${status.activeUsers}\n• Last Check: ${status.lastCheck ? new Date(status.lastCheck).toLocaleTimeString() : 'Never'}\n\n🎭 *Available Reactions:*\n${status.reactions.map(r => `• ${r}`).join('\n')}`
-        }, { quoted: m });
-        return;
-      }
-      
-      // Toggle on/off
-      if (arg === 'on' || arg === 'enable' || arg === 'start') {
-        const enabled = AutoReactStatusManager.toggle();
-        await sock.sendMessage(targetJid, {
-          text: `✅ *Auto-React to Status ${enabled ? 'ENABLED' : 'DISABLED'}*\n\n${enabled ? 'I will now automatically react to WhatsApp status updates! 📱\n\nNote: This is a simulation. Real status reactions require additional setup.' : 'Status reactions have been turned off.'}`
-        }, { quoted: m });
-        return;
-      }
-      
-      if (arg === 'off' || arg === 'disable' || arg === 'stop') {
-        const enabled = AutoReactStatusManager.toggle();
-        await sock.sendMessage(targetJid, {
-          text: `✅ *Auto-React to Status ${enabled ? 'ENABLED' : 'DISABLED'}*\n\n${enabled ? 'Status reactions have been turned on! 🎉' : 'I will no longer react to status updates.'}`
-        }, { quoted: m });
-        return;
-      }
-      
-      // Set chance
-      if (arg === 'chance' || arg === 'probability') {
-        const chance = parseInt(args[1]);
-        if (isNaN(chance)) {
-          await sock.sendMessage(targetJid, {
-            text: `🎲 *Current Chance:* ${autoReactStatusConfig.reactionChance}%\n\nUse: .autoreactstatus chance 75`
-          }, { quoted: m });
-          return;
-        }
-        
-        const success = AutoReactStatusManager.setChance(chance);
-        if (success) {
-          await sock.sendMessage(targetJid, {
-            text: `✅ *Chance Updated*\n\nStatus reaction chance set to ${chance}%.\n\nThis means there's a ${chance}% chance I'll react to each new status.`
-          }, { quoted: m });
-        } else {
-          await sock.sendMessage(targetJid, {
-            text: `❌ *Invalid Chance*\n\nPlease use a number between 0 and 100.`
-          }, { quoted: m });
-        }
-        return;
-      }
-      
-      // Set cooldown
-      if (arg === 'cooldown' || arg === 'cd') {
-        const seconds = parseInt(args[1]);
-        if (isNaN(seconds)) {
-          await sock.sendMessage(targetJid, {
-            text: `⏱️ *Current Cooldown:* ${autoReactStatusConfig.cooldown / 1000}s\n\nUse: .autoreactstatus cooldown 120`
-          }, { quoted: m });
-          return;
-        }
-        
-        const success = AutoReactStatusManager.setCooldown(seconds);
-        if (success) {
-          await sock.sendMessage(targetJid, {
-            text: `✅ *Cooldown Updated*\n\nCooldown set to ${seconds} seconds.\n\nI will wait ${seconds}s before reacting to the same user's status again.`
-          }, { quoted: m });
-        } else {
-          await sock.sendMessage(targetJid, {
-            text: `❌ *Invalid Cooldown*\n\nPlease use a number between 10 and 3600 seconds (10s to 1 hour).`
-          }, { quoted: m });
-        }
-        return;
-      }
-      
-      // Set daily limit
-      if (arg === 'limit' || arg === 'daily' || arg === 'max') {
-        const limit = parseInt(args[1]);
-        if (isNaN(limit)) {
-          await sock.sendMessage(targetJid, {
-            text: `🎯 *Current Daily Limit:* ${autoReactStatusConfig.maxReactionsPerDay}\n\nUse: .autoreactstatus limit 100`
-          }, { quoted: m });
-          return;
-        }
-        
-        const success = AutoReactStatusManager.setDailyLimit(limit);
-        if (success) {
-          await sock.sendMessage(targetJid, {
-            text: `✅ *Daily Limit Updated*\n\nMaximum daily reactions per user set to ${limit}.\n\nThis prevents spamming the same user's status.`
-          }, { quoted: m });
-        } else {
-          await sock.sendMessage(targetJid, {
-            text: `❌ *Invalid Limit*\n\nPlease use a number between 1 and 1000.`
-          }, { quoted: m });
-        }
-        return;
-      }
-      
-      // Set check interval
-      if (arg === 'interval' || arg === 'check' || arg === 'frequency') {
-        const seconds = parseInt(args[1]);
-        if (isNaN(seconds)) {
-          await sock.sendMessage(targetJid, {
-            text: `🔄 *Current Check Interval:* ${autoReactStatusConfig.checkInterval / 1000}s\n\nUse: .autoreactstatus interval 300`
-          }, { quoted: m });
-          return;
-        }
-        
-        const success = AutoReactStatusManager.setCheckInterval(seconds);
-        if (success) {
-          await sock.sendMessage(targetJid, {
-            text: `✅ *Check Interval Updated*\n\nStatus check interval set to ${seconds} seconds.\n\nI will check for new statuses every ${seconds}s.`
-          }, { quoted: m });
-        } else {
-          await sock.sendMessage(targetJid, {
-            text: `❌ *Invalid Interval*\n\nPlease use a number between 30 and 3600 seconds (30s to 1 hour).`
-          }, { quoted: m });
-        }
-        return;
-      }
-      
-      // Simulate reaction
-      if (arg === 'simulate' || arg === 'test' || arg === 'demo') {
-        const contactJid = args[1] || (m.key.participant || m.key.remoteJid);
-        const statusType = args[2] || 'text';
-        
-        await sock.sendMessage(targetJid, {
-          text: `🧪 *Simulating Status Reaction*\n\nSimulating reaction to ${contactJid.split('@')[0]}'s ${statusType} status...`
-        }, { quoted: m });
-        
-        try {
-          const result = await AutoReactStatusManager.simulateManualReaction(sock, contactJid, statusType);
-          
-          await sock.sendMessage(targetJid, {
-            text: `✅ *Simulation Complete!*\n\n• Contact: ${result.contact}\n• Status Type: ${result.statusType}\n• Reaction: ${result.reaction}\n• Daily Count: ${result.dailyCount}\n• Success: ${result.success ? '✅' : '❌'}\n\nNote: This was a simulation. Real status reactions work similarly.`
-          }, { quoted: m });
-        } catch (err) {
-          await sock.sendMessage(targetJid, {
-            text: `❌ *Simulation Failed*\n\nError: ${err.message}`
-          }, { quoted: m });
-        }
-        return;
-      }
-      
-      // Bulk react
-      if (arg === 'bulk' || arg === 'mass' || arg === 'multiple') {
-        const count = parseInt(args[1]) || 3;
-        
-        if (count < 1 || count > 10) {
-          await sock.sendMessage(targetJid, {
-            text: `❌ *Invalid Count*\n\nPlease use a number between 1 and 10.`
-          }, { quoted: m });
-          return;
-        }
-        
-        await sock.sendMessage(targetJid, {
-          text: `🚀 *Bulk Status Reaction Started*\n\nReacting to ${count} simulated statuses...`
-        }, { quoted: m });
-        
-        try {
-          const results = await AutoReactStatusManager.bulkReactToStatuses(sock, count);
-          const successCount = results.filter(r => r.success).length;
-          
-          let resultText = `✅ *Bulk Reaction Complete!*\n\nReacted to ${successCount}/${count} statuses.\n\n`;
-          
-          if (successCount > 0) {
-            resultText += `*Recent Reactions:*\n`;
-            results.slice(0, 3).forEach((r, i) => {
-              resultText += `${i + 1}. ${r.contact}: ${r.reaction} (${r.statusType})\n`;
-            });
-            
-            if (results.length > 3) {
-              resultText += `...and ${results.length - 3} more`;
-            }
-          }
-          
-          await sock.sendMessage(targetJid, {
-            text: resultText
-          }, { quoted: m });
-        } catch (err) {
-          await sock.sendMessage(targetJid, {
-            text: `❌ *Bulk Reaction Failed*\n\nError: ${err.message}`
-          }, { quoted: m });
-        }
-        return;
-      }
-      
-      // Reset daily stats
-      if (arg === 'reset' || arg === 'clear') {
-        AutoReactStatusManager.resetDailyStats();
-        await sock.sendMessage(targetJid, {
-          text: `🔄 *Daily Statistics Reset*\n\nAll daily reaction counts have been reset to zero.`
-        }, { quoted: m });
-        return;
-      }
-      
-      // Show help
-      if (arg === 'help' || arg === 'commands') {
-        await sock.sendMessage(targetJid, {
-          text: `📖 *Auto-React to Status Help*\n\n*Basic Commands:*\n• .autoreactstatus on - Enable system\n• .autoreactstatus off - Disable system\n• .autoreactstatus stats - Show statistics\n\n*Configuration:*\n• .autoreactstatus chance 75 - 75% reaction chance\n• .autoreactstatus cooldown 120 - 2min cooldown\n• .autoreactstatus limit 50 - 50 reactions/day/user\n• .autoreactstatus interval 300 - Check every 5min\n\n*Testing:*\n• .autoreactstatus simulate - Test with fake status\n• .autoreactstatus bulk 5 - React to 5 statuses\n• .autoreactstatus reset - Reset daily counts\n\n*Note:* This system simulates status reactions. Real WhatsApp status API access may require additional setup.`
-        }, { quoted: m });
-        return;
-      }
-      
-      // If no valid command, show help
-      await sock.sendMessage(targetJid, {
-        text: `❓ *Invalid Command*\n\nUse:\n• \`.autoreactstatus on\` - Enable system\n• \`.autoreactstatus off\` - Disable\n• \`.autoreactstatus stats\` - Show statistics\n• \`.autoreactstatus chance 75\` - Set 75% chance\n• \`.autoreactstatus simulate\` - Test reaction\n• \`.autoreactstatus help\` - Show all commands`
-      }, { quoted: m });
-      
-    } catch (err) {
-      console.error("AutoReactStatus command error:", err);
-      await sock.sendMessage(m.key.remoteJid, {
-        text: `❌ AutoReactStatus command failed: ${err.message}`
-      }, { quoted: m });
+        // Log initialization
+        console.log(`🐺 AutoReactStatus initialized: ${this.config.enabled ? '✅ ACTIVE' : '❌ INACTIVE'}`);
+        console.log(`🎭 Default mode: ${this.config.mode}`);
+        console.log(`😄 Default emoji: ${this.config.fixedEmoji}`);
     }
-  }
+    
+    loadConfig() {
+        try {
+            const data = fs.readFileSync(CONFIG_FILE, 'utf8');
+            return JSON.parse(data);
+        } catch (error) {
+            console.error('Error loading auto react config:', error);
+            return {
+                enabled: true,
+                mode: 'fixed',
+                fixedEmoji: '🐺',
+                reactions: ["🐺", "❤️", "👍", "🔥", "🎉", "😂", "😮", "👏", "🎯", "💯", "🌟", "✨", "⚡", "💥", "🫶"],
+                logs: [],
+                totalReacted: 0,
+                lastReacted: null,
+                consecutiveReactions: 0,
+                lastSender: null,
+                settings: {
+                    rateLimitDelay: 500,
+                    reactToAll: true,
+                    ignoreConsecutiveLimit: true,
+                    noHourlyLimit: true
+                }
+            };
+        }
+    }
+    
+    saveConfig() {
+        try {
+            fs.writeFileSync(CONFIG_FILE, JSON.stringify(this.config, null, 2));
+        } catch (error) {
+            console.error('Error saving auto react config:', error);
+        }
+    }
+    
+    get enabled() {
+        return this.config.enabled;
+    }
+    
+    get mode() {
+        return this.config.mode;
+    }
+    
+    get fixedEmoji() {
+        return this.config.fixedEmoji;
+    }
+    
+    get reactions() {
+        return this.config.reactions;
+    }
+    
+    get logs() {
+        return this.config.logs;
+    }
+    
+    get totalReacted() {
+        return this.config.totalReacted;
+    }
+    
+    // Smart toggle: if already ON, just confirm instead of toggling
+    toggle(forceOff = false) {
+        if (forceOff) {
+            // Force turn off
+            this.config.enabled = false;
+            this.saveConfig();
+            return false;
+        }
+        
+        // If already enabled, don't toggle - just return true (enabled)
+        if (this.config.enabled) {
+            return true; // Still enabled
+        }
+        
+        // If disabled, enable it
+        this.config.enabled = true;
+        this.saveConfig();
+        return true;
+    }
+    
+    setMode(newMode) {
+        if (newMode === 'random' || newMode === 'fixed') {
+            this.config.mode = newMode;
+            this.saveConfig();
+            return true;
+        }
+        return false;
+    }
+    
+    setFixedEmoji(emoji) {
+        if (emoji.length <= 2) {
+            this.config.fixedEmoji = emoji;
+            this.saveConfig();
+            return true;
+        }
+        return false;
+    }
+    
+    addReaction(emoji) {
+        if (!this.config.reactions.includes(emoji) && emoji.length <= 2) {
+            this.config.reactions.push(emoji);
+            this.saveConfig();
+            return true;
+        }
+        return false;
+    }
+    
+    removeReaction(emoji) {
+        const index = this.config.reactions.indexOf(emoji);
+        if (index !== -1) {
+            this.config.reactions.splice(index, 1);
+            this.saveConfig();
+            return true;
+        }
+        return false;
+    }
+    
+    resetReactions() {
+        this.config.reactions = ["🐺", "❤️", "👍", "🔥", "🎉", "😂", "😮", "👏", "🎯", "💯", "🌟", "✨", "⚡", "💥", "🫶"];
+        this.saveConfig();
+    }
+    
+    addLog(sender, reaction, type = 'status') {
+        const logEntry = {
+            sender,
+            reaction,
+            type,
+            timestamp: Date.now()
+        };
+        
+        this.config.logs.push(logEntry);
+        this.config.totalReacted++;
+        this.config.lastReacted = logEntry;
+        
+        // Check for consecutive statuses from same sender
+        if (this.config.lastSender === sender) {
+            this.config.consecutiveReactions++;
+        } else {
+            this.config.consecutiveReactions = 1;
+            this.config.lastSender = sender;
+        }
+        
+        // Keep only last 100 logs
+        if (this.config.logs.length > 100) {
+            this.config.logs.shift();
+        }
+        
+        this.saveConfig();
+    }
+    
+    clearLogs() {
+        this.config.logs = [];
+        this.config.totalReacted = 0;
+        this.config.lastReacted = null;
+        this.config.consecutiveReactions = 0;
+        this.config.lastSender = null;
+        this.saveConfig();
+    }
+    
+    getStats() {
+        return {
+            enabled: this.config.enabled,
+            mode: this.config.mode,
+            fixedEmoji: this.config.fixedEmoji,
+            reactions: [...this.config.reactions],
+            logsCount: this.config.logs.length,
+            totalReacted: this.config.totalReacted,
+            lastReacted: this.config.lastReacted,
+            consecutiveReactions: this.config.consecutiveReactions,
+            settings: { ...this.config.settings }
+        };
+    }
+    
+    shouldReact(sender) {
+        if (!this.config.enabled) return false;
+        
+        // Check rate limiting
+        const now = Date.now();
+        if (now - this.lastReactionTime < this.config.settings.rateLimitDelay) {
+            return false;
+        }
+        
+        // Check if we should react to consecutive statuses
+        if (!this.config.settings.ignoreConsecutiveLimit && 
+            this.config.lastSender === sender && 
+            this.config.consecutiveReactions >= 3) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    getReaction() {
+        if (this.config.mode === 'fixed') {
+            return this.config.fixedEmoji;
+        } else {
+            // Random mode
+            if (this.config.reactions.length === 0) return '🐺';
+            const randomIndex = Math.floor(Math.random() * this.config.reactions.length);
+            return this.config.reactions[randomIndex];
+        }
+    }
+    
+    async reactToStatus(sock, statusKey) {
+        try {
+            const sender = statusKey.participant || statusKey.remoteJid;
+            const cleanSender = sender.split('@')[0];
+            
+            if (!this.shouldReact(sender)) {
+                return false;
+            }
+            
+            const reactionEmoji = this.getReaction();
+            
+            await sock.relayMessage(
+                'status@broadcast',
+                {
+                    reactionMessage: {
+                        key: {
+                            remoteJid: 'status@broadcast',
+                            id: statusKey.id,
+                            participant: statusKey.participant || statusKey.remoteJid,
+                            fromMe: false
+                        },
+                        text: reactionEmoji
+                    }
+                },
+                {
+                    messageId: statusKey.id,
+                    statusJidList: [statusKey.remoteJid, statusKey.participant || statusKey.remoteJid]
+                }
+            );
+            
+            // Update reaction time
+            this.lastReactionTime = Date.now();
+            
+            // Add to logs
+            this.addLog(cleanSender, reactionEmoji, 'status');
+            
+            console.log(`🐺 AutoReact: Reacted to ${cleanSender}'s status with ${reactionEmoji}`);
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Error reacting to status:', error.message);
+            
+            // Handle rate limiting by increasing delay
+            if (error.message?.includes('rate-overlimit')) {
+                console.log('⚠️ Rate limit hit, increasing delay...');
+                this.config.settings.rateLimitDelay = Math.min(
+                    this.config.settings.rateLimitDelay * 2,
+                    5000
+                );
+                this.saveConfig();
+            }
+            
+            return false;
+        }
+    }
+}
+
+// Create singleton instance
+const autoReactManager = new AutoReactManager();
+
+// Export the function for index.js
+export async function handleAutoReact(sock, statusKey) {
+    return await autoReactManager.reactToStatus(sock, statusKey);
+}
+
+// Export the manager for other uses
+export { autoReactManager };
+
+// The command module
+export default {
+    name: "autoreactstatus",
+    alias: [ "reactstatus", "statusreact", "sr", "reacts"],
+    desc: "Automatically react to WhatsApp statuses 🐺",
+    category: "Status",
+    ownerOnly: false,
+    
+    async execute(sock, m, args, prefix, extra) {
+        try {
+            // Check if sender is owner
+            const isOwner = extra?.isOwner?.() || false;
+            
+            if (args.length === 0) {
+                // Show current status
+                const stats = autoReactManager.getStats();
+                
+                let statusText = `🐺 *AUTOREACTSTATUS*\n\n`;
+                statusText += `Status: ${stats.enabled ? '✅ **ACTIVE**' : '❌ **INACTIVE**'}\n`;
+                statusText += `Mode: ${stats.mode === 'fixed' ? `Fixed (${stats.fixedEmoji})` : 'Random'}\n`;
+                //statusText += `📊 Total Reacted: ${stats.totalReacted}\n`;
+                //statusText += `🔄 Consecutive: ${stats.consecutiveReactions}\n\n`;
+                
+                // if (stats.lastReacted) {
+                //     const timeAgo = Math.floor((Date.now() - stats.lastReacted.timestamp) / 60000);
+                //     statusText += `🕒 Last Reaction:\n`;
+                //     statusText += `• To: ${stats.lastReacted.sender}\n`;
+                //     statusText += `• With: ${stats.lastReacted.reaction}\n`;
+                //     statusText += `• ${timeAgo < 1 ? 'Just now' : `${timeAgo} minutes ago`}\n`;
+                // }
+                
+                //statusText += `\n📋 *Commands:*\n`;
+                statusText += `• \`${prefix}autoreactstatus on\`\n`;
+                statusText += `• \`${prefix}autoreactstatus off\`\n`;
+                statusText += `• \`${prefix}autoreactstatus random\`\n`;
+                statusText += `• \`${prefix}autoreactstatus emoji <choose emoji>\``;
+              
+                
+                await sock.sendMessage(m.key.remoteJid, { text: statusText }, { quoted: m });
+                return;
+            }
+            
+            const action = args[0].toLowerCase();
+            
+            switch (action) {
+                case 'on':
+                case 'enable':
+                case 'start':
+                    if (!isOwner) {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: "❌ Owner only command!"
+                        }, { quoted: m });
+                        return;
+                    }
+                    
+                    // Use smart toggle that doesn't toggle if already on
+                    const currentlyEnabled = autoReactManager.enabled;
+                    const result = autoReactManager.toggle(false); // false = don't force off
+                    
+                    if (currentlyEnabled) {
+                        // Already enabled, just show confirmation
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: `✅ *AUTOREACTSTATUS IS ALREADY ACTIVE*\n\n🐺 Auto reactions are already enabled!\n\nCurrent settings:\n• Mode: ${autoReactManager.mode}\n• Emoji: ${autoReactManager.mode === 'fixed' ? autoReactManager.fixedEmoji : 'Random'}\n• Total reacted: ${autoReactManager.totalReacted}\n\nUse \`${prefix}autoreactstatus off\` to disable.`
+                        }, { quoted: m });
+                    } else {
+                        // Was disabled, now enabled
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: `✅ *AUTOREACTSTATUS ENABLED*\n\n🐺 I will now automatically react to ALL statuses!\n\nDefault emoji: ${autoReactManager.fixedEmoji}\nMode: ${autoReactManager.mode}`
+                        }, { quoted: m });
+                    }
+                    break;
+                    
+                case 'off':
+                case 'disable':
+                case 'stop':
+                    if (!isOwner) {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: "❌ Owner only command!"
+                        }, { quoted: m });
+                        return;
+                    }
+                    
+                    // Force turn off
+                    const wasEnabled = autoReactManager.enabled;
+                    autoReactManager.toggle(true); // true = force off
+                    
+                    if (wasEnabled) {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: `❌ *AUTOREACTSTATUS DISABLED*\n\nAuto reactions have been turned off.\n\nUse \`${prefix}autoreactstatus on\` to enable again.`
+                        }, { quoted: m });
+                    } else {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: `⚠️ *AUTOREACTSTATUS ALREADY DISABLED*\n\nAuto reactions are already turned off.\n\nUse \`${prefix}autoreactstatus on\` to enable.`
+                        }, { quoted: m });
+                    }
+                    break;
+                    
+                case 'random':
+                    autoReactManager.setMode('random');
+                    await sock.sendMessage(m.key.remoteJid, {
+                        text: `🎲 *Mode set to RANDOM*\n\nI will react with random emojis from the list!\n\nCurrent emoji list: ${autoReactManager.reactions.join(' ')}`
+                    }, { quoted: m });
+                    break;
+                    
+                case 'emoji':
+                    if (args.length < 2) {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: `🐺 *Current Fixed Emoji:* ${autoReactManager.fixedEmoji}\n\nUsage: ${prefix}autoreactstatus emoji 🐺\n\nSets a fixed emoji for reactions.`
+                        }, { quoted: m });
+                        return;
+                    }
+                    
+                    const emoji = args[1];
+                    if (emoji.length > 2) {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: '❌ Please use a single emoji (max 2 characters).'
+                        }, { quoted: m });
+                        return;
+                    }
+                    
+                    if (autoReactManager.setFixedEmoji(emoji)) {
+                        autoReactManager.setMode('fixed');
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: `✅ *Fixed Emoji Set*\n\nReactions will now use: ${emoji}\n\nMode automatically switched to FIXED.`
+                        }, { quoted: m });
+                    } else {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: '❌ Failed to set emoji.'
+                        }, { quoted: m });
+                    }
+                    break;
+                    
+                case 'stats':
+                case 'statistics':
+                case 'info':
+                    const detailedStats = autoReactManager.getStats();
+                    let statsText = `📊 *AUTOREACTSTATUS STATISTICS*\n\n`;
+                    statsText += `🟢 Status: ${detailedStats.enabled ? '**ACTIVE** ✅' : '**INACTIVE** ❌'}\n`;
+                    statsText += `🎭 Mode: ${detailedStats.mode === 'fixed' ? `FIXED (${detailedStats.fixedEmoji})` : 'RANDOM'}\n`;
+                    statsText += `🐺 Total Reacted: **${detailedStats.totalReacted}**\n`;
+                    statsText += `🔄 Consecutive Reactions: ${detailedStats.consecutiveReactions}\n`;
+                    statsText += `📝 Logs Stored: ${detailedStats.logsCount}\n\n`;
+                    
+                    if (detailedStats.lastReacted) {
+                        const timeAgo = Math.floor((Date.now() - detailedStats.lastReacted.timestamp) / 60000);
+                        statsText += `🕒 *Last Reaction:*\n`;
+                        statsText += `• To: ${detailedStats.lastReacted.sender}\n`;
+                        statsText += `• With: ${detailedStats.lastReacted.reaction}\n`;
+                        statsText += `• ${timeAgo < 1 ? 'Just now' : `${timeAgo} minutes ago`}\n`;
+                    }
+                    
+                    statsText += `\n⚙️ *Settings:*\n`;
+                    statsText += `• Rate Limit: ${detailedStats.settings.rateLimitDelay}ms\n`;
+                    statsText += `• React to All: ${detailedStats.settings.reactToAll ? '✅' : '❌'}\n`;
+                    statsText += `• Ignore Consecutive: ${detailedStats.settings.ignoreConsecutiveLimit ? '✅' : '❌'}\n`;
+                    statsText += `• Hourly Limit: ❌ DISABLED\n`;
+                    
+                    await sock.sendMessage(m.key.remoteJid, { text: statsText }, { quoted: m });
+                    break;
+                    
+                case 'list':
+                case 'emojis':
+                    const emojiList = autoReactManager.reactions;
+                    await sock.sendMessage(m.key.remoteJid, {
+                        text: `😄 *Random Emoji List (${emojiList.length}):*\n\n${emojiList.join(' ')}\n\nCurrent mode: ${autoReactManager.mode}\nFixed emoji: ${autoReactManager.fixedEmoji}`
+                    }, { quoted: m });
+                    break;
+                    
+                case 'add':
+                    if (!isOwner) {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: "❌ Owner only command!"
+                        }, { quoted: m });
+                        return;
+                    }
+                    
+                    if (args.length < 2) {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: `Usage: ${prefix}autoreactstatus add ❤️\n\nAdds an emoji to the random emoji list.`
+                        }, { quoted: m });
+                        return;
+                    }
+                    
+                    const addEmoji = args[1];
+                    if (addEmoji.length > 2) {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: '❌ Please use a single emoji (max 2 characters).'
+                        }, { quoted: m });
+                        return;
+                    }
+                    
+                    if (autoReactManager.addReaction(addEmoji)) {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: `✅ *Emoji Added*\n\n${addEmoji} has been added to the random list.\n\nCurrent list (${autoReactManager.reactions.length}):\n${autoReactManager.reactions.join(' ')}`
+                        }, { quoted: m });
+                    } else {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: `⚠️ Emoji ${addEmoji} is already in the list or invalid.\n\nCurrent list: ${autoReactManager.reactions.join(' ')}`
+                        }, { quoted: m });
+                    }
+                    break;
+                    
+                case 'remove':
+                    if (!isOwner) {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: "❌ Owner only command!"
+                        }, { quoted: m });
+                        return;
+                    }
+                    
+                    if (args.length < 2) {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: `Usage: ${prefix}autoreactstatus remove 🔥\n\nRemoves an emoji from the random emoji list.`
+                        }, { quoted: m });
+                        return;
+                    }
+                    
+                    const removeEmoji = args[1];
+                    if (autoReactManager.removeReaction(removeEmoji)) {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: `✅ *Emoji Removed*\n\n${removeEmoji} has been removed from the random list.\n\nCurrent list (${autoReactManager.reactions.length}):\n${autoReactManager.reactions.join(' ')}`
+                        }, { quoted: m });
+                    } else {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: `❌ Emoji ${removeEmoji} not found in the list.\n\nCurrent list: ${autoReactManager.reactions.join(' ')}`
+                        }, { quoted: m });
+                    }
+                    break;
+                    
+                case 'reset':
+                case 'clear':
+                    if (!isOwner) {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: "❌ Owner only command!"
+                        }, { quoted: m });
+                        return;
+                    }
+                    autoReactManager.resetReactions();
+                    await sock.sendMessage(m.key.remoteJid, {
+                        text: `🔄 *Emoji List Reset*\n\nReset to default emojis:\n${autoReactManager.reactions.join(' ')}`
+                    }, { quoted: m });
+                    break;
+                    
+                default:
+                    await sock.sendMessage(m.key.remoteJid, {
+                        text: `❓ *Invalid Command*\n\nUse:\n• ${prefix}autoreactstatus on/off\n• ${prefix}autoreactstatus random\n• ${prefix}autoreactstatus emoji 🐺\n• ${prefix}autoreactstatus stats\n• ${prefix}autoreactstatus list`
+                    }, { quoted: m });
+            }
+            
+        } catch (error) {
+            console.error('AutoReactStatus command error:', error);
+            await sock.sendMessage(m.key.remoteJid, {
+                text: `❌ Command failed: ${error.message}`
+            }, { quoted: m });
+        }
+    }
 };

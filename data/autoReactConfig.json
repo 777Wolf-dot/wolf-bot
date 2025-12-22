@@ -1,0 +1,480 @@
+{
+  "enabled": true,
+  "reactionChance": 80,
+  "reactions": [
+    "❤️",
+    "👍",
+    "🔥",
+    "🎉",
+    "😂",
+    "😮",
+    "👏",
+    "🎯",
+    "💯",
+    "🌟",
+    "🐺"
+  ],
+  "logs": [
+    {
+      "sender": "254703397679",
+      "reaction": "❤️",
+      "type": "status",
+      "timestamp": 1766431979491
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "🎯",
+      "type": "status",
+      "timestamp": 1766433216755
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766433483565
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "💯",
+      "type": "status",
+      "timestamp": 1766433485874
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "😂",
+      "type": "status",
+      "timestamp": 1766434226297
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "💯",
+      "type": "status",
+      "timestamp": 1766434226525
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "🎯",
+      "type": "status",
+      "timestamp": 1766434243051
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "💯",
+      "type": "status",
+      "timestamp": 1766434276216
+    },
+    {
+      "sender": "254733961184",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434703956
+    },
+    {
+      "sender": "254733961184",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434705219
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434706427
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434709693
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434713139
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434716376
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434719634
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434722938
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434726181
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434729417
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434732647
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434733997
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434735844
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434739147
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434742389
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434745670
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434748972
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434752233
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434755501
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434759083
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434762465
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434765767
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434769025
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434772285
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434776053
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434779358
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434782650
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434785909
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434789250
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434792459
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434795735
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434798991
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434802300
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434805883
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434809123
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434812400
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434815704
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434819078
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434822427
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434825747
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434829007
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434832281
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434835580
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434838865
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434842131
+    },
+    {
+      "sender": "254740417773",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766434845395
+    },
+    {
+      "sender": "254715259971",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766435598879
+    },
+    {
+      "sender": "254715259971",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766435606044
+    },
+    {
+      "sender": "254715259971",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766435618920
+    },
+    {
+      "sender": "254715259971",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766435622966
+    },
+    {
+      "sender": "254715259971",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766435638176
+    },
+    {
+      "sender": "254715259971",
+      "reaction": "😂",
+      "type": "status",
+      "timestamp": 1766435683310
+    },
+    {
+      "sender": "254715259971",
+      "reaction": "😂",
+      "type": "status",
+      "timestamp": 1766435692650
+    },
+    {
+      "sender": "254715259971",
+      "reaction": "😂",
+      "type": "status",
+      "timestamp": 1766435746299
+    },
+    {
+      "sender": "254715259971",
+      "reaction": "😂",
+      "type": "status",
+      "timestamp": 1766435754327
+    },
+    {
+      "sender": "254715259971",
+      "reaction": "😂",
+      "type": "status",
+      "timestamp": 1766436125295
+    },
+    {
+      "sender": "254715259971",
+      "reaction": "😂",
+      "type": "status",
+      "timestamp": 1766436134752
+    },
+    {
+      "sender": "254715259971",
+      "reaction": "😂",
+      "type": "status",
+      "timestamp": 1766436437809
+    },
+    {
+      "sender": "254715259971",
+      "reaction": "😂",
+      "type": "status",
+      "timestamp": 1766436446723
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "😂",
+      "type": "status",
+      "timestamp": 1766436465873
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "😂",
+      "type": "status",
+      "timestamp": 1766436474779
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766439462258
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766439954596
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766441992549
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766442011283
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766442012597
+    }
+  ],
+  "totalReacted": 74,
+  "lastReacted": {
+    "sender": "254703397679",
+    "reaction": "🐺",
+    "type": "status",
+    "timestamp": 1766442012597
+  },
+  "settings": {
+    "rateLimitDelay": 1000,
+    "maxReactionsPerHour": 50,
+    "blacklist": [],
+    "whitelist": []
+  },
+  "consecutiveReactions": 7,
+  "lastSender": "254703397679",
+  "fixedEmoji": "🐺",
+  "mode": "fixed"
+}

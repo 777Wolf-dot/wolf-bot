@@ -1,174 +1,94 @@
 {
   "logs": [
     {
-      "sender": "254794352686",
-      "fullSender": "254794352686@s.whatsapp.net",
-      "type": "image",
-      "caption": "😂😂💔",
-      "fileInfo": "🖼️ 1080x748 | 15KB",
-      "postedAt": "5:18:25 PM",
-      "detectedAt": "5:20:47 PM",
-      "timestamp": 1766413247151
-    },
-    {
-      "sender": "254732982940",
-      "fullSender": "254732982940@s.whatsapp.net",
-      "type": "video",
-      "caption": "> 🎧🎧🥶💙",
-      "fileInfo": "🎬 25s | 2760KB",
-      "postedAt": "5:21:17 PM",
-      "detectedAt": "5:21:18 PM",
-      "timestamp": 1766413278830
-    },
-    {
-      "sender": "260769771108",
-      "fullSender": "260769771108@s.whatsapp.net",
-      "type": "video",
-      "caption": "🔐🎧",
-      "fileInfo": "🎬 18s | 2101KB",
-      "postedAt": "5:21:30 PM",
-      "detectedAt": "5:21:50 PM",
-      "timestamp": 1766413310531
-    },
-    {
-      "sender": "254768188297",
-      "fullSender": "254768188297@s.whatsapp.net",
-      "type": "video",
-      "caption": "😂💔",
-      "fileInfo": "🎬 23s | 2816KB",
-      "postedAt": "5:21:55 PM",
-      "detectedAt": "5:21:55 PM",
-      "timestamp": 1766413315765
-    },
-    {
-      "sender": "447984857447",
-      "fullSender": "447984857447@s.whatsapp.net",
-      "type": "video",
-      "caption": "In love with Jamaican music ❤️😝",
-      "fileInfo": "🎬 12s | 2400KB",
-      "postedAt": "5:25:33 PM",
-      "detectedAt": "5:25:58 PM",
-      "timestamp": 1766413558962
-    },
-    {
-      "sender": "2348155931801",
-      "fullSender": "2348155931801@s.whatsapp.net",
-      "type": "video",
-      "caption": "Party don start for Ascension ooo na you dey wait for 25th",
-      "fileInfo": "🎬 15s | 1552KB",
-      "postedAt": "5:25:54 PM",
-      "detectedAt": "5:27:12 PM",
-      "timestamp": 1766413632040
-    },
-    {
-      "sender": "447984857447",
-      "fullSender": "447984857447@s.whatsapp.net",
-      "type": "video",
-      "caption": "In love with Jamaican music ❤️😝",
-      "fileInfo": "🎬 12s | 2400KB",
-      "postedAt": "5:25:59 PM",
-      "detectedAt": "5:27:12 PM",
-      "timestamp": 1766413632054
-    },
-    {
-      "sender": "254768188297",
-      "fullSender": "254768188297@s.whatsapp.net",
-      "type": "video",
-      "caption": "😂😂",
-      "fileInfo": "🎬 30s | 2641KB",
-      "postedAt": "5:26:05 PM",
-      "detectedAt": "5:27:18 PM",
-      "timestamp": 1766413638041
-    },
-    {
-      "sender": "2348155931801",
-      "fullSender": "2348155931801@s.whatsapp.net",
-      "type": "video",
-      "caption": "Party don start for Ascension ooo na you dey wait for 25th",
-      "fileInfo": "🎬 15s | 1552KB",
-      "postedAt": "5:26:29 PM",
-      "detectedAt": "5:27:30 PM",
-      "timestamp": 1766413650902
-    },
-    {
-      "sender": "254733961184",
-      "fullSender": "254733961184@s.whatsapp.net",
-      "type": "unknown",
-      "caption": "",
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "text",
+      "caption": "Zkkzkkz",
       "fileInfo": "",
-      "postedAt": "5:28:02 PM",
-      "detectedAt": "5:28:11 PM",
-      "timestamp": 1766413691260
+      "postedAt": "10:32:57 PM",
+      "detectedAt": "10:32:58 PM",
+      "timestamp": 1766431978483
     },
     {
-      "sender": "254733961184",
-      "fullSender": "254733961184@s.whatsapp.net",
-      "type": "unknown",
-      "caption": "",
-      "fileInfo": "",
-      "postedAt": "5:28:03 PM",
-      "detectedAt": "5:28:11 PM",
-      "timestamp": 1766413691270
-    },
-    {
-      "sender": "254733961184",
-      "fullSender": "254733961184@s.whatsapp.net",
-      "type": "unknown",
-      "caption": "",
-      "fileInfo": "",
-      "postedAt": "5:28:03 PM",
-      "detectedAt": "5:28:11 PM",
-      "timestamp": 1766413691278
-    },
-    {
-      "sender": "254733961184",
-      "fullSender": "254733961184@s.whatsapp.net",
-      "type": "unknown",
-      "caption": "",
-      "fileInfo": "",
-      "postedAt": "5:28:03 PM",
-      "detectedAt": "5:28:12 PM",
-      "timestamp": 1766413692286
-    },
-    {
-      "sender": "254733961184",
-      "fullSender": "254733961184@s.whatsapp.net",
-      "type": "unknown",
-      "caption": "",
-      "fileInfo": "",
-      "postedAt": "5:28:04 PM",
-      "detectedAt": "5:28:12 PM",
-      "timestamp": 1766413692303
-    },
-    {
-      "sender": "254769901428",
-      "fullSender": "254769901428@s.whatsapp.net",
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
       "type": "image",
       "caption": "",
-      "fileInfo": "🖼️ 720x1280 | 18KB",
-      "postedAt": "5:29:20 PM",
-      "detectedAt": "5:29:21 PM",
-      "timestamp": 1766413761767
+      "fileInfo": "🖼️ 563x581 | 51KB",
+      "postedAt": "10:53:35 PM",
+      "detectedAt": "10:53:36 PM",
+      "timestamp": 1766433216078
     },
     {
-      "sender": "254769901428",
-      "fullSender": "254769901428@s.whatsapp.net",
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
       "type": "image",
       "caption": "",
-      "fileInfo": "🖼️ 1080x500 | 9KB",
-      "postedAt": "5:29:26 PM",
-      "detectedAt": "5:29:27 PM",
-      "timestamp": 1766413767648
+      "fileInfo": "🖼️ 1024x1024 | 60KB",
+      "postedAt": "10:58:02 PM",
+      "detectedAt": "10:58:03 PM",
+      "timestamp": 1766433483318
     },
     {
-      "sender": "254713099334",
-      "fullSender": "254713099334@s.whatsapp.net",
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
       "type": "image",
-      "caption": "Istanbul 2 modern tv stand with led light\n\nKSh 4,521",
-      "fileInfo": "🖼️ 500x500 | 15KB",
-      "postedAt": "5:31:30 PM",
-      "detectedAt": "5:31:31 PM",
-      "timestamp": 1766413891290
+      "caption": "",
+      "fileInfo": "🖼️ 896x512 | 59KB",
+      "postedAt": "10:58:03 PM",
+      "detectedAt": "10:58:04 PM",
+      "timestamp": 1766433484173
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "image",
+      "caption": "",
+      "fileInfo": "🖼️ 576x1280 | 64KB",
+      "postedAt": "10:58:04 PM",
+      "detectedAt": "10:58:05 PM",
+      "timestamp": 1766433485631
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "image",
+      "caption": "",
+      "fileInfo": "🖼️ 576x1280 | 38KB",
+      "postedAt": "10:58:06 PM",
+      "detectedAt": "10:58:06 PM",
+      "timestamp": 1766433486756
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:10:24 PM",
+      "detectedAt": "11:10:25 PM",
+      "timestamp": 1766434225202
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:10:25 PM",
+      "detectedAt": "11:10:25 PM",
+      "timestamp": 1766434225814
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:10:25 PM",
+      "detectedAt": "11:10:26 PM",
+      "timestamp": 1766434226475
     },
     {
       "sender": "254703397679",
@@ -176,61 +96,801 @@
       "type": "text",
       "caption": ".",
       "fileInfo": "",
-      "postedAt": "5:46:26 PM",
-      "detectedAt": "5:46:26 PM",
-      "timestamp": 1766414786757
+      "postedAt": "11:10:42 PM",
+      "detectedAt": "11:10:42 PM",
+      "timestamp": 1766434242813
     },
     {
-      "sender": "260968807818",
-      "fullSender": "260968807818@s.whatsapp.net",
-      "type": "video",
-      "caption": "❤️",
-      "fileInfo": "🎬 15s | 302KB",
-      "postedAt": "5:54:59 PM",
-      "detectedAt": "5:55:03 PM",
-      "timestamp": 1766415303113
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:11:15 PM",
+      "detectedAt": "11:11:15 PM",
+      "timestamp": 1766434275984
     },
     {
-      "sender": "254797373671",
-      "fullSender": "254797373671@s.whatsapp.net",
-      "type": "image",
-      "caption": "Christmas offer 🫴 this week only",
-      "fileInfo": "🖼️ 540x1200 | 48KB",
-      "postedAt": "5:55:29 PM",
-      "detectedAt": "5:56:05 PM",
-      "timestamp": 1766415365105
+      "sender": "254733961184",
+      "fullSender": "254733961184@s.whatsapp.net",
+      "type": "text",
+      "caption": ".",
+      "fileInfo": "",
+      "postedAt": "11:18:21 PM",
+      "detectedAt": "11:18:22 PM",
+      "timestamp": 1766434702721
     },
     {
-      "sender": "254797373671",
-      "fullSender": "254797373671@s.whatsapp.net",
-      "type": "image",
-      "caption": "Christmas offer 🫴 this week only",
-      "fileInfo": "🖼️ 540x1200 | 48KB",
-      "postedAt": "5:56:05 PM",
-      "detectedAt": "5:56:29 PM",
-      "timestamp": 1766415389388
+      "sender": "254733961184",
+      "fullSender": "254733961184@s.whatsapp.net",
+      "type": "text",
+      "caption": "Xjkkz",
+      "fileInfo": "",
+      "postedAt": "11:18:24 PM",
+      "detectedAt": "11:18:24 PM",
+      "timestamp": 1766434704959
     },
     {
-      "sender": "254797373671",
-      "fullSender": "254797373671@s.whatsapp.net",
-      "type": "video",
-      "caption": "The power of praying 5x a day 🦦🛫",
-      "fileInfo": "🎬 29s | 7992KB",
-      "postedAt": "5:57:13 PM",
-      "detectedAt": "5:57:42 PM",
-      "timestamp": 1766415462397
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:18:24 PM",
+      "detectedAt": "11:18:25 PM",
+      "timestamp": 1766434705085
     },
     {
-      "sender": "260964830720",
-      "fullSender": "260964830720@s.whatsapp.net",
-      "type": "video",
-      "caption": "😘😘😘",
-      "fileInfo": "🎬 8s | 1351KB",
-      "postedAt": "5:57:49 PM",
-      "detectedAt": "5:57:51 PM",
-      "timestamp": 1766415471527
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:18:26 PM",
+      "detectedAt": "11:18:26 PM",
+      "timestamp": 1766434706555
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:18:28 PM",
+      "detectedAt": "11:18:29 PM",
+      "timestamp": 1766434709458
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:18:32 PM",
+      "detectedAt": "11:18:32 PM",
+      "timestamp": 1766434712793
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:18:35 PM",
+      "detectedAt": "11:18:36 PM",
+      "timestamp": 1766434716142
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:18:38 PM",
+      "detectedAt": "11:18:39 PM",
+      "timestamp": 1766434719404
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:18:42 PM",
+      "detectedAt": "11:18:42 PM",
+      "timestamp": 1766434722683
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:18:45 PM",
+      "detectedAt": "11:18:45 PM",
+      "timestamp": 1766434725920
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:18:48 PM",
+      "detectedAt": "11:18:49 PM",
+      "timestamp": 1766434729179
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:18:51 PM",
+      "detectedAt": "11:18:52 PM",
+      "timestamp": 1766434732415
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:18:51 PM",
+      "detectedAt": "11:18:52 PM",
+      "timestamp": 1766434732550
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:18:52 PM",
+      "detectedAt": "11:18:53 PM",
+      "timestamp": 1766434733463
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:18:55 PM",
+      "detectedAt": "11:18:55 PM",
+      "timestamp": 1766434735616
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:18:58 PM",
+      "detectedAt": "11:18:58 PM",
+      "timestamp": 1766434738835
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:01 PM",
+      "detectedAt": "11:19:02 PM",
+      "timestamp": 1766434742139
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:04 PM",
+      "detectedAt": "11:19:05 PM",
+      "timestamp": 1766434745440
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:08 PM",
+      "detectedAt": "11:19:08 PM",
+      "timestamp": 1766434748706
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:11 PM",
+      "detectedAt": "11:19:11 PM",
+      "timestamp": 1766434751957
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:14 PM",
+      "detectedAt": "11:19:15 PM",
+      "timestamp": 1766434755246
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:18 PM",
+      "detectedAt": "11:19:18 PM",
+      "timestamp": 1766434758755
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:21 PM",
+      "detectedAt": "11:19:22 PM",
+      "timestamp": 1766434762214
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:24 PM",
+      "detectedAt": "11:19:25 PM",
+      "timestamp": 1766434765476
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:28 PM",
+      "detectedAt": "11:19:28 PM",
+      "timestamp": 1766434768767
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:31 PM",
+      "detectedAt": "11:19:32 PM",
+      "timestamp": 1766434772031
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:34 PM",
+      "detectedAt": "11:19:35 PM",
+      "timestamp": 1766434775525
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:38 PM",
+      "detectedAt": "11:19:39 PM",
+      "timestamp": 1766434779097
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:41 PM",
+      "detectedAt": "11:19:42 PM",
+      "timestamp": 1766434782329
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:45 PM",
+      "detectedAt": "11:19:45 PM",
+      "timestamp": 1766434785668
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:48 PM",
+      "detectedAt": "11:19:49 PM",
+      "timestamp": 1766434789014
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:51 PM",
+      "detectedAt": "11:19:52 PM",
+      "timestamp": 1766434792221
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:54 PM",
+      "detectedAt": "11:19:55 PM",
+      "timestamp": 1766434795411
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:19:58 PM",
+      "detectedAt": "11:19:58 PM",
+      "timestamp": 1766434798758
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:01 PM",
+      "detectedAt": "11:20:02 PM",
+      "timestamp": 1766434802042
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:05 PM",
+      "detectedAt": "11:20:05 PM",
+      "timestamp": 1766434805554
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:08 PM",
+      "detectedAt": "11:20:08 PM",
+      "timestamp": 1766434808884
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:11 PM",
+      "detectedAt": "11:20:12 PM",
+      "timestamp": 1766434812171
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:14 PM",
+      "detectedAt": "11:20:15 PM",
+      "timestamp": 1766434815455
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:18 PM",
+      "detectedAt": "11:20:18 PM",
+      "timestamp": 1766434818792
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:21 PM",
+      "detectedAt": "11:20:22 PM",
+      "timestamp": 1766434822190
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:24 PM",
+      "detectedAt": "11:20:25 PM",
+      "timestamp": 1766434825496
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:28 PM",
+      "detectedAt": "11:20:28 PM",
+      "timestamp": 1766434828772
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:31 PM",
+      "detectedAt": "11:20:32 PM",
+      "timestamp": 1766434832042
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:34 PM",
+      "detectedAt": "11:20:35 PM",
+      "timestamp": 1766434835306
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:38 PM",
+      "detectedAt": "11:20:38 PM",
+      "timestamp": 1766434838574
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:41 PM",
+      "detectedAt": "11:20:41 PM",
+      "timestamp": 1766434841876
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:44 PM",
+      "detectedAt": "11:20:45 PM",
+      "timestamp": 1766434845077
+    },
+    {
+      "sender": "254740417773",
+      "fullSender": "254740417773@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:20:47 PM",
+      "detectedAt": "11:20:48 PM",
+      "timestamp": 1766434848509
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "text",
+      "caption": ".",
+      "fileInfo": "",
+      "postedAt": "11:20:53 PM",
+      "detectedAt": "11:20:53 PM",
+      "timestamp": 1766434853609
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:21:17 PM",
+      "detectedAt": "11:21:18 PM",
+      "timestamp": 1766434878350
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "text",
+      "caption": ".",
+      "fileInfo": "",
+      "postedAt": "11:32:38 PM",
+      "detectedAt": "11:32:39 PM",
+      "timestamp": 1766435559018
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:33:16 PM",
+      "detectedAt": "11:33:17 PM",
+      "timestamp": 1766435597462
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "text",
+      "caption": ".",
+      "fileInfo": "",
+      "postedAt": "11:33:25 PM",
+      "detectedAt": "11:33:25 PM",
+      "timestamp": 1766435605791
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:33:38 PM",
+      "detectedAt": "11:33:38 PM",
+      "timestamp": 1766435618594
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "text",
+      "caption": ".",
+      "fileInfo": "",
+      "postedAt": "11:33:42 PM",
+      "detectedAt": "11:33:42 PM",
+      "timestamp": 1766435622706
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:33:57 PM",
+      "detectedAt": "11:33:57 PM",
+      "timestamp": 1766435637872
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "text",
+      "caption": ".",
+      "fileInfo": "",
+      "postedAt": "11:34:42 PM",
+      "detectedAt": "11:34:43 PM",
+      "timestamp": 1766435683064
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:34:51 PM",
+      "detectedAt": "11:34:52 PM",
+      "timestamp": 1766435692335
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "text",
+      "caption": "Nsj",
+      "fileInfo": "",
+      "postedAt": "11:35:16 PM",
+      "detectedAt": "11:35:16 PM",
+      "timestamp": 1766435716517
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:35:22 PM",
+      "detectedAt": "11:35:22 PM",
+      "timestamp": 1766435722573
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "text",
+      "caption": "Korir",
+      "fileInfo": "",
+      "postedAt": "11:35:45 PM",
+      "detectedAt": "11:35:45 PM",
+      "timestamp": 1766435745985
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:35:53 PM",
+      "detectedAt": "11:35:54 PM",
+      "timestamp": 1766435754065
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "text",
+      "caption": ".",
+      "fileInfo": "",
+      "postedAt": "11:42:03 PM",
+      "detectedAt": "11:42:03 PM",
+      "timestamp": 1766436123804
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:42:14 PM",
+      "detectedAt": "11:42:14 PM",
+      "timestamp": 1766436134488
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "text",
+      "caption": ".",
+      "fileInfo": "",
+      "postedAt": "11:47:15 PM",
+      "detectedAt": "11:47:16 PM",
+      "timestamp": 1766436436587
+    },
+    {
+      "sender": "254715259971",
+      "fullSender": "254715259971@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:47:25 PM",
+      "detectedAt": "11:47:26 PM",
+      "timestamp": 1766436446398
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "text",
+      "caption": ".",
+      "fileInfo": "",
+      "postedAt": "11:47:44 PM",
+      "detectedAt": "11:47:44 PM",
+      "timestamp": 1766436464790
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "11:47:53 PM",
+      "detectedAt": "11:47:54 PM",
+      "timestamp": 1766436474525
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "text",
+      "caption": "Zkkz",
+      "fileInfo": "",
+      "postedAt": "11:58:46 PM",
+      "detectedAt": "11:58:47 PM",
+      "timestamp": 1766437127616
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "12:04:35 AM",
+      "detectedAt": "12:04:36 AM",
+      "timestamp": 1766437476905
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "12:04:36 AM",
+      "detectedAt": "12:04:37 AM",
+      "timestamp": 1766437477959
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "text",
+      "caption": ".",
+      "fileInfo": "",
+      "postedAt": "12:37:39 AM",
+      "detectedAt": "12:37:41 AM",
+      "timestamp": 1766439461016
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "text",
+      "caption": ".",
+      "fileInfo": "",
+      "postedAt": "12:45:52 AM",
+      "detectedAt": "12:45:53 AM",
+      "timestamp": 1766439953317
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "text",
+      "caption": ".",
+      "fileInfo": "",
+      "postedAt": "1:19:50 AM",
+      "detectedAt": "1:19:51 AM",
+      "timestamp": 1766441991468
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "1:20:10 AM",
+      "detectedAt": "1:20:11 AM",
+      "timestamp": 1766442011047
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "1:20:11 AM",
+      "detectedAt": "1:20:12 AM",
+      "timestamp": 1766442012350
+    },
+    {
+      "sender": "254703397679",
+      "fullSender": "254703397679@s.whatsapp.net",
+      "type": "unknown",
+      "caption": "",
+      "fileInfo": "",
+      "postedAt": "1:20:12 AM",
+      "detectedAt": "1:20:13 AM",
+      "timestamp": 1766442013079
     }
   ],
-  "updatedAt": "2025-12-22T14:58:01.906Z",
-  "count": 23
+  "updatedAt": "2025-12-22T22:54:28.624Z",
+  "count": 89
 }

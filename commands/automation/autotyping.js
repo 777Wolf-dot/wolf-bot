@@ -366,12 +366,6 @@ export default {
 
 ${statusText}
 ${modeText}
-
-📊 *Status:*
-• Auto-Typing: ${status.enabled ? 'ON 🟢' : 'OFF 🔴'}
-• Duration: ${status.duration} seconds
-• Active Chats: ${status.activeSessions}
-• Total Users: ${status.totalUsersTyping}\n
 📝 *Commands:*
 • \`${PREFIX}autotyping on\` 
 • \`${PREFIX}autotyping off\` 
