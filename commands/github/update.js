@@ -630,984 +630,137 @@
 
 
 
-// import { exec } from "child_process";
-// import { promisify } from "util";
-// import fs from "fs";
-// import path from "path";
-
-// const execAsync = promisify(exec);
-// const isWindows = process.platform === 'win32';
-
-// export class PanelManager {
-//   constructor(panelPath = './panel') {
-//     this.panelPath = panelPath;
-//     this.panelPort = process.env.PANEL_PORT || 3000;
-//   }
-  
-//   async startPanel() {
-//     try {
-//       const panelMain = this.findPanelMain();
-//       if (!panelMain) {
-//         throw new Error("Panel main file not found");
-//       }
-      
-//       console.log(`🚀 Starting panel: ${panelMain}`);
-      
-//       if (isWindows) {
-//         await execAsync(`start /B node "${panelMain}"`, { shell: true });
-//       } else {
-//         await execAsync(`nohup node "${panelMain}" > panel.log 2>&1 &`, { shell: true });
-//       }
-      
-//       // Wait for panel to start
-//       await new Promise(resolve => setTimeout(resolve, 3000));
-      
-//       return { success: true, pid: await this.getPanelPid() };
-//     } catch (error) {
-//       return { success: false, error: error.message };
-//     }
-//   }
-  
-//   async stopPanel() {
-//     try {
-//       const pid = await this.getPanelPid();
-//       if (pid) {
-//         if (isWindows) {
-//           await execAsync(`taskkill /F /PID ${pid}`, { shell: true });
-//         } else {
-//           await execAsync(`kill -9 ${pid}`, { shell: true });
-//         }
-//         await new Promise(resolve => setTimeout(resolve, 1000));
-//       }
-//       return { success: true };
-//     } catch (error) {
-//       return { success: false, error: error.message };
-//     }
-//   }
-  
-//   async restartPanel() {
-//     await this.stopPanel();
-//     return await this.startPanel();
-//   }
-  
-//   async getPanelStatus() {
-//     try {
-//       const pid = await this.getPanelPid();
-//       const running = !!pid;
-      
-//       // Check if port is listening
-//       let portOpen = false;
-//       if (running) {
-//         if (isWindows) {
-//           const result = await execAsync(`netstat -ano | findstr :${this.panelPort}`, { shell: true });
-//           portOpen = result.stdout.includes(`:${this.panelPort}`);
-//         } else {
-//           const result = await execAsync(`netstat -tuln | grep :${this.panelPort}`, { shell: true });
-//           portOpen = !!result.stdout;
-//         }
-//       }
-      
-//       return {
-//         running,
-//         pid,
-//         port: this.panelPort,
-//         portOpen,
-//         path: this.panelPath
-//       };
-//     } catch (error) {
-//       return { running: false, error: error.message };
-//     }
-//   }
-  
-//   async getPanelPid() {
-//     try {
-//       if (isWindows) {
-//         const result = await execAsync(
-//           `Get-WmiObject Win32_Process -Filter "name='node.exe'" | ` +
-//           `Where-Object {$_.CommandLine -like '*${this.panelPath.replace(/\\/g, '\\\\')}*'} | ` +
-//           `Select-Object -ExpandProperty ProcessId`,
-//           { shell: 'powershell' }
-//         );
-//         return result.stdout.trim();
-//       } else {
-//         const result = await execAsync(`pgrep -f "${this.panelPath}"`, { shell: true });
-//         return result.stdout.trim();
-//       }
-//     } catch (error) {
-//       return null;
-//     }
-//   }
-  
-//   findPanelMain() {
-//     const possibleFiles = [
-//       path.join(this.panelPath, 'index.js'),
-//       path.join(this.panelPath, 'app.js'),
-//       path.join(this.panelPath, 'server.js'),
-//       path.join(this.panelPath, 'main.js'),
-//       path.join(process.cwd(), 'panel.js'),
-//       path.join(process.cwd(), 'src', 'panel.js')
-//     ];
-    
-//     for (const file of possibleFiles) {
-//       if (fs.existsSync(file)) {
-//         return file;
-//       }
-//     }
-//     return null;
-//   }
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { exec } from "child_process";
 import { promisify } from "util";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
-import { spawn } from "child_process";
 
 const execAsync = promisify(exec);
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Panel-specific configurations
-const PANEL_MODE = process.env.PANEL_MODE === 'true' || false;
-const PANEL_PORT = process.env.PANEL_PORT || 3000;
-const PANEL_PATH = process.env.PANEL_PATH || './panel';
-
-// Detect OS
 const isWindows = process.platform === 'win32';
-const shell = isWindows ? 'powershell' : 'bash';
 
-// Enhanced exec with OS compatibility
-async function run(cmd, timeout = 30000) {
-  try {
-    const command = isWindows ? 
-      `powershell -Command "${cmd.replace(/"/g, '\\"')}"` : 
-      cmd;
-    
-    const { stdout, stderr } = await execAsync(command, { 
-      timeout, 
-      shell: true,
-      windowsHide: true 
-    });
-    
-    if (stderr && !stderr.includes('warning')) {
-      console.warn(`Command stderr: ${stderr}`);
-    }
-    return stdout.trim();
-  } catch (error) {
-    console.error(`Command failed: ${cmd}`, error.message);
-    throw error;
-  }
-}
-
-// OS-compatible file operations
-async function copyDirOS(src, dest) {
-  if (isWindows) {
-    // Windows: use xcopy or native copy
-    if (await run('where xcopy').then(() => true).catch(() => false)) {
-      await run(`xcopy "${src}" "${dest}" /E /I /H /Y /Q`);
-    } else {
-      // Native Node.js copy
-      await copyDirNative(src, dest);
-    }
-  } else {
-    // Linux/Mac
-    await run(`cp -r "${src}" "${dest}"`);
-  }
-}
-
-async function deleteDirOS(dirPath) {
-  if (fs.existsSync(dirPath)) {
-    if (isWindows) {
-      await run(`rmdir /s /q "${dirPath}"`);
-    } else {
-      await run(`rm -rf "${dirPath}"`);
-    }
-  }
-}
-
-// Native directory copy
-async function copyDirNative(src, dest) {
-  if (!fs.existsSync(src)) return;
-  
-  if (!fs.existsSync(dest)) {
-    fs.mkdirSync(dest, { recursive: true });
+export class PanelManager {
+  constructor(panelPath = './panel') {
+    this.panelPath = panelPath;
+    this.panelPort = process.env.PANEL_PORT || 3000;
   }
   
-  const entries = fs.readdirSync(src, { withFileTypes: true });
+  async startPanel() {
+    try {
+      const panelMain = this.findPanelMain();
+      if (!panelMain) {
+        throw new Error("Panel main file not found");
+      }
+      
+      console.log(`🚀 Starting panel: ${panelMain}`);
+      
+      if (isWindows) {
+        await execAsync(`start /B node "${panelMain}"`, { shell: true });
+      } else {
+        await execAsync(`nohup node "${panelMain}" > panel.log 2>&1 &`, { shell: true });
+      }
+      
+      // Wait for panel to start
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      return { success: true, pid: await this.getPanelPid() };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
   
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
+  async stopPanel() {
+    try {
+      const pid = await this.getPanelPid();
+      if (pid) {
+        if (isWindows) {
+          await execAsync(`taskkill /F /PID ${pid}`, { shell: true });
+        } else {
+          await execAsync(`kill -9 ${pid}`, { shell: true });
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+  
+  async restartPanel() {
+    await this.stopPanel();
+    return await this.startPanel();
+  }
+  
+  async getPanelStatus() {
+    try {
+      const pid = await this.getPanelPid();
+      const running = !!pid;
+      
+      // Check if port is listening
+      let portOpen = false;
+      if (running) {
+        if (isWindows) {
+          const result = await execAsync(`netstat -ano | findstr :${this.panelPort}`, { shell: true });
+          portOpen = result.stdout.includes(`:${this.panelPort}`);
+        } else {
+          const result = await execAsync(`netstat -tuln | grep :${this.panelPort}`, { shell: true });
+          portOpen = !!result.stdout;
+        }
+      }
+      
+      return {
+        running,
+        pid,
+        port: this.panelPort,
+        portOpen,
+        path: this.panelPath
+      };
+    } catch (error) {
+      return { running: false, error: error.message };
+    }
+  }
+  
+  async getPanelPid() {
+    try {
+      if (isWindows) {
+        const result = await execAsync(
+          `Get-WmiObject Win32_Process -Filter "name='node.exe'" | ` +
+          `Where-Object {$_.CommandLine -like '*${this.panelPath.replace(/\\/g, '\\\\')}*'} | ` +
+          `Select-Object -ExpandProperty ProcessId`,
+          { shell: 'powershell' }
+        );
+        return result.stdout.trim();
+      } else {
+        const result = await execAsync(`pgrep -f "${this.panelPath}"`, { shell: true });
+        return result.stdout.trim();
+      }
+    } catch (error) {
+      return null;
+    }
+  }
+  
+  findPanelMain() {
+    const possibleFiles = [
+      path.join(this.panelPath, 'index.js'),
+      path.join(this.panelPath, 'app.js'),
+      path.join(this.panelPath, 'server.js'),
+      path.join(this.panelPath, 'main.js'),
+      path.join(process.cwd(), 'panel.js'),
+      path.join(process.cwd(), 'src', 'panel.js')
+    ];
     
-    if (entry.isDirectory()) {
-      await copyDirNative(srcPath, destPath);
-    } else {
-      fs.copyFileSync(srcPath, destPath);
+    for (const file of possibleFiles) {
+      if (fs.existsSync(file)) {
+        return file;
+      }
     }
-  }
-}
-
-// Check if git repository exists
-async function hasGitRepo() {
-  const gitPath = path.join(process.cwd(), ".git");
-  return fs.existsSync(gitPath);
-}
-
-// Get current git branch
-async function getCurrentBranch() {
-  try {
-    return await run("git rev-parse --abbrev-ref HEAD");
-  } catch (error) {
-    return "main";
-  }
-}
-
-// Panel management functions
-async function isPanelRunning() {
-  try {
-    if (isWindows) {
-      const result = await run(`Get-Process node -ErrorAction SilentlyContinue | Where-Object {$_.CommandLine -like '*${PANEL_PATH}*'}`);
-      return result.length > 0;
-    } else {
-      const result = await run(`ps aux | grep -v grep | grep -i "${PANEL_PATH}"`);
-      return result.length > 0;
-    }
-  } catch (error) {
-    return false;
-  }
-}
-
-async function getPanelPid() {
-  try {
-    if (isWindows) {
-      const result = await run(`Get-WmiObject Win32_Process -Filter "name='node.exe'" | Where-Object {$_.CommandLine -like '*${PANEL_PATH}*'} | Select-Object -ExpandProperty ProcessId`);
-      return result.trim();
-    } else {
-      const result = await run(`pgrep -f "${PANEL_PATH}"`);
-      return result.trim();
-    }
-  } catch (error) {
     return null;
   }
 }
 
-async function restartPanel() {
-  console.log("🔄 Restarting panel...");
-  
-  try {
-    const panelMain = findPanelMainFile();
-    if (!panelMain) {
-      console.log("⚠️ Panel main file not found");
-      return false;
-    }
-    
-    // Kill existing panel process
-    const pid = await getPanelPid();
-    if (pid) {
-      if (isWindows) {
-        await run(`taskkill /F /PID ${pid}`);
-      } else {
-        await run(`kill -9 ${pid}`);
-      }
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    
-    // Start panel in background
-    if (isWindows) {
-      await run(`start /B node "${panelMain}"`);
-    } else {
-      await run(`nohup node "${panelMain}" > panel.log 2>&1 &`);
-    }
-    
-    console.log("✅ Panel restarted");
-    return true;
-  } catch (error) {
-    console.error("Panel restart failed:", error);
-    return false;
-  }
-}
 
-function findPanelMainFile() {
-  const possibleFiles = [
-    path.join(PANEL_PATH, 'index.js'),
-    path.join(PANEL_PATH, 'app.js'),
-    path.join(PANEL_PATH, 'server.js'),
-    path.join(PANEL_PATH, 'main.js'),
-    path.join(process.cwd(), 'panel.js'),
-    path.join(process.cwd(), 'src', 'panel.js')
-  ];
-  
-  for (const file of possibleFiles) {
-    if (fs.existsSync(file)) {
-      return file;
-    }
-  }
-  return null;
-}
 
-// Session backup/restore for hot updates
-async function backupSession() {
-  const sessionPath = path.join(process.cwd(), "session");
-  const backupPath = path.join(process.cwd(), "session_backup_hot");
-  
-  if (fs.existsSync(sessionPath)) {
-    // Remove old backup
-    if (fs.existsSync(backupPath)) {
-      await deleteDirOS(backupPath);
-    }
-    
-    // Create backup
-    await copyDirOS(sessionPath, backupPath);
-    console.log("✅ Session backed up");
-    return backupPath;
-  }
-  return null;
-}
 
-async function restoreSession() {
-  const sessionPath = path.join(process.cwd(), "session");
-  const backupPath = path.join(process.cwd(), "session_backup_hot");
-  
-  if (fs.existsSync(backupPath)) {
-    // Restore critical files only
-    const criticalFiles = ['creds.json', 'app-state-sync-version', 'pre-key', 'session'];
-    
-    for (const file of criticalFiles) {
-      const backupFile = path.join(backupPath, file);
-      const sessionFile = path.join(sessionPath, file);
-      
-      if (fs.existsSync(backupFile)) {
-        if (fs.existsSync(sessionFile)) {
-          // Backup current file first
-          const tempBackup = path.join(process.cwd(), `temp_${file}`);
-          if (fs.existsSync(sessionFile)) {
-            if (fs.statSync(sessionFile).isDirectory()) {
-              await copyDirOS(sessionFile, tempBackup);
-            } else {
-              fs.copyFileSync(sessionFile, tempBackup);
-            }
-          }
-          
-          // Restore from backup
-          if (fs.statSync(backupFile).isDirectory()) {
-            await copyDirOS(backupFile, sessionFile);
-          } else {
-            fs.copyFileSync(backupFile, sessionFile);
-          }
-          
-          // Cleanup temp
-          if (fs.existsSync(tempBackup)) {
-            await deleteDirOS(tempBackup);
-          }
-        }
-      }
-    }
-    
-    // Cleanup backup
-    await deleteDirOS(backupPath);
-    console.log("✅ Session restored");
-  }
-}
 
-// Hot module reload without restart
-async function hotReloadModules() {
-  console.log("🔄 Attempting hot reload...");
-  
-  try {
-    // Clear require cache for all .js and .mjs files
-    const cacheKeys = Object.keys(require.cache);
-    
-    for (const key of cacheKeys) {
-      if (key.includes(process.cwd()) && 
-          !key.includes('node_modules') && 
-          (key.endsWith('.js') || key.endsWith('.mjs'))) {
-        delete require.cache[key];
-      }
-    }
-    
-    console.log(`✅ Cleared ${cacheKeys.length} modules from cache`);
-    
-    // If there's a panel, try to send it a reload signal
-    if (PANEL_MODE) {
-      try {
-        const panelPid = await getPanelPid();
-        if (panelPid) {
-          if (isWindows) {
-            await run(`taskkill /F /PID ${panelPid} /T`);
-          } else {
-            await run(`kill -HUP ${panelPid}`);
-          }
-        }
-      } catch (e) {
-        console.log("Panel reload signal failed:", e.message);
-      }
-    }
-    
-    return true;
-  } catch (error) {
-    console.error("Hot reload failed:", error);
-    return false;
-  }
-}
 
-// Update from wolf-bot repo
-async function updateFromWolfBot() {
-  try {
-    const oldRev = await run("git rev-parse HEAD").catch(() => "unknown");
-    const currentBranch = await getCurrentBranch();
-    
-    console.log(`Current branch: ${currentBranch}, Revision: ${oldRev.substring(0, 7)}`);
-    
-    // Add wolf-bot upstream if needed
-    try {
-      await run("git remote get-url wolf-bot-upstream");
-    } catch {
-      await run("git remote add wolf-bot-upstream https://github.com/777Wolf-dot/wolf-bot.git");
-    }
-    
-    // Fetch updates
-    await run("git fetch --all --prune");
-    
-    // Get new revision
-    const newRev = await run("git rev-parse wolf-bot-upstream/main");
-    const alreadyUpToDate = oldRev === newRev;
-    
-    if (alreadyUpToDate) {
-      return { 
-        oldRev, 
-        newRev, 
-        alreadyUpToDate, 
-        source: "wolf-bot/main",
-        type: "git"
-      };
-    }
-    
-    console.log(`Updating: ${oldRev.substring(0, 7)} → ${newRev.substring(0, 7)}`);
-    
-    // Create backup
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupBranch = `backup-${timestamp}`;
-    await run(`git branch ${backupBranch}`);
-    
-    // Update to latest
-    await run("git reset --hard wolf-bot-upstream/main");
-    
-    return { 
-      oldRev, 
-      newRev, 
-      alreadyUpToDate, 
-      source: "wolf-bot/main",
-      backupBranch,
-      type: "git"
-    };
-    
-  } catch (error) {
-    console.error("Git update failed:", error);
-    throw new Error(`Git update failed: ${error.message}`);
-  }
-}
 
-// ZIP update with panel support
-async function updateViaZip() {
-  const zipUrl = "https://github.com/777Wolf-dot/wolf-bot/archive/refs/heads/main.zip";
-  const tmpDir = path.join(process.cwd(), "tmp_panel_update");
-  const zipPath = path.join(tmpDir, "update.zip");
-  
-  try {
-    // Backup session
-    await backupSession();
-    
-    // Clean/create temp
-    if (fs.existsSync(tmpDir)) {
-      await deleteDirOS(tmpDir);
-    }
-    fs.mkdirSync(tmpDir, { recursive: true });
-    
-    console.log(`📥 Downloading from: ${zipUrl}`);
-    
-    // Download
-    let downloadCmd;
-    if (isWindows) {
-      if (await run('where curl').then(() => true).catch(() => false)) {
-        downloadCmd = `curl -L "${zipUrl}" -o "${zipPath}"`;
-      } else {
-        downloadCmd = `powershell -Command "Invoke-WebRequest -Uri '${zipUrl}' -OutFile '${zipPath}'"`;
-      }
-    } else {
-      if (await run('which curl').then(() => true).catch(() => false)) {
-        downloadCmd = `curl -L "${zipUrl}" -o "${zipPath}"`;
-      } else {
-        downloadCmd = `wget "${zipUrl}" -O "${zipPath}"`;
-      }
-    }
-    
-    await run(downloadCmd);
-    
-    // Extract
-    console.log("📦 Extracting...");
-    
-    if (isWindows) {
-      if (await run('where 7z').then(() => true).catch(() => false)) {
-        await run(`7z x "${zipPath}" -o"${tmpDir}" -y`);
-      } else {
-        await run(`powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${tmpDir}'"`);
-      }
-    } else {
-      if (await run('which unzip').then(() => true).catch(() => false)) {
-        await run(`unzip -o "${zipPath}" -d "${tmpDir}"`);
-      } else {
-        await run(`7z x "${zipPath}" -o"${tmpDir}" -y`);
-      }
-    }
-    
-    // Find source directory
-    const items = fs.readdirSync(tmpDir);
-    let sourceDir = tmpDir;
-    
-    const wolfFolder = items.find(item => item.includes('wolf-bot'));
-    if (wolfFolder) {
-      sourceDir = path.join(tmpDir, wolfFolder);
-    }
-    
-    console.log(`🔄 Copying files from ${sourceDir}`);
-    
-    // Copy with exclusions
-    const exclude = ['.git', 'node_modules', 'session', 'tmp', 'logs', 
-                    'settings.js', 'config.json', '.env', 'panel',
-                    'session_backup_hot', 'tmp_panel_update'];
-    
-    await copyFilesExcluding(sourceDir, process.cwd(), exclude);
-    
-    // Cleanup
-    await deleteDirOS(tmpDir);
-    
-    return { 
-      success: true, 
-      source: "wolf-bot ZIP" 
-    };
-    
-  } catch (error) {
-    if (fs.existsSync(tmpDir)) {
-      await deleteDirOS(tmpDir);
-    }
-    throw new Error(`ZIP update failed: ${error.message}`);
-  }
-}
 
-async function copyFilesExcluding(src, dest, exclude = []) {
-  if (!fs.existsSync(src)) return;
-  
-  const entries = fs.readdirSync(src, { withFileTypes: true });
-  
-  for (const entry of entries) {
-    if (exclude.includes(entry.name)) {
-      console.log(`⏭️ Skipping: ${entry.name}`);
-      continue;
-    }
-    
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
-    
-    if (entry.isDirectory()) {
-      if (!fs.existsSync(destPath)) {
-        fs.mkdirSync(destPath, { recursive: true });
-      }
-      await copyFilesExcluding(srcPath, destPath, exclude);
-    } else {
-      // Don't overwrite config files
-      if (['settings.js', 'config.json', '.env'].includes(entry.name) && 
-          fs.existsSync(destPath)) {
-        console.log(`💾 Preserving: ${entry.name}`);
-        continue;
-      }
-      
-      fs.copyFileSync(srcPath, destPath);
-      console.log(`✅ Updated: ${entry.name}`);
-    }
-  }
-}
-
-// Smart restart that preserves panel
-async function smartRestart(sock, jid) {
-  console.log("🔄 Performing smart restart...");
-  
-  try {
-    // Backup session
-    await backupSession();
-    
-    // Send restarting message
-    if (sock && jid) {
-      await sock.sendMessage(jid, { 
-        text: "🤖 Bot is performing a smart restart. Back in a moment..." 
-      });
-    }
-    
-    // Close WhatsApp connection gracefully
-    if (sock && sock.ws && sock.ws.readyState === 1) {
-      try {
-        await sock.end();
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      } catch (e) {
-        console.log("WhatsApp disconnect warning:", e.message);
-      }
-    }
-    
-    // Restore session
-    await restoreSession();
-    
-    // Find main bot file
-    const mainFiles = ['index.js', 'main.js', 'app.js', 'bot.js'];
-    let mainFile = null;
-    
-    for (const file of mainFiles) {
-      const filePath = path.join(process.cwd(), file);
-      if (fs.existsSync(filePath)) {
-        mainFile = filePath;
-        break;
-      }
-    }
-    
-    if (!mainFile) {
-      throw new Error("Main bot file not found");
-    }
-    
-    // Start new bot process
-    console.log(`🚀 Starting new bot process: ${mainFile}`);
-    
-    const child = spawn('node', [mainFile], {
-      stdio: 'inherit',
-      detached: true,
-      shell: true,
-      env: { 
-        ...process.env, 
-        HOT_RESTART: 'true',
-        PANEL_MODE: PANEL_MODE ? 'true' : 'false'
-      }
-    });
-    
-    child.unref();
-    
-    // If panel exists, restart it too
-    if (PANEL_MODE && fs.existsSync(PANEL_PATH)) {
-      setTimeout(async () => {
-        await restartPanel();
-      }, 3000);
-    }
-    
-    // Exit old process after delay
-    setTimeout(() => {
-      console.log("👋 Old process exiting gracefully");
-      process.exit(0);
-    }, 5000);
-    
-    return true;
-    
-  } catch (error) {
-    console.error("Smart restart failed:", error);
-    throw error;
-  }
-}
-
-// Load settings
-async function loadSettings() {
-  try {
-    const settingsPath = path.join(process.cwd(), "settings.js");
-    if (fs.existsSync(settingsPath)) {
-      const module = await import(`file://${settingsPath}`);
-      return module.default || module;
-    }
-  } catch (error) {
-    console.warn("Settings load warning:", error);
-  }
-  return {};
-}
-
-// Check panel status
-async function checkPanelStatus() {
-  try {
-    const panelRunning = await isPanelRunning();
-    const panelPid = await getPanelPid();
-    
-    return {
-      running: panelRunning,
-      pid: panelPid,
-      path: PANEL_PATH,
-      mode: PANEL_MODE
-    };
-  } catch (error) {
-    return { running: false, error: error.message };
-  }
-}
-
-// Main command handler with panel support
-let isUpdating = false;
-
-export default {
-  name: "update",
-  description: "Update bot with panel support (no restart needed)",
-  category: "owner",
-  ownerOnly: true,
-
-  async execute(sock, m, args) {
-    if (isUpdating) {
-      await sock.sendMessage(m.key.remoteJid, { 
-        text: "⏳ Update in progress. Please wait..." 
-      }, { quoted: m });
-      return;
-    }
-    
-    isUpdating = true;
-    const jid = m.key.remoteJid;
-    const sender = m.key.participant || jid;
-    
-    try {
-      // Initial message
-      await sock.sendMessage(jid, { 
-        text: `🔄 Starting panel-aware update...\nMode: ${PANEL_MODE ? 'Panel Enabled' : 'Bot Only'}` 
-      }, { quoted: m });
-      
-      // Load settings and check owner
-      const settings = await loadSettings();
-      const isOwner = m.key.fromMe || 
-        (settings.ownerNumber && sender.includes(settings.ownerNumber));
-      
-      if (!isOwner) {
-        await sock.sendMessage(jid, { 
-          text: "❌ Owner only command." 
-        }, { quoted: m });
-        isUpdating = false;
-        return;
-      }
-      
-      // Check panel status
-      const panelStatus = await checkPanelStatus();
-      if (PANEL_MODE) {
-        await sock.sendMessage(jid, { 
-          text: `📊 Panel Status: ${panelStatus.running ? '✅ Running' : '❌ Stopped'}\nPID: ${panelStatus.pid || 'N/A'}` 
-        }, { quoted: m });
-      }
-      
-      // Parse command
-      const command = args[0]?.toLowerCase();
-      const commands = {
-        'git': 'Force Git update',
-        'zip': 'Force ZIP update',
-        'soft': 'Soft restart only',
-        'panel': 'Restart panel only',
-        'status': 'Check update status',
-        'hot': 'Hot reload (no restart)'
-      };
-      
-      // STATUS CHECK
-      if (command === 'status') {
-        const hasGit = await hasGitRepo();
-        let statusMsg = `📊 System Status:\n`;
-        statusMsg += `• OS: ${process.platform}\n`;
-        statusMsg += `• Panel: ${PANEL_MODE ? 'Enabled' : 'Disabled'}\n`;
-        statusMsg += `• Git: ${hasGit ? '✅' : '❌'}\n`;
-        
-        if (hasGit) {
-          try {
-            const branch = await getCurrentBranch();
-            const rev = await run("git rev-parse HEAD").catch(() => "Unknown");
-            statusMsg += `• Branch: ${branch}\n`;
-            statusMsg += `• Commit: ${rev.substring(0, 7)}\n`;
-            
-            await run("git fetch wolf-bot-upstream --quiet");
-            const remoteRev = await run("git rev-parse wolf-bot-upstream/main").catch(() => "Unknown");
-            statusMsg += `• Remote: ${remoteRev.substring(0, 7)}\n`;
-            statusMsg += `• Status: ${rev === remoteRev ? '✅ Up to date' : '🔄 Update available'}`;
-          } catch (e) {
-            statusMsg += `• Error: ${e.message}`;
-          }
-        }
-        
-        await sock.sendMessage(jid, { text: statusMsg }, { quoted: m });
-        isUpdating = false;
-        return;
-      }
-      
-      // PANEL RESTART ONLY
-      if (command === 'panel') {
-        await sock.sendMessage(jid, { 
-          text: "🔄 Restarting panel..." 
-        }, { quoted: m });
-        
-        const success = await restartPanel();
-        await sock.sendMessage(jid, { 
-          text: success ? "✅ Panel restarted!" : "❌ Panel restart failed" 
-        }, { quoted: m });
-        
-        isUpdating = false;
-        return;
-      }
-      
-      // HOT RELOAD
-      if (command === 'hot') {
-        await sock.sendMessage(jid, { 
-          text: "🔥 Performing hot reload..." 
-        }, { quoted: m });
-        
-        const success = await hotReloadModules();
-        if (success) {
-          await sock.sendMessage(jid, { 
-            text: "✅ Hot reload successful!\nModules updated without restart." 
-          }, { quoted: m });
-        } else {
-          await sock.sendMessage(jid, { 
-            text: "❌ Hot reload failed. Try full update." 
-          }, { quoted: m });
-        }
-        
-        isUpdating = false;
-        return;
-      }
-      
-      // SOFT RESTART
-      if (command === 'soft') {
-        await sock.sendMessage(jid, { 
-          text: "🔁 Performing soft restart..." 
-        }, { quoted: m });
-        
-        await smartRestart(sock, jid);
-        isUpdating = false;
-        return;
-      }
-      
-      // Determine update method
-      const forceZip = command === 'zip';
-      const forceGit = command === 'git';
-      const hasGit = await hasGitRepo();
-      
-      let updateResult;
-      
-      // GIT UPDATE
-      if ((hasGit && !forceZip) || forceGit) {
-        await sock.sendMessage(jid, { 
-          text: "🌐 Fetching Git updates (panel-safe)..." 
-        }, { quoted: m });
-        
-        updateResult = await updateFromWolfBot();
-        
-        if (updateResult.alreadyUpToDate) {
-          await sock.sendMessage(jid, { 
-            text: `✅ Already up to date!\nCommit: ${updateResult.newRev.substring(0, 7)}` 
-          }, { quoted: m });
-          
-          // Still try hot reload for any config changes
-          await sock.sendMessage(jid, { 
-            text: "🔄 Applying configuration changes..." 
-          }, { quoted: m });
-          
-          const hotReloaded = await hotReloadModules();
-          if (hotReloaded) {
-            await sock.sendMessage(jid, { 
-              text: "✅ Changes applied without restart!" 
-            }, { quoted: m });
-          } else {
-            await sock.sendMessage(jid, { 
-              text: "⚠️ Changes may require restart. Use !update soft if needed." 
-            }, { quoted: m });
-          }
-          
-          isUpdating = false;
-          return;
-        } else {
-          await sock.sendMessage(jid, { 
-            text: `✅ Git update successful!\n${updateResult.oldRev.substring(0, 7)} → ${updateResult.newRev.substring(0, 7)}` 
-          }, { quoted: m });
-        }
-        
-        // Install dependencies
-        await sock.sendMessage(jid, { 
-          text: "📦 Installing dependencies..." 
-        }, { quoted: m });
-        
-        try {
-          if (fs.existsSync(path.join(process.cwd(), 'package.json'))) {
-            await run("npm install --no-audit --no-fund --silent");
-            await sock.sendMessage(jid, { 
-              text: "✅ Dependencies installed!" 
-            }, { quoted: m });
-          }
-        } catch (npmError) {
-          console.error("npm error:", npmError);
-          await sock.sendMessage(jid, { 
-            text: `⚠️ npm install issues: ${npmError.message}` 
-          }, { quoted: m });
-        }
-        
-      } else {
-        // ZIP UPDATE
-        await sock.sendMessage(jid, { 
-          text: "📦 Downloading ZIP update (panel-safe)..." 
-        }, { quoted: m });
-        
-        updateResult = await updateViaZip();
-        await sock.sendMessage(jid, { 
-          text: "✅ ZIP update complete!" 
-        }, { quoted: m });
-      }
-      
-      // Try hot reload first
-      await sock.sendMessage(jid, { 
-        text: "🔥 Attempting hot reload to avoid restart..." 
-      }, { quoted: m });
-      
-      const hotSuccess = await hotReloadModules();
-      
-      if (hotSuccess) {
-        await sock.sendMessage(jid, { 
-          text: `✅ Update complete with hot reload!\n\nBot and panel (if running) updated without interruption.` 
-        }, { quoted: m });
-      } else {
-        // Fallback to smart restart
-        await sock.sendMessage(jid, { 
-          text: "⚠️ Hot reload failed, performing smart restart..." 
-        }, { quoted: m });
-        
-        await smartRestart(sock, jid);
-      }
-      
-    } catch (error) {
-      console.error("Update error:", error);
-      
-      let errorMsg = `❌ Update failed: ${error.message}`;
-      
-      // Add helpful tips
-      if (error.message.includes('git') || error.message.includes('not found')) {
-        errorMsg += "\n\n💡 **Tips:**";
-        errorMsg += "\n• Use `!update zip` for ZIP update";
-        errorMsg += "\n• Install Git for automatic updates";
-        errorMsg += "\n• Check internet connection";
-      }
-      
-      await sock.sendMessage(jid, { 
-        text: errorMsg 
-      }, { quoted: m });
-      
-      // Try to restore session
-      try {
-        await restoreSession();
-      } catch (restoreError) {
-        console.error("Session restore also failed:", restoreError);
-      }
-      
-    } finally {
-      isUpdating = false;
-    }
-  }
-};
