@@ -3946,6 +3946,8 @@ case 6: {
 
 
 
+
+
 // case 7: {
 //   // Similar to case 6 - apply the same individual toggle logic
 //   // ... (same pattern as case 6)
@@ -4078,9 +4080,146 @@ case 6: {
 //     return 'WOLFBOT'; // Default fallback
 //   };
   
+//   // ADD THIS NEW HELPER FUNCTION FOR OWNER NAME
+//   const getOwnerName = () => {
+//     try {
+//       console.log('🔍 DEBUG: Looking for owner name...');
+      
+//       // First priority: Check bot_settings.json for custom owner name
+//       const botSettingsPaths = [
+//         './bot_settings.json',
+//         path.join(__dirname, 'bot_settings.json'),
+//         path.join(__dirname, '../bot_settings.json'),
+//         path.join(__dirname, '../../bot_settings.json'),
+//       ];
+      
+//       for (const settingsPath of botSettingsPaths) {
+//         if (fs.existsSync(settingsPath)) {
+//           try {
+//             const settingsData = fs.readFileSync(settingsPath, 'utf8');
+//             const settings = JSON.parse(settingsData);
+            
+//             // Check for owner name in bot_settings.json
+//             if (settings.ownerName && settings.ownerName.trim() !== '') {
+//               console.log(`✅ DEBUG: Custom owner name found: "${settings.ownerName}"`);
+//               return settings.ownerName.trim();
+//             }
+//           } catch (parseError) {
+//             // Continue to next path
+//           }
+//         }
+//       }
+      
+//       console.log('⚠️ DEBUG: No custom owner name found, checking owner.json...');
+      
+//       // Second priority: Load from owner.json (original method)
+//       const ownerPath = path.join(__dirname, 'owner.json');
+//       if (fs.existsSync(ownerPath)) {
+//         const ownerData = fs.readFileSync(ownerPath, 'utf8');
+//         const ownerInfo = JSON.parse(ownerData);
+        
+//         // Try different possible field names in owner.json
+//         if (ownerInfo.owner && ownerInfo.owner.trim() !== '') {
+//           console.log(`✅ DEBUG: Owner from owner.json: "${ownerInfo.owner}"`);
+//           return ownerInfo.owner.trim();
+//         } else if (ownerInfo.number && ownerInfo.number.trim() !== '') {
+//           console.log(`✅ DEBUG: Owner number from owner.json: "${ownerInfo.number}"`);
+//           return ownerInfo.number.trim();
+//         } else if (ownerInfo.phone && ownerInfo.phone.trim() !== '') {
+//           console.log(`✅ DEBUG: Owner phone from owner.json: "${ownerInfo.phone}"`);
+//           return ownerInfo.phone.trim();
+//         } else if (ownerInfo.contact && ownerInfo.contact.trim() !== '') {
+//           console.log(`✅ DEBUG: Owner contact from owner.json: "${ownerInfo.contact}"`);
+//           return ownerInfo.contact.trim();
+//         } else if (Array.isArray(ownerInfo) && ownerInfo.length > 0) {
+//           // If it's an array, take the first one
+//           const owner = typeof ownerInfo[0] === 'string' ? ownerInfo[0] : "Unknown";
+//           console.log(`✅ DEBUG: Owner from array: "${owner}"`);
+//           return owner;
+//         }
+//       }
+      
+//       console.log('⚠️ DEBUG: No owner.json found, checking global...');
+      
+//       // Third priority: Global variables
+//       if (global.OWNER_NAME) {
+//         console.log(`✅ DEBUG: Found global.OWNER_NAME: ${global.OWNER_NAME}`);
+//         return global.OWNER_NAME;
+//       }
+//       if (global.owner) {
+//         console.log(`✅ DEBUG: Found global.owner: ${global.owner}`);
+//         return global.owner;
+//       }
+//       if (process.env.OWNER_NUMBER) {
+//         console.log(`✅ DEBUG: Found process.env.OWNER_NUMBER: ${process.env.OWNER_NUMBER}`);
+//         return process.env.OWNER_NUMBER;
+//       }
+      
+//     } catch (error) {
+//       console.error('❌ DEBUG: Error in getOwnerName:', error);
+//     }
+    
+//     console.log('⚠️ DEBUG: Using default owner: Unknown');
+//     return 'Unknown'; // Default fallback
+//   };
+  
+//   // ADD THIS NEW HELPER FUNCTION FOR PREFIX
+//   const getBotPrefix = () => {
+//     try {
+//       console.log('🔍 DEBUG: Looking for prefix...');
+      
+//       // First priority: Check bot_settings.json for custom prefix
+//       const botSettingsPaths = [
+//         './bot_settings.json',
+//         path.join(__dirname, 'bot_settings.json'),
+//         path.join(__dirname, '../bot_settings.json'),
+//         path.join(__dirname, '../../bot_settings.json'),
+//       ];
+      
+//       for (const settingsPath of botSettingsPaths) {
+//         if (fs.existsSync(settingsPath)) {
+//           try {
+//             const settingsData = fs.readFileSync(settingsPath, 'utf8');
+//             const settings = JSON.parse(settingsData);
+            
+//             // Check for prefix in bot_settings.json
+//             if (settings.prefix && settings.prefix.trim() !== '') {
+//               console.log(`✅ DEBUG: Custom prefix found: "${settings.prefix}"`);
+//               return settings.prefix.trim();
+//             }
+//           } catch (parseError) {
+//             // Continue to next path
+//           }
+//         }
+//       }
+      
+//       console.log('⚠️ DEBUG: No custom prefix found, checking global...');
+      
+//       // Second priority: Global prefix
+//       if (global.prefix) {
+//         console.log(`✅ DEBUG: Found global.prefix: ${global.prefix}`);
+//         return global.prefix;
+//       }
+      
+//       // Third priority: Environment variable
+//       if (process.env.PREFIX) {
+//         console.log(`✅ DEBUG: Found process.env.PREFIX: ${process.env.PREFIX}`);
+//         return process.env.PREFIX;
+//       }
+      
+//     } catch (error) {
+//       console.error('❌ DEBUG: Error in getBotPrefix:', error);
+//     }
+    
+//     console.log('⚠️ DEBUG: Using default prefix: .');
+//     return '.'; // Default fallback
+//   };
+  
 //   // Load bot name using the helper function
 //   const botName = getBotName();
-//   console.log(`✅ Menu display bot name: "${botName}"`);
+//   const ownerName = getOwnerName();
+//   const botPrefix = getBotPrefix();
+//   console.log(`✅ Menu display - Bot: "${botName}" | Owner: "${ownerName}" | Prefix: "${botPrefix}"`);
   
 //   // Add bot name header before the info section
 //   finalCaption += `┌────────────────
@@ -4102,50 +4241,21 @@ case 6: {
 //     const memPercent = Math.min(((usedMem / (totalMem * 1024)) * 100).toFixed(0), 100);
 //     const memBar = "█".repeat(Math.floor(memPercent / 10)) + "░".repeat(10 - Math.floor(memPercent / 10));
 
-//     // Load owner from owner.json file
-//     let ownerNumber = "Unknown";
-//     try {
-//       const ownerPath = path.join(__dirname, 'owner.json');
-//       if (fs.existsSync(ownerPath)) {
-//         const ownerData = fs.readFileSync(ownerPath, 'utf8');
-//         const ownerInfo = JSON.parse(ownerData);
-        
-//         // Try different possible field names in owner.json
-//         if (ownerInfo.owner && ownerInfo.owner.trim() !== '') {
-//           ownerNumber = ownerInfo.owner.trim();
-//         } else if (ownerInfo.number && ownerInfo.number.trim() !== '') {
-//           ownerNumber = ownerInfo.number.trim();
-//         } else if (ownerInfo.phone && ownerInfo.phone.trim() !== '') {
-//           ownerNumber = ownerInfo.phone.trim();
-//         } else if (ownerInfo.contact && ownerInfo.contact.trim() !== '') {
-//           ownerNumber = ownerInfo.contact.trim();
-//         } else if (Array.isArray(ownerInfo) && ownerInfo.length > 0) {
-//           // If it's an array, take the first one
-//           ownerNumber = typeof ownerInfo[0] === 'string' ? ownerInfo[0] : "Unknown";
-//         }
-//       }
-//     } catch (ownerError) {
-//       console.error('Error loading owner from owner.json:', ownerError);
-//       // Fallback to environment variable or global
-//       ownerNumber = global.owner || process.env.OWNER_NUMBER || "Unknown";
-//     }
-
 //     // Load bot mode using the helper function
 //     const botMode = getBotMode();
 //     console.log(`✅ Menu display mode: ${botMode}`);
 
 //     const host = process.env.REPL_ID ? "Replit" : process.env.HEROKU_APP_NAME ? "Heroku" : process.env.RENDER ? "Render" : "Panel";
-//     const prefix = global.prefix || ".";
 //     const version = global.version || "v2.6.2";
 
 //     const infoLines = [];
 //     // Bot name is already in the header, so we don't duplicate it here
 //     if (fieldsStatus.user) infoLines.push(`┃ User: ${m.pushName || "Anonymous"}`);
-//     if (fieldsStatus.owner) infoLines.push(`┃ Owner: ${ownerNumber}`);
+//     if (fieldsStatus.owner) infoLines.push(`┃ Owner: ${ownerName}`);  // Use loaded owner name
 //     if (fieldsStatus.mode) infoLines.push(`┃ Mode: ${botMode}`);  // Use the loaded botMode
 //     if (fieldsStatus.host) infoLines.push(`┃ Host: ${host}`);
 //     if (fieldsStatus.speed) infoLines.push(`┃ Speed: ${speed} ms`);
-//     if (fieldsStatus.prefix) infoLines.push(`┃ Prefix: [ ${prefix} ]`);
+//     if (fieldsStatus.prefix) infoLines.push(`┃ Prefix: [ ${botPrefix} ]`);  // Use loaded prefix
 //     if (fieldsStatus.uptime) infoLines.push(`┃ Uptime: ${uptimeStr}`);
 //     if (fieldsStatus.version) infoLines.push(`┃ Version: ${version}`);
 //     if (fieldsStatus.usage) infoLines.push(`┃ Usage: ${usedMem} MB of ${totalMem} GB`);
@@ -4221,9 +4331,10 @@ case 6: {
 // │ ⚡ CORE MANAGEMENT ⚡    
 // ├────────────────
 // │ setbotname              
+// │ setowner                
+// │ setprefix               
 // │ iamowner                
 // │ about                   
-// │ setprefix               
 // │ block                   
 // │ unblock                 
 // │ blockdetect             
@@ -4312,7 +4423,7 @@ case 6: {
 // │ ⬇️ MEDIA DOWNLOADS 📥     
 // ├───────────────
 // │ youtube                 
-// │ tiktok                  
+// │ tiktok                 
 // │ instagram               
 // │ facebook                
 // │ snapchat                
@@ -4433,37 +4544,46 @@ case 6: {
 // }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 case 7: {
-  // Similar to case 6 - apply the same individual toggle logic
-  // ... (same pattern as case 6)
-  
   // 🖼️ Full info + image + commands (with individual toggles)
   let finalCaption = "";
   
   // Add these helper functions at the start of case 7
   const getBotMode = () => {
     try {
-      console.log('🔍 DEBUG: Looking for bot_mode.json...');
-      
-      // Check multiple possible locations with priority order
       const possiblePaths = [
-        './bot_mode.json',  // Root directory (most likely)
-        path.join(__dirname, 'bot_mode.json'),  // Same directory as menu
-        path.join(__dirname, '../bot_mode.json'),  // Parent directory
-        path.join(__dirname, '../../bot_mode.json'),  // 2 levels up
-        path.join(__dirname, '../../../bot_mode.json'),  // 3 levels up
-        path.join(__dirname, '../commands/owner/bot_mode.json'),  // Owner commands directory
+        './bot_mode.json',
+        path.join(__dirname, 'bot_mode.json'),
+        path.join(__dirname, '../bot_mode.json'),
+        path.join(__dirname, '../../bot_mode.json'),
+        path.join(__dirname, '../../../bot_mode.json'),
+        path.join(__dirname, '../commands/owner/bot_mode.json'),
       ];
       
       for (const modePath of possiblePaths) {
         if (fs.existsSync(modePath)) {
-          console.log(`✅ DEBUG: Found bot_mode.json at: ${modePath}`);
           try {
             const modeData = JSON.parse(fs.readFileSync(modePath, 'utf8'));
-            console.log(`📊 DEBUG: Mode data:`, modeData);
             
             if (modeData.mode) {
-              // Format for display
               let displayMode;
               switch(modeData.mode.toLowerCase()) {
                 case 'public':
@@ -4472,105 +4592,79 @@ case 7: {
                 case 'silent':
                   displayMode = '🔇 Silent';
                   break;
+                case 'private':
+                  displayMode = '🔒 Private';
+                  break;
+                case 'group-only':
+                  displayMode = '👥 Group Only';
+                  break;
+                case 'maintenance':
+                  displayMode = '🛠️ Maintenance';
+                  break;
                 default:
                   displayMode = `⚙️ ${modeData.mode.charAt(0).toUpperCase() + modeData.mode.slice(1)}`;
               }
-              
-              console.log(`✅ DEBUG: Mode loaded: ${modeData.mode} -> ${displayMode}`);
               return displayMode;
             }
-          } catch (parseError) {
-            console.error(`❌ DEBUG: Error parsing ${modePath}:`, parseError);
-          }
+          } catch (parseError) {}
         }
       }
       
-      console.log('⚠️ DEBUG: No bot_mode.json found in any path, checking global...');
-      
       // Fallback to global variables
       if (global.BOT_MODE) {
-        console.log(`✅ DEBUG: Found global.BOT_MODE: ${global.BOT_MODE}`);
         return global.BOT_MODE === 'silent' ? '🔇 Silent' : '🌍 Public';
       }
       if (global.mode) {
-        console.log(`✅ DEBUG: Found global.mode: ${global.mode}`);
         return global.mode === 'silent' ? '🔇 Silent' : '🌍 Public';
       }
       if (process.env.BOT_MODE) {
-        console.log(`✅ DEBUG: Found process.env.BOT_MODE: ${process.env.BOT_MODE}`);
         return process.env.BOT_MODE === 'silent' ? '🔇 Silent' : '🌍 Public';
       }
       
-    } catch (error) {
-      console.error('❌ DEBUG: Error in getBotMode:', error);
-    }
+    } catch (error) {}
     
-    console.log('⚠️ DEBUG: Using default mode: 🌍 Public');
-    return '🌍 Public'; // Default fallback
+    return '🌍 Public';
   };
   
-  // ADD THIS NEW HELPER FUNCTION FOR BOT NAME
   const getBotName = () => {
     try {
-      console.log('🔍 DEBUG: Looking for bot_settings.json...');
-      
-      // Check multiple possible locations with priority order
       const possiblePaths = [
-        './bot_settings.json',  // Root directory (most likely)
-        path.join(__dirname, 'bot_settings.json'),  // Same directory as menu
-        path.join(__dirname, '../bot_settings.json'),  // Parent directory
-        path.join(__dirname, '../../bot_settings.json'),  // 2 levels up
-        path.join(__dirname, '../../../bot_settings.json'),  // 3 levels up
-        path.join(__dirname, '../commands/owner/bot_settings.json'),  // Owner commands directory
+        './bot_settings.json',
+        path.join(__dirname, 'bot_settings.json'),
+        path.join(__dirname, '../bot_settings.json'),
+        path.join(__dirname, '../../bot_settings.json'),
+        path.join(__dirname, '../../../bot_settings.json'),
+        path.join(__dirname, '../commands/owner/bot_settings.json'),
       ];
       
       for (const settingsPath of possiblePaths) {
         if (fs.existsSync(settingsPath)) {
-          console.log(`✅ DEBUG: Found bot_settings.json at: ${settingsPath}`);
           try {
             const settingsData = fs.readFileSync(settingsPath, 'utf8');
             const settings = JSON.parse(settingsData);
-            console.log(`📊 DEBUG: Settings data:`, settings);
             
             if (settings.botName && settings.botName.trim() !== '') {
-              const loadedName = settings.botName.trim();
-              console.log(`✅ DEBUG: Bot name loaded: "${loadedName}"`);
-              return loadedName;
+              return settings.botName.trim();
             }
-          } catch (parseError) {
-            console.error(`❌ DEBUG: Error parsing ${settingsPath}:`, parseError);
-          }
+          } catch (parseError) {}
         }
       }
       
-      console.log('⚠️ DEBUG: No bot_settings.json found in any path, checking global...');
-      
-      // Fallback to global variables
       if (global.BOT_NAME) {
-        console.log(`✅ DEBUG: Found global.BOT_NAME: ${global.BOT_NAME}`);
         return global.BOT_NAME;
       }
       
-      // Fallback to environment variable
       if (process.env.BOT_NAME) {
-        console.log(`✅ DEBUG: Found process.env.BOT_NAME: ${process.env.BOT_NAME}`);
         return process.env.BOT_NAME;
       }
       
-    } catch (error) {
-      console.error('❌ DEBUG: Error in getBotName:', error);
-    }
+    } catch (error) {}
     
-    console.log('⚠️ DEBUG: Using default bot name: WOLFBOT');
-    return 'WOLFBOT'; // Default fallback
+    return 'WOLFBOT';
   };
   
-  // ADD THIS NEW HELPER FUNCTION FOR OWNER NAME
   const getOwnerName = () => {
     try {
-      console.log('🔍 DEBUG: Looking for owner name...');
-      
-      // First priority: Check bot_settings.json for custom owner name
       const botSettingsPaths = [
         './bot_settings.json',
         path.join(__dirname, 'bot_settings.json'),
@@ -4584,76 +4678,49 @@ case 7: {
             const settingsData = fs.readFileSync(settingsPath, 'utf8');
             const settings = JSON.parse(settingsData);
             
-            // Check for owner name in bot_settings.json
             if (settings.ownerName && settings.ownerName.trim() !== '') {
-              console.log(`✅ DEBUG: Custom owner name found: "${settings.ownerName}"`);
               return settings.ownerName.trim();
             }
-          } catch (parseError) {
-            // Continue to next path
-          }
+          } catch (parseError) {}
         }
       }
       
-      console.log('⚠️ DEBUG: No custom owner name found, checking owner.json...');
-      
-      // Second priority: Load from owner.json (original method)
       const ownerPath = path.join(__dirname, 'owner.json');
       if (fs.existsSync(ownerPath)) {
         const ownerData = fs.readFileSync(ownerPath, 'utf8');
         const ownerInfo = JSON.parse(ownerData);
         
-        // Try different possible field names in owner.json
         if (ownerInfo.owner && ownerInfo.owner.trim() !== '') {
-          console.log(`✅ DEBUG: Owner from owner.json: "${ownerInfo.owner}"`);
           return ownerInfo.owner.trim();
         } else if (ownerInfo.number && ownerInfo.number.trim() !== '') {
-          console.log(`✅ DEBUG: Owner number from owner.json: "${ownerInfo.number}"`);
           return ownerInfo.number.trim();
         } else if (ownerInfo.phone && ownerInfo.phone.trim() !== '') {
-          console.log(`✅ DEBUG: Owner phone from owner.json: "${ownerInfo.phone}"`);
           return ownerInfo.phone.trim();
         } else if (ownerInfo.contact && ownerInfo.contact.trim() !== '') {
-          console.log(`✅ DEBUG: Owner contact from owner.json: "${ownerInfo.contact}"`);
           return ownerInfo.contact.trim();
         } else if (Array.isArray(ownerInfo) && ownerInfo.length > 0) {
-          // If it's an array, take the first one
           const owner = typeof ownerInfo[0] === 'string' ? ownerInfo[0] : "Unknown";
-          console.log(`✅ DEBUG: Owner from array: "${owner}"`);
           return owner;
         }
       }
       
-      console.log('⚠️ DEBUG: No owner.json found, checking global...');
-      
-      // Third priority: Global variables
       if (global.OWNER_NAME) {
-        console.log(`✅ DEBUG: Found global.OWNER_NAME: ${global.OWNER_NAME}`);
         return global.OWNER_NAME;
       }
       if (global.owner) {
-        console.log(`✅ DEBUG: Found global.owner: ${global.owner}`);
         return global.owner;
       }
       if (process.env.OWNER_NUMBER) {
-        console.log(`✅ DEBUG: Found process.env.OWNER_NUMBER: ${process.env.OWNER_NUMBER}`);
         return process.env.OWNER_NUMBER;
       }
       
-    } catch (error) {
-      console.error('❌ DEBUG: Error in getOwnerName:', error);
-    }
+    } catch (error) {}
     
-    console.log('⚠️ DEBUG: Using default owner: Unknown');
-    return 'Unknown'; // Default fallback
+    return 'Unknown';
   };
   
-  // ADD THIS NEW HELPER FUNCTION FOR PREFIX
   const getBotPrefix = () => {
     try {
-      console.log('🔍 DEBUG: Looking for prefix...');
-      
-      // First priority: Check bot_settings.json for custom prefix
       const botSettingsPaths = [
         './bot_settings.json',
         path.join(__dirname, 'bot_settings.json'),
@@ -4667,48 +4734,261 @@ case 7: {
             const settingsData = fs.readFileSync(settingsPath, 'utf8');
             const settings = JSON.parse(settingsData);
             
-            // Check for prefix in bot_settings.json
             if (settings.prefix && settings.prefix.trim() !== '') {
-              console.log(`✅ DEBUG: Custom prefix found: "${settings.prefix}"`);
               return settings.prefix.trim();
             }
-          } catch (parseError) {
-            // Continue to next path
-          }
+          } catch (parseError) {}
         }
       }
       
-      console.log('⚠️ DEBUG: No custom prefix found, checking global...');
-      
-      // Second priority: Global prefix
       if (global.prefix) {
-        console.log(`✅ DEBUG: Found global.prefix: ${global.prefix}`);
         return global.prefix;
       }
       
-      // Third priority: Environment variable
       if (process.env.PREFIX) {
-        console.log(`✅ DEBUG: Found process.env.PREFIX: ${process.env.PREFIX}`);
         return process.env.PREFIX;
       }
       
-    } catch (error) {
-      console.error('❌ DEBUG: Error in getBotPrefix:', error);
-    }
+    } catch (error) {}
     
-    console.log('⚠️ DEBUG: Using default prefix: .');
-    return '.'; // Default fallback
+    return '.';
   };
   
-  // Load bot name using the helper function
+  const getBotVersion = () => {
+    try {
+      const ownerPath = path.join(__dirname, 'owner.json');
+      if (fs.existsSync(ownerPath)) {
+        const ownerData = fs.readFileSync(ownerPath, 'utf8');
+        const ownerInfo = JSON.parse(ownerData);
+        
+        if (ownerInfo.version && ownerInfo.version.trim() !== '') {
+          return ownerInfo.version.trim();
+        }
+      }
+      
+      const botSettingsPaths = [
+        './bot_settings.json',
+        path.join(__dirname, 'bot_settings.json'),
+        path.join(__dirname, '../bot_settings.json'),
+      ];
+      
+      for (const settingsPath of botSettingsPaths) {
+        if (fs.existsSync(settingsPath)) {
+          try {
+            const settingsData = fs.readFileSync(settingsPath, 'utf8');
+            const settings = JSON.parse(settingsData);
+            
+            if (settings.version && settings.version.trim() !== '') {
+              return settings.version.trim();
+            }
+          } catch (parseError) {}
+        }
+      }
+      
+      if (global.VERSION) {
+        return global.VERSION;
+      }
+      
+      if (global.version) {
+        return global.version;
+      }
+      
+      if (process.env.VERSION) {
+        return process.env.VERSION;
+      }
+      
+    } catch (error) {}
+    
+    return 'v1.0.0';
+  };
+  
+  const getDeploymentPlatform = () => {
+    // Detect deployment platform
+    if (process.env.REPL_ID || process.env.REPLIT_DB_URL) {
+      return {
+        name: 'Replit',
+        status: 'Active',
+        icon: '🌀'
+      };
+    } else if (process.env.HEROKU_APP_NAME) {
+      return {
+        name: 'Heroku',
+        status: 'Active',
+        icon: '🦸'
+      };
+    } else if (process.env.RENDER_SERVICE_ID) {
+      return {
+        name: 'Render',
+        status: 'Active',
+        icon: '⚡'
+      };
+    } else if (process.env.RAILWAY_ENVIRONMENT) {
+      return {
+        name: 'Railway',
+        status: 'Active',
+        icon: '🚂'
+      };
+    } else if (process.env.VERCEL) {
+      return {
+        name: 'Vercel',
+        status: 'Active',
+        icon: '▲'
+      };
+    } else if (process.env.GLITCH_PROJECT_REMIX) {
+      return {
+        name: 'Glitch',
+        status: 'Active',
+        icon: '🎏'
+      };
+    } else if (process.env.KOYEB) {
+      return {
+        name: 'Koyeb',
+        status: 'Active',
+        icon: '☁️'
+      };
+    } else if (process.env.CYCLIC_URL) {
+      return {
+        name: 'Cyclic',
+        status: 'Active',
+        icon: '🔄'
+      };
+    } else if (process.env.PANEL) {
+      return {
+        name: 'PteroPanel',
+        status: 'Active',
+        icon: '🖥️'
+      };
+    } else if (process.env.SSH_CONNECTION || process.env.SSH_CLIENT) {
+      return {
+        name: 'VPS/SSH',
+        status: 'Active',
+        icon: '🖥️'
+      };
+    } else if (process.platform === 'win32') {
+      return {
+        name: 'Windows PC',
+        status: 'Active',
+        icon: '💻'
+      };
+    } else if (process.platform === 'linux') {
+      return {
+        name: 'Linux VPS',
+        status: 'Active',
+        icon: '🐧'
+      };
+    } else if (process.platform === 'darwin') {
+      return {
+        name: 'MacOS',
+        status: 'Active',
+        icon: '🍎'
+      };
+    } else {
+      return {
+        name: 'Local Machine',
+        status: 'Active',
+        icon: '🏠'
+      };
+    }
+  };
+  
+  const getTimeZone = () => {
+    try {
+      // Try to get timezone from system
+      if (process.env.TZ) {
+        return process.env.TZ;
+      }
+      
+      // Try to detect from Intl
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (timeZone) {
+        return timeZone;
+      }
+      
+      // Fallback based on environment
+      if (process.env.REPL_ID) {
+        return 'America/Los_Angeles'; // Replit default
+      } else if (process.env.HEROKU_APP_NAME) {
+        return 'UTC'; // Heroku default
+      } else if (process.env.RENDER) {
+        return 'UTC'; // Render default
+      }
+      
+    } catch (error) {}
+    
+    return 'UTC';
+  };
+  
+  const getCorePower = () => {
+    try {
+      const cpus = os.cpus();
+      if (cpus && cpus.length > 0) {
+        const model = cpus[0].model;
+        const cores = cpus.length;
+        const speed = cpus[0].speed;
+        
+        // Calculate performance score
+        let performance = 'Low';
+        let icon = '🐢';
+        
+        if (cores >= 8 && speed >= 3000) {
+          performance = 'Ultra';
+          icon = '🚀';
+        } else if (cores >= 4 && speed >= 2500) {
+          performance = 'High';
+          icon = '⚡';
+        } else if (cores >= 2 && speed >= 2000) {
+          performance = 'Medium';
+          icon = '⚙️';
+        }
+        
+        return {
+          cores: cores,
+          speed: `${(speed / 1000).toFixed(1)} GHz`,
+          performance: performance,
+          icon: icon,
+          model: model.length > 30 ? model.substring(0, 30) + '...' : model
+        };
+      }
+    } catch (error) {}
+    
+    return {
+      cores: 'N/A',
+      speed: 'N/A',
+      performance: 'Unknown',
+      icon: '❓',
+      model: 'Unknown CPU'
+    };
+  };
+  
+  // Get current time and date
+  const now = new Date();
+  const currentTime = now.toLocaleTimeString('en-US', { 
+    hour12: true, 
+    hour: '2-digit', 
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  
+  const currentDate = now.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  // Load bot information using helper functions
   const botName = getBotName();
   const ownerName = getOwnerName();
   const botPrefix = getBotPrefix();
-  console.log(`✅ Menu display - Bot: "${botName}" | Owner: "${ownerName}" | Prefix: "${botPrefix}"`);
+  const botVersion = getBotVersion();
+  const botMode = getBotMode();
+  const deploymentPlatform = getDeploymentPlatform();
+  const timeZone = getTimeZone();
+  const corePower = getCorePower();
   
   // Add bot name header before the info section
   finalCaption += `┌────────────────
-│ 🐺 ${botName}  MENU 🐺
+│ 🐺 ${botName} MENU v${botVersion} 🐺
 └────────────────\n\n`;
   
   // Add info section only if any field is enabled
@@ -4725,26 +5005,60 @@ case 7: {
     const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(0);
     const memPercent = Math.min(((usedMem / (totalMem * 1024)) * 100).toFixed(0), 100);
     const memBar = "█".repeat(Math.floor(memPercent / 10)) + "░".repeat(10 - Math.floor(memPercent / 10));
-
-    // Load bot mode using the helper function
-    const botMode = getBotMode();
-    console.log(`✅ Menu display mode: ${botMode}`);
-
-    const host = process.env.REPL_ID ? "Replit" : process.env.HEROKU_APP_NAME ? "Heroku" : process.env.RENDER ? "Render" : "Panel";
-    const version = global.version || "v2.6.2";
-
+    
+    // Get Node.js version
+    const nodeVersion = process.version;
+    
+    // Calculate command speed in milliseconds
+    const commandSpeed = `${speed}ms`;
+    
+    // Get CPU load
+    const cpuLoad = os.loadavg()[0].toFixed(2);
+    const cpuLoadBar = "█".repeat(Math.floor(cpuLoad)) + "░".repeat(5 - Math.floor(cpuLoad));
+    
     const infoLines = [];
-    // Bot name is already in the header, so we don't duplicate it here
+    
+    // TIME & DATE SECTION
+    if (fieldsStatus.time || fieldsStatus.date) {
+      infoLines.push(`┃ Date: ${currentDate}`);
+      infoLines.push(`┃ Time: ${currentTime}`);
+    }
+    
+    // SYSTEM INFO SECTION
     if (fieldsStatus.user) infoLines.push(`┃ User: ${m.pushName || "Anonymous"}`);
-    if (fieldsStatus.owner) infoLines.push(`┃ Owner: ${ownerName}`);  // Use loaded owner name
-    if (fieldsStatus.mode) infoLines.push(`┃ Mode: ${botMode}`);  // Use the loaded botMode
-    if (fieldsStatus.host) infoLines.push(`┃ Host: ${host}`);
-    if (fieldsStatus.speed) infoLines.push(`┃ Speed: ${speed} ms`);
-    if (fieldsStatus.prefix) infoLines.push(`┃ Prefix: [ ${botPrefix} ]`);  // Use loaded prefix
+    if (fieldsStatus.owner) infoLines.push(`┃ Owner: ${ownerName}`);
+    if (fieldsStatus.mode) infoLines.push(`┃ Mode: ${botMode}`);
+    if (fieldsStatus.prefix) infoLines.push(`┃ Prefix: [ ${botPrefix} ]`);
+    if (fieldsStatus.version) infoLines.push(`┃ Version: ${botVersion}`);
+    
+    // DEPLOYMENT & PLATFORM
+    if (fieldsStatus.host) {
+      infoLines.push(`┃ Panel: ${deploymentPlatform.name}`);
+      infoLines.push(`┃ Status: ${deploymentPlatform.status}`);
+    }
+    
+    // PERFORMANCE METRICS
+    if (fieldsStatus.speed) {
+      infoLines.push(`┃ ⚡ Speed: ${commandSpeed}`);
+      infoLines.push(`┃ 🧠 CPU Load: ${cpuLoadBar} ${cpuLoad}`);
+    }
+
     if (fieldsStatus.uptime) infoLines.push(`┃ Uptime: ${uptimeStr}`);
-    if (fieldsStatus.version) infoLines.push(`┃ Version: ${version}`);
     if (fieldsStatus.usage) infoLines.push(`┃ Usage: ${usedMem} MB of ${totalMem} GB`);
     if (fieldsStatus.ram) infoLines.push(`┃ RAM: ${memBar} ${memPercent}%`);
+
+    // CORE POWER (HARDWARE INFO)
+    if (fieldsStatus.ram || fieldsStatus.usage) { // Reuse existing toggles for core power
+      infoLines.push(`┃ ${corePower.icon} Cores: ${corePower.cores} @ ${corePower.speed}`);
+      infoLines.push(`┃ Power: ${corePower.performance} Performance`);
+      infoLines.push(`┃ CPU: ${corePower.model}`);
+    }
+    
+    // NODE & TECH STACK
+    if (fieldsStatus.version) { // Reuse version toggle for Node info
+      infoLines.push(`┃ Node: ${nodeVersion}`);
+      infoLines.push(`┃ Timezone: ${timeZone}`);
+    }
 
     if (infoLines.length > 0) {
       const infoCaption = `┌────────────────\n${infoLines.join('\n')}\n└────────────────\n\n`;
@@ -4808,6 +5122,7 @@ case 7: {
 │ togglemenuinfo
 │ setmenuimage
 │ resetmenuinfo
+│ menustyle
 └────────────────
 
 ┌────────────────
@@ -4825,7 +5140,7 @@ case 7: {
 │ blockdetect             
 │ silent                  
 │ anticall                
-│ mode                    ← Shows/sets bot mode (owner only)
+│ mode                    
 │ online                  
 │ setpp                   
 │ repo                    
@@ -5040,448 +5355,7 @@ case 7: {
 
 
 
-
-// case 7: {
-//   // Similar to case 6 - apply the same individual toggle logic
-//   // ... (same pattern as case 6)
-  
-//   // 🖼️ Full info + image + commands (with individual toggles)
-//   let finalCaption = "";
-  
-//   // Add this helper function at the start of case 7
-//   const getBotMode = () => {
-//     try {
-//       console.log('🔍 DEBUG: Looking for bot_mode.json...');
-      
-//       // Check multiple possible locations with priority order
-//       const possiblePaths = [
-//         './bot_mode.json',  // Root directory (most likely)
-//         path.join(__dirname, 'bot_mode.json'),  // Same directory as menu
-//         path.join(__dirname, '../bot_mode.json'),  // Parent directory
-//         path.join(__dirname, '../../bot_mode.json'),  // 2 levels up
-//         path.join(__dirname, '../../../bot_mode.json'),  // 3 levels up
-//         path.join(__dirname, '../commands/owner/bot_mode.json'),  // Owner commands directory
-//       ];
-      
-//       for (const modePath of possiblePaths) {
-//         if (fs.existsSync(modePath)) {
-//           console.log(`✅ DEBUG: Found bot_mode.json at: ${modePath}`);
-//           try {
-//             const modeData = JSON.parse(fs.readFileSync(modePath, 'utf8'));
-//             console.log(`📊 DEBUG: Mode data:`, modeData);
-            
-//             if (modeData.mode) {
-//               // Format for display
-//               let displayMode;
-//               switch(modeData.mode.toLowerCase()) {
-//                 case 'public':
-//                   displayMode = '🌍 Public';
-//                   break;
-//                 case 'silent':
-//                   displayMode = '🔇 Silent';
-//                   break;
-//                 default:
-//                   displayMode = `⚙️ ${modeData.mode.charAt(0).toUpperCase() + modeData.mode.slice(1)}`;
-//               }
-              
-//               console.log(`✅ DEBUG: Mode loaded: ${modeData.mode} -> ${displayMode}`);
-//               return displayMode;
-//             }
-//           } catch (parseError) {
-//             console.error(`❌ DEBUG: Error parsing ${modePath}:`, parseError);
-//           }
-//         }
-//       }
-      
-//       console.log('⚠️ DEBUG: No bot_mode.json found in any path, checking global...');
-      
-//       // Fallback to global variables
-//       if (global.BOT_MODE) {
-//         console.log(`✅ DEBUG: Found global.BOT_MODE: ${global.BOT_MODE}`);
-//         return global.BOT_MODE === 'silent' ? '🔇 Silent' : '🌍 Public';
-//       }
-//       if (global.mode) {
-//         console.log(`✅ DEBUG: Found global.mode: ${global.mode}`);
-//         return global.mode === 'silent' ? '🔇 Silent' : '🌍 Public';
-//       }
-//       if (process.env.BOT_MODE) {
-//         console.log(`✅ DEBUG: Found process.env.BOT_MODE: ${process.env.BOT_MODE}`);
-//         return process.env.BOT_MODE === 'silent' ? '🔇 Silent' : '🌍 Public';
-//       }
-      
-//     } catch (error) {
-//       console.error('❌ DEBUG: Error in getBotMode:', error);
-//     }
-    
-//     console.log('⚠️ DEBUG: Using default mode: 🌍 Public');
-//     return '🌍 Public'; // Default fallback
-//   };
-  
-//   // Load bot name from JSON file
-//   let botName = "WOLFBOT"; // Default
-//   try {
-//     const settingsPath = path.join(__dirname, 'bot_settings.json');
-//     if (fs.existsSync(settingsPath)) {
-//       const settingsData = fs.readFileSync(settingsPath, 'utf8');
-//       const settings = JSON.parse(settingsData);
-//       if (settings.botName && settings.botName.trim() !== '') {
-//         botName = settings.botName.trim();
-//       }
-//     }
-//   } catch (error) {
-//     console.error('Error loading bot name:', error);
-//   }
-  
-//   // Add bot name header before the info section
-//   finalCaption += `┌────────────────
-// │ 🐺 ${botName}  MENU 🐺
-// └────────────────\n\n`;
-  
-//   // Add info section only if any field is enabled
-//   const fieldsStatus = getAllFieldsStatus(style);
-//   if (fieldsStatus && Object.values(fieldsStatus).some(val => val)) {
-//     const start = performance.now();
-//     const uptime = process.uptime();
-//     const h = Math.floor(uptime / 3600);
-//     const mnt = Math.floor((uptime % 3600) / 60);
-//     const s = Math.floor(uptime % 60);
-//     const uptimeStr = `${h}h ${mnt}m ${s}s`;
-//     const speed = (performance.now() - start).toFixed(2);
-//     const usedMem = (process.memoryUsage().rss / 1024 / 1024).toFixed(1);
-//     const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(0);
-//     const memPercent = Math.min(((usedMem / (totalMem * 1024)) * 100).toFixed(0), 100);
-//     const memBar = "█".repeat(Math.floor(memPercent / 10)) + "░".repeat(10 - Math.floor(memPercent / 10));
-
-//     // Load owner from owner.json file
-//     let ownerNumber = "Unknown";
-//     try {
-//       const ownerPath = path.join(__dirname, 'owner.json');
-//       if (fs.existsSync(ownerPath)) {
-//         const ownerData = fs.readFileSync(ownerPath, 'utf8');
-//         const ownerInfo = JSON.parse(ownerData);
-        
-//         // Try different possible field names in owner.json
-//         if (ownerInfo.owner && ownerInfo.owner.trim() !== '') {
-//           ownerNumber = ownerInfo.owner.trim();
-//         } else if (ownerInfo.number && ownerInfo.number.trim() !== '') {
-//           ownerNumber = ownerInfo.number.trim();
-//         } else if (ownerInfo.phone && ownerInfo.phone.trim() !== '') {
-//           ownerNumber = ownerInfo.phone.trim();
-//         } else if (ownerInfo.contact && ownerInfo.contact.trim() !== '') {
-//           ownerNumber = ownerInfo.contact.trim();
-//         } else if (Array.isArray(ownerInfo) && ownerInfo.length > 0) {
-//           // If it's an array, take the first one
-//           ownerNumber = typeof ownerInfo[0] === 'string' ? ownerInfo[0] : "Unknown";
-//         }
-//       }
-//     } catch (ownerError) {
-//       console.error('Error loading owner from owner.json:', ownerError);
-//       // Fallback to environment variable or global
-//       ownerNumber = global.owner || process.env.OWNER_NUMBER || "Unknown";
-//     }
-
-//     // Load bot mode using the helper function
-//     const botMode = getBotMode();
-//     console.log(`✅ Menu display mode: ${botMode}`);
-
-//     const host = process.env.REPL_ID ? "Replit" : process.env.HEROKU_APP_NAME ? "Heroku" : process.env.RENDER ? "Render" : "Panel";
-//     const prefix = global.prefix || ".";
-//     const version = global.version || "v2.6.2";
-
-//     const infoLines = [];
-//     // Bot name is already in the header, so we don't duplicate it here
-//     if (fieldsStatus.user) infoLines.push(`┃ User: ${m.pushName || "Anonymous"}`);
-//     if (fieldsStatus.owner) infoLines.push(`┃ Owner: ${ownerNumber}`);
-//     if (fieldsStatus.mode) infoLines.push(`┃ Mode: ${botMode}`);  // Use the loaded botMode
-//     if (fieldsStatus.host) infoLines.push(`┃ Host: ${host}`);
-//     if (fieldsStatus.speed) infoLines.push(`┃ Speed: ${speed} ms`);
-//     if (fieldsStatus.prefix) infoLines.push(`┃ Prefix: [ ${prefix} ]`);
-//     if (fieldsStatus.uptime) infoLines.push(`┃ Uptime: ${uptimeStr}`);
-//     if (fieldsStatus.version) infoLines.push(`┃ Version: ${version}`);
-//     if (fieldsStatus.usage) infoLines.push(`┃ Usage: ${usedMem} MB of ${totalMem} GB`);
-//     if (fieldsStatus.ram) infoLines.push(`┃ RAM: ${memBar} ${memPercent}%`);
-
-//     if (infoLines.length > 0) {
-//       const infoCaption = `┌────────────────\n${infoLines.join('\n')}\n└────────────────\n\n`;
-//       finalCaption += infoCaption;
-//     }
-//   }
-
-//   const commandsText = `┌────────────────
-// │ 🏠 GROUP MANAGEMENT 🏠 
-// ├────────────────
-// │ 🛡️ ADMIN & MODERATION 🛡️ 
-// ├────────────────
-// │ add                     
-// │ promote                 
-// │ demote                  
-// │ kick                    
-// │ kickall                 
-// │ ban                     
-// │ unban                   
-// │ banlist                 
-// │ clearbanlist            
-// │ warn                    
-// │ resetwarn               
-// │ setwarn                 
-// │ mute                    
-// │ unmute                  
-// │ gctime                  
-// │ antileave               
-// │ antilink                
-// │ welcome                 
-// ├────────────────
-// │ 🚫 AUTO-MODERATION 🚫   
-// ├────────────────
-// │ antisticker             
-// │ antiviewonce  
-// │ antilink  
-// │ antiimage
-// │ antivideo
-// │ antiaudio
-// │ antimention
-// │ antistatusmention  
-// │ antigrouplink
-// ├────────────────
-// │ 📊 GROUP INFO & TOOLS 📊 
-// ├────────────────
-// │ groupinfo               
-// │ tagadmin                
-// │ tagall                  
-// │ hidetag                 
-// │ link                    
-// │ invite                  
-// │ revoke                  
-// │ setdesc                 
-// │ fangtrace               
-// │ getgpp                  
-// └────────────────
-
-// ┌────────────────
-// │ 🎨 MENU COMMANDS 🎨
-// ├────────────────
-// │ togglemenuinfo
-// │ setmenuimage
-// │ resetmenuinfo
-// └────────────────
-
-// ┌────────────────
-// │ 👑 OWNER CONTROLS 👑    
-// ├────────────────
-// │ ⚡ CORE MANAGEMENT ⚡    
-// ├────────────────
-// │ setbotname              
-// │ iamowner                
-// │ about                   
-// │ setprefix               
-// │ block                   
-// │ unblock                 
-// │ blockdetect             
-// │ silent                  
-// │ anticall                
-// │ mode                    ← Shows/sets bot mode (owner only)
-// │ online                  
-// │ setpp                   
-// │ repo                    
-// ├────────────────
-// │ 🔄 SYSTEM & MAINTENANCE 🛠️ 
-// ├────────────────
-// │ restart                 
-// │ workingreload           
-// │ reloadenv               
-// │ getsettings             
-// │ setsetting              
-// │ test                    
-// │ disk                    
-// │ hostip                  
-// │ findcommands            
-// └────────────────
-
-// ┌────────────────
-// │ ⚙️ AUTOMATION ⚙️
-// ├────────────────
-// │ autoread                
-// │ autotyping              
-// │ autorecording           
-// │ autoreact               
-// │ autoreactstatus         
-// │ autobio                 
-// │ autorec                 
-// └────────────────
-
-// ┌────────────────
-// │ ✨ GENERAL UTILITIES ✨  
-// ├────────────────
-// │ 🔍 INFO & SEARCH 🔎     
-// ├────────────────
-// │ ping                    
-// │ time                    
-// │ uptime                  
-// │ alive                   
-// │ define                  
-// │ news                    
-// │ covid                   
-// │ quote                   
-// │ prefixinfo              
-// ├───────────────
-// │ 🔗 CONVERSION & MEDIA 📁 
-// ├───────────────
-// │ translate               
-// │ shorturl                
-// │ qrencode                
-// │ take                    
-// │ toimage                 
-// │ tostatus                
-// │ toaudio                 
-// │ tovoice                 
-// │ save                    
-// │ url                     
-// ├───────────────
-// │ 📝 PERSONAL TOOLS 📅    
-// ├───────────────
-// │ goodmorning             
-// │ goodnight               
-// └────────────────
-
-// ├────────────────
-// │ 🎵 MUSIC & MEDIA 🎶
-// ├────────────────
-// │ play                    
-// │ song                    
-// │ lyrics                  
-// │ spotify                 
-// │ video                   
-// │ video2                  
-// │ bassboost               
-// │ trebleboost             
-// └────────────────
-
-// ┌───────────────
-// │ 🤖 MEDIA & AI COMMANDS 🧠 
-// ├───────────────
-// │ ⬇️ MEDIA DOWNLOADS 📥     
-// ├───────────────
-// │ youtube                 
-// │ tiktok                  
-// │ instagram               
-// │ facebook                
-// │ snapchat                
-// │ apk                     
-// ├───────────────
-// │ 🎨 AI GENERATION 💡    
-// ├───────────────
-// │ gpt                     
-// │ gemini                  
-// │ deepseek                
-// │ deepseek+               
-// │ analyze                 
-// │ suno                    
-// │ wolfbot                 
-// │ videogen                
-// └───────────────
-
-// ┌───────────────
-// │ 🖼️ IMAGE TOOLS 🖼️
-// ├───────────────
-// │ image                   
-// │ imagegenerate           
-// │ anime                   
-// │ art                     
-// │ real                    
-// └───────────────
-
-// ┌───────────────
-// │ 🛡️ SECURITY & HACKING 🔒 
-// ├───────────────
-// │ 🌐 NETWORK & INFO 📡   
-// ├───────────────
-// │ ipinfo                  
-// │ shodan                  
-// │ iplookup                
-// │ getip                   
-// └───────────────
-
-// ┌────────────────
-// │ 🎨 LOGO DESIGN STUDIO 🎨
-// ├────────────────
-// │ 🌟 PREMIUM METALS 🌟    
-// ├────────────────
-// │ goldlogo                
-// │ silverlogo              
-// │ platinumlogo            
-// │ chromelogo              
-// │ diamondlogo             
-// │ bronzelogo              
-// │ steelogo                
-// │ copperlogo              
-// │ titaniumlogo            
-// ├────────────────
-// │ 🔥 ELEMENTAL EFFECTS 🔥  
-// ├────────────────
-// │ firelogo                
-// │ icelogo                 
-// │ iceglowlogo             
-// │ lightninglogo           
-// │ aqualogo                
-// │ rainbowlogo             
-// │ sunlogo                 
-// │ moonlogo                
-// ├────────────────
-// │ 🎭 MYTHICAL & MAGICAL 🧙  
-// ├────────────────
-// │ dragonlogo              
-// │ phoenixlogo             
-// │ wizardlogo              
-// │ crystallogo             
-// │ darkmagiclogo           
-// ├────────────────
-// │ 🌌 DARK & GOTHIC 🌑     
-// ├────────────────
-// │ shadowlogo              
-// │ smokelogo               
-// │ bloodlogo               
-// ├────────────────
-// │ 💫 GLOW & NEON EFFECTS 🌈  
-// ├────────────────
-// │ neonlogo                
-// │ glowlogo                
-// ├────────────────
-// │ 🤖 TECH & FUTURISTIC 🚀  
-// ├────────────────
-// │ matrixlogo              
-// └────────────────
-// ┌────────────────
-// │ 🐙 GITHUB COMMANDS 🐙
-// ├────────────────
-// │ gitclone
-// │ gitinfo
-// │ repo
-// │ commits
-// │ stars
-// │ watchers
-// │ release
-// └────────────────
-
-
-// 🐺🌕POWERED BY WOLFTECH🌕🐺
-
-// `;
-
-//   finalCaption += commandsText;
-
-//   const imgPath1 = path.join(__dirname, "media", "wolfbot.jpg");
-//   const imgPath2 = path.join(__dirname, "../media/wolfbot.jpg");
-//   const imagePath = fs.existsSync(imgPath1) ? imgPath1 : fs.existsSync(imgPath2) ? imgPath2 : null;
-//   if (!imagePath) {
-//     await sock.sendMessage(jid, { text: "⚠️ Image 'wolfbot.jpg' not found!" }, { quoted: m });
-//     return;
-//   }
-//   const buffer = fs.readFileSync(imagePath);
-
-//   await sock.sendMessage(jid, { image: buffer, caption: finalCaption, mimetype: "image/jpeg" }, { quoted: m });
-//   break;
-// }
-        default:
+  default:
           await sock.sendMessage(jid, { text: "❌ Unknown menu style. Reverting to default (Style 1)." }, { quoted: m });
           break;
        
