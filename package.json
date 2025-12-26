@@ -1,14 +1,17 @@
 {
   "name": "silent-wolf-bot",
-  "version": "2.0.0",
-  "description": "A WhatsApp bot using Baileys with auto-restart prefix system",
+  "version": "2.1.0",
+  "description": "A WhatsApp bot using Baileys with auto-restart prefix system and heartbeat monitor",
   "keywords": [
     "whatsapp",
     "bot",
     "baileys",
     "silent-wolf",
     "auto-restart",
-    "prefix"
+    "prefix",
+    "heartbeat",
+    "monitor",
+    "session-protection"
   ],
   "homepage": "https://github.com/777Wolf-dot/Silent-Wolf--Bot#readme",
   "bugs": {
@@ -19,7 +22,7 @@
     "url": "git+https://github.com/777Wolf-dot/Silent-Wolf--Bot.git"
   },
   "license": "MIT",
-  "author": "YourName",
+  "author": "777Wolf-dot",
   "type": "module",
   "main": "index.js",
   "directories": {
@@ -37,7 +40,23 @@
     "dev": "node index.js",
     "test": "echo \"No tests specified\" && exit 0",
     "logs": "type bot_restart.log",
-    "status": "node check_status.js"
+    "status": "node check_status.js",
+    "heartbeat": "node heartbeat.js",
+    "monitor": "node heartbeat.js",
+    "start:full": "node heartbeat.js & node index.js",
+    "start:monitored": "concurrently \"node heartbeat.js\" \"node index.js\"",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop ecosystem.config.js",
+    "pm2:restart": "pm2 restart ecosystem.config.js",
+    "pm2:logs": "pm2 logs",
+    "pm2:status": "pm2 status",
+    "session:check": "node scripts/check-session.js",
+    "session:backup": "node scripts/backup-session.js",
+    "session:restore": "node scripts/restore-session.js",
+    "health": "node scripts/health-check.js",
+    "diagnose": "node scripts/diagnose.js",
+    "clean": "node scripts/cleanup.js",
+    "stats": "node scripts/show-stats.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -47,6 +66,7 @@
     "archiver": "^7.0.1",
     "axios": "^1.13.2",
     "chalk": "^4.1.2",
+    "concurrently": "^8.2.2",
     "dotenv": "^17.2.3",
     "execa": "^9.6.0",
     "express": "^5.1.0",
@@ -66,7 +86,8 @@
     "pino": "^8.21.0",
     "qrcode-terminal": "^0.12.0",
     "replicate": "^1.4.0",
-    "systeminformation": "^5.28.0"
+    "systeminformation": "^5.28.0",
+    "ws": "^8.18.0"
   },
   "optionalDependencies": {
     "@distube/ytdl-core": "^4.16.12",
@@ -79,6 +100,7 @@
     "formdata-node": "^6.0.3",
     "gifencoder": "^2.0.1",
     "play-dl": "^1.9.7",
+    "pm2": "^5.4.3",
     "qrcode": "^1.5.4",
     "qrcode-reader": "^1.0.4",
     "sharp": "^0.32.6",
@@ -89,6 +111,9 @@
     "yt-search": "^2.13.1",
     "ytdl-core": "^4.11.5",
     "zxcvbn": "^4.4.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
   },
   "engines": {
     "node": ">=18.0.0"

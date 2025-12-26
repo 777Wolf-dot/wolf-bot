@@ -2,51 +2,6 @@
   "enabled": true,
   "logs": [
     {
-      "sender": "254794352686",
-      "action": "viewed",
-      "timestamp": 1766735204159
-    },
-    {
-      "sender": "254715259971",
-      "action": "viewed",
-      "timestamp": 1766735259229
-    },
-    {
-      "sender": "260978210451",
-      "action": "viewed",
-      "timestamp": 1766735365192
-    },
-    {
-      "sender": "254116210755",
-      "action": "viewed",
-      "timestamp": 1766735610602
-    },
-    {
-      "sender": "260962347198",
-      "action": "viewed",
-      "timestamp": 1766735811901
-    },
-    {
-      "sender": "260978210451",
-      "action": "viewed",
-      "timestamp": 1766735914698
-    },
-    {
-      "sender": "254745428533",
-      "action": "viewed",
-      "timestamp": 1766735959716
-    },
-    {
-      "sender": "254719769109",
-      "action": "viewed",
-      "timestamp": 1766735960734
-    },
-    {
-      "sender": "254734971054",
-      "action": "viewed",
-      "timestamp": 1766735991970
-    },
-    {
       "sender": "256782154150",
       "action": "viewed",
       "timestamp": 1766736028123
@@ -500,16 +455,61 @@
       "sender": "254715259971",
       "action": "viewed",
       "timestamp": 1766750684892
+    },
+    {
+      "sender": "233535244326",
+      "action": "viewed",
+      "timestamp": 1766761170428
+    },
+    {
+      "sender": "255783702943",
+      "action": "viewed",
+      "timestamp": 1766761189910
+    },
+    {
+      "sender": "233244515981",
+      "action": "viewed",
+      "timestamp": 1766761484641
+    },
+    {
+      "sender": "255783702943",
+      "action": "viewed",
+      "timestamp": 1766765321371
+    },
+    {
+      "sender": "254787451049",
+      "action": "viewed",
+      "timestamp": 1766765593796
+    },
+    {
+      "sender": "254115896460",
+      "action": "viewed",
+      "timestamp": 1766774814888
+    },
+    {
+      "sender": "254733961184",
+      "action": "viewed",
+      "timestamp": 1766775084190
+    },
+    {
+      "sender": "254115896460",
+      "action": "viewed",
+      "timestamp": 1766775126629
+    },
+    {
+      "sender": "237689895250",
+      "action": "viewed",
+      "timestamp": 1766775203598
     }
   ],
-  "totalViewed": 1216,
+  "totalViewed": 1225,
   "lastViewed": {
-    "sender": "254715259971",
+    "sender": "237689895250",
     "action": "viewed",
-    "timestamp": 1766750684892
+    "timestamp": 1766775203598
   },
   "consecutiveViews": 1,
-  "lastSender": "254715259971",
+  "lastSender": "237689895250",
   "settings": {
     "rateLimitDelay": 1000,
     "viewToAll": true,
