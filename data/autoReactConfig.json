@@ -19,11 +19,47 @@
     "💥",
     "🫶"
   ],
-  "logs": [],
-  "totalReacted": 0,
-  "lastReacted": null,
-  "consecutiveReactions": 0,
-  "lastSender": null,
+  "logs": [
+    {
+      "sender": "2348029985650",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766787808350
+    },
+    {
+      "sender": "2348029985650",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766787873692
+    },
+    {
+      "sender": "2348029985650",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766787905002
+    },
+    {
+      "sender": "2348029985650",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766788179051
+    },
+    {
+      "sender": "2348029985650",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766788623226
+    }
+  ],
+  "totalReacted": 5,
+  "lastReacted": {
+    "sender": "2348029985650",
+    "reaction": "🐺",
+    "type": "status",
+    "timestamp": 1766788623226
+  },
+  "consecutiveReactions": 5,
+  "lastSender": "2348029985650",
   "settings": {
     "rateLimitDelay": 500,
     "reactToAll": true,
