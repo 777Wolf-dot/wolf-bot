@@ -1788,1059 +1788,708 @@ import { promisify } from "util";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createRequire } from 'module';
+import { createHash } from "crypto";
 
 const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const require = createRequire(import.meta.url);
 
-// Enhanced exec with timeout
-async function run(cmd, timeout = 30000) {
+// Simple, reliable exec
+async function run(cmd, timeout = 60000) {
+  console.log(`[CMD] ${cmd.substring(0, 100)}${cmd.length > 100 ? '...' : ''}`);
+  
   try {
-    const { stdout, stderr } = await execAsync(cmd, { timeout });
-    if (stderr && !stderr.includes('warning')) {
-      console.warn(`Command stderr: ${stderr}`);
+    const { stdout, stderr } = await execAsync(cmd, { 
+      timeout,
+      cwd: process.cwd(),
+      shell: '/bin/bash'
+    });
+    
+    if (stderr && !stderr.includes('warning') && !stderr.includes('npm')) {
+      console.warn(`[STDERR] ${stderr.substring(0, 200)}`);
     }
-    return stdout.trim();
+    
+    const result = stdout.trim();
+    console.log(`[RESULT] ${result.substring(0, 200)}${result.length > 200 ? '...' : ''}`);
+    return result;
   } catch (error) {
-    console.error(`Command failed: ${cmd}`, error.message);
+    console.error(`[ERROR] ${error.message}`);
     throw error;
   }
 }
 
-// Safe exec that doesn't throw on failure
-async function runSafe(cmd, timeout = 30000) {
+// Get file hash to verify changes
+function getFileHash(filePath) {
   try {
-    const { stdout, stderr } = await execAsync(cmd, { timeout });
-    return { success: true, stdout: stdout.trim(), stderr: stderr.trim() };
-  } catch (error) {
-    return { success: false, error: error.message, stdout: '', stderr: error.stderr || '' };
+    if (!fs.existsSync(filePath)) return null;
+    const content = fs.readFileSync(filePath);
+    return createHash('md5').update(content).digest('hex');
+  } catch {
+    return null;
   }
 }
 
-// Cache for clearing require cache
-const originalRequireResolve = require.resolve;
-const moduleCache = new Map();
-
-// Clear module cache for hot reload
-function clearModuleCache(modulePath) {
-  const normalizedPath = path.resolve(modulePath);
+// Get directory hash (for checking if updates happened)
+function getDirectoryHash(dirPath, exclude = ['.git', 'node_modules', 'logs', 'session', 'tmp']) {
+  const hashes = [];
   
-  // Clear from require.cache
-  if (require.cache) {
-    for (const key in require.cache) {
-      if (key.includes(normalizedPath)) {
-        delete require.cache[key];
-      }
-    }
-  }
-  
-  // Clear from module cache
-  moduleCache.delete(normalizedPath);
-}
-
-// Hot reload handler registry
-const hotReloadHandlers = new Set();
-
-// Register a module for hot reload
-export function registerForHotReload(modulePath, reloadCallback) {
-  const normalizedPath = path.resolve(modulePath);
-  hotReloadHandlers.add({
-    path: normalizedPath,
-    callback: reloadCallback
-  });
-  return () => hotReloadHandlers.delete(normalizedPath);
-}
-
-// Execute hot reload for updated modules
-async function executeHotReload(updatedFiles = []) {
-  console.log(`🔄 Hot reloading ${updatedFiles.length} updated modules`);
-  
-  const reloadResults = [];
-  
-  for (const handler of hotReloadHandlers) {
-    // Check if this handler's module was updated
-    const needsReload = updatedFiles.some(filePath => 
-      filePath.includes(handler.path) || 
-      handler.path.includes(path.dirname(filePath))
-    );
+  function scan(dir) {
+    if (!fs.existsSync(dir)) return;
     
-    if (needsReload) {
-      try {
-        console.log(`Hot reloading: ${handler.path}`);
-        
-        // Clear cache first
-        clearModuleCache(handler.path);
-        
-        // Execute reload callback
-        const result = await handler.callback();
-        reloadResults.push({
-          path: handler.path,
-          success: true,
-          result
-        });
-        
-        console.log(`✅ Successfully hot reloaded: ${handler.path}`);
-      } catch (error) {
-        console.error(`❌ Failed to hot reload ${handler.path}:`, error);
-        reloadResults.push({
-          path: handler.path,
-          success: false,
-          error: error.message
-        });
-      }
-    }
-  }
-  
-  return reloadResults;
-}
-
-// Hot reload specific modules
-async function hotReloadModules(modulePaths = []) {
-  console.log(`🔄 Hot reloading specific modules:`, modulePaths);
-  
-  const results = [];
-  for (const modulePath of modulePaths) {
-    try {
-      clearModuleCache(modulePath);
-      
-      // For ES modules, we need to re-import
-      const module = await import(`file://${modulePath}?update=${Date.now()}`);
-      
-      results.push({
-        path: modulePath,
-        success: true,
-        module
-      });
-      
-      console.log(`✅ Hot reloaded: ${modulePath}`);
-    } catch (error) {
-      console.error(`❌ Failed to hot reload ${modulePath}:`, error);
-      results.push({
-        path: modulePath,
-        success: false,
-        error: error.message
-      });
-    }
-  }
-  
-  return results;
-}
-
-// Enhanced file watcher for dynamic updates
-class FileWatcher {
-  constructor() {
-    this.watchers = new Map();
-    this.debounceTimers = new Map();
-  }
-  
-  watchFile(filePath, callback, debounceMs = 1000) {
-    const normalizedPath = path.resolve(filePath);
+    const items = fs.readdirSync(dir, { withFileTypes: true });
     
-    if (this.watchers.has(normalizedPath)) {
-      this.unwatchFile(normalizedPath);
-    }
-    
-    try {
-      const watcher = fs.watch(normalizedPath, (eventType) => {
-        if (eventType === 'change') {
-          // Debounce to prevent multiple rapid triggers
-          if (this.debounceTimers.has(normalizedPath)) {
-            clearTimeout(this.debounceTimers.get(normalizedPath));
-          }
-          
-          this.debounceTimers.set(normalizedPath, setTimeout(() => {
-            console.log(`📁 File changed: ${normalizedPath}`);
-            callback(normalizedPath);
-            this.debounceTimers.delete(normalizedPath);
-          }, debounceMs));
-        }
-      });
+    for (const item of items) {
+      const fullPath = path.join(dir, item.name);
       
-      this.watchers.set(normalizedPath, watcher);
-      console.log(`👁️  Watching file: ${normalizedPath}`);
-    } catch (error) {
-      console.error(`Failed to watch file ${normalizedPath}:`, error);
-    }
-  }
-  
-  watchDirectory(dirPath, callback, recursive = true, debounceMs = 1000) {
-    const normalizedPath = path.resolve(dirPath);
-    
-    if (!fs.existsSync(normalizedPath)) {
-      console.warn(`Directory does not exist: ${normalizedPath}`);
-      return;
-    }
-    
-    try {
-      const watcher = fs.watch(normalizedPath, { recursive }, (eventType, filename) => {
-        if (filename && eventType === 'change') {
-          const fullPath = path.join(normalizedPath, filename);
-          
-          // Debounce
-          const key = `${normalizedPath}:${filename}`;
-          if (this.debounceTimers.has(key)) {
-            clearTimeout(this.debounceTimers.get(key));
-          }
-          
-          this.debounceTimers.set(key, setTimeout(() => {
-            console.log(`📁 File in directory changed: ${fullPath}`);
-            callback(fullPath);
-            this.debounceTimers.delete(key);
-          }, debounceMs));
-        }
-      });
+      // Skip excluded items
+      if (exclude.some(pattern => 
+        pattern === item.name || 
+        fullPath.includes(pattern)
+      )) continue;
       
-      this.watchers.set(normalizedPath, watcher);
-      console.log(`👁️  Watching directory: ${normalizedPath} (recursive: ${recursive})`);
-      
-      // Also watch subdirectories for new files
-      if (recursive) {
-        this.watchSubdirectories(normalizedPath, callback, debounceMs);
-      }
-    } catch (error) {
-      console.error(`Failed to watch directory ${normalizedPath}:`, error);
-    }
-  }
-  
-  watchSubdirectories(dirPath, callback, debounceMs) {
-    try {
-      const entries = fs.readdirSync(dirPath, { withFileTypes: true });
-      
-      for (const entry of entries) {
-        if (entry.isDirectory()) {
-          const subDirPath = path.join(dirPath, entry.name);
-          this.watchDirectory(subDirPath, callback, true, debounceMs);
+      if (item.isDirectory()) {
+        scan(fullPath);
+      } else {
+        const hash = getFileHash(fullPath);
+        if (hash) {
+          hashes.push(`${path.relative(process.cwd(), fullPath)}:${hash}`);
         }
       }
-    } catch (error) {
-      console.error(`Failed to watch subdirectories of ${dirPath}:`, error);
     }
   }
   
-  unwatchFile(filePath) {
-    const normalizedPath = path.resolve(filePath);
-    
-    if (this.watchers.has(normalizedPath)) {
-      this.watchers.get(normalizedPath).close();
-      this.watchers.delete(normalizedPath);
-      console.log(`👁️  Stopped watching: ${normalizedPath}`);
-    }
-    
-    // Clear any debounce timer
-    if (this.debounceTimers.has(normalizedPath)) {
-      clearTimeout(this.debounceTimers.get(normalizedPath));
-      this.debounceTimers.delete(normalizedPath);
-    }
-  }
+  scan(dirPath);
+  hashes.sort(); // Sort for consistent hash
   
-  unwatchAll() {
-    for (const [path, watcher] of this.watchers) {
-      watcher.close();
-    }
-    this.watchers.clear();
-    
-    for (const timer of this.debounceTimers.values()) {
-      clearTimeout(timer);
-    }
-    this.debounceTimers.clear();
-    
-    console.log('👁️  Stopped all file watchers');
-  }
+  if (hashes.length === 0) return null;
+  return createHash('md5').update(hashes.join('|')).digest('hex');
 }
 
-// Create global file watcher instance
-export const fileWatcher = new FileWatcher();
-
-// Check if git repository exists
-async function hasGitRepo() {
-  const gitPath = path.join(process.cwd(), ".git");
-  return fs.existsSync(gitPath);
-}
-
-// Check if git has any commits
-async function hasGitCommits() {
+// REAL GIT CHECK - Actually fetch and compare
+async function checkForRealUpdates() {
   try {
-    const result = await runSafe("git rev-list --count HEAD 2>/dev/null || echo '0'");
-    if (result.success) {
-      const count = parseInt(result.stdout) || 0;
-      return count > 0;
-    }
-    return false;
-  } catch (error) {
-    return false;
-  }
-}
-
-// Get current git branch with fallback
-async function getCurrentBranch() {
-  try {
-    // Try multiple methods to get branch name
-    let result = await runSafe("git rev-parse --abbrev-ref HEAD");
-    if (result.success && result.stdout && result.stdout !== 'HEAD') {
-      return result.stdout;
+    console.log("=== REAL UPDATE CHECK ===");
+    
+    // Check if git exists
+    try {
+      await run("git --version");
+    } catch {
+      console.log("Git not available");
+      return { hasUpdates: false, method: 'nogit' };
     }
     
-    result = await runSafe("git branch --show-current");
-    if (result.success && result.stdout) {
-      return result.stdout;
+    // Check if we're in a git repo
+    const gitDir = path.join(process.cwd(), '.git');
+    if (!fs.existsSync(gitDir)) {
+      console.log("Not a git repository");
+      return { hasUpdates: false, method: 'nogit' };
     }
     
-    result = await runSafe("git symbolic-ref --short HEAD");
-    if (result.success && result.stdout) {
-      return result.stdout;
+    // Get current state BEFORE any operations
+    const beforeState = getDirectoryHash(process.cwd());
+    console.log(`Before state hash: ${beforeState}`);
+    
+    // Get current commit
+    let currentCommit;
+    try {
+      currentCommit = await run("git rev-parse HEAD");
+      console.log(`Current commit: ${currentCommit.substring(0, 8)}`);
+    } catch {
+      console.log("No commits yet");
+      currentCommit = 'none';
     }
     
-    return "main"; // default branch
-  } catch (error) {
-    return "main";
-  }
-}
-
-// Initialize git repo if it doesn't exist
-async function initGitRepo() {
-  try {
-    if (!await hasGitRepo()) {
-      console.log("Initializing git repository...");
-      await run("git init");
-      await run("git remote add origin https://github.com/777Wolf-dot/Silent-Wolf--Bot.git");
-      await run("git fetch origin");
-      
-      // Try to checkout main branch
-      const result = await runSafe("git checkout -b main --track origin/main");
-      if (!result.success) {
-        await run("git checkout -b main");
+    // Add upstream if not exists
+    try {
+      await run("git remote get-url wolf-bot-upstream");
+      console.log("Upstream remote exists");
+    } catch {
+      console.log("Adding upstream remote...");
+      await run("git remote add wolf-bot-upstream https://github.com/777Wolf-dot/wolf-bot.git");
+    }
+    
+    // FETCH NEW CHANGES (this is what was missing!)
+    console.log("Fetching from upstream...");
+    const fetchOutput = await run("git fetch wolf-bot-upstream --verbose");
+    console.log(`Fetch output: ${fetchOutput}`);
+    
+    // Check what changed
+    let newCommits = [];
+    try {
+      if (currentCommit !== 'none') {
+        const diff = await run(`git log --oneline ${currentCommit}..wolf-bot-upstream/main`);
+        newCommits = diff.split('\n').filter(line => line.trim());
+        console.log(`New commits: ${newCommits.length}`);
+      } else {
+        console.log("No local commits to compare against");
       }
-      console.log("Git repository initialized");
-      return true;
+    } catch (error) {
+      console.log("Could not compare commits:", error.message);
     }
     
-    // If repo exists but no commits, make initial commit
-    const hasCommits = await hasGitCommits();
-    if (!hasCommits) {
-      console.log("Making initial commit...");
-      await runSafe("git add .");
-      await runSafe('git commit -m "Initial commit" --allow-empty');
+    // Get latest commit from upstream
+    let upstreamCommit;
+    try {
+      upstreamCommit = await run("git rev-parse wolf-bot-upstream/main");
+      console.log(`Upstream commit: ${upstreamCommit.substring(0, 8)}`);
+    } catch (error) {
+      console.log("Could not get upstream commit:", error.message);
+      return { hasUpdates: false, method: 'git', error: 'no_upstream' };
     }
     
-    return false;
-  } catch (error) {
-    console.error("Failed to initialize git repo:", error);
-    return false;
-  }
-}
-
-// Get HEAD revision with fallback for empty repos
-async function getHeadRevision() {
-  try {
-    const result = await runSafe("git rev-parse HEAD");
-    if (result.success && result.stdout && !result.stdout.includes('fatal')) {
-      return result.stdout;
-    }
-    return "0000000000000000000000000000000000000000"; // Null commit ID
-  } catch (error) {
-    return "0000000000000000000000000000000000000000";
-  }
-}
-
-// Simple file update without git (for panels)
-async function updateFilesFromWolfBot(hotReload = false) {
-  const updatedFiles = [];
-  
-  try {
-    // Get list of files from wolf-bot repo using GitHub API or direct download
-    console.log("Fetching file list from wolf-bot...");
-    
-    // Create a temporary directory for updates
-    const tempDir = path.join(process.cwd(), 'temp_update');
-    if (fs.existsSync(tempDir)) {
-      fs.rmSync(tempDir, { recursive: true });
-    }
-    fs.mkdirSync(tempDir, { recursive: true });
-    
-    // Download individual files or use ZIP method
-    const updateResult = await updateViaZip(hotReload);
-    
-    // Cleanup
-    if (fs.existsSync(tempDir)) {
-      fs.rmSync(tempDir, { recursive: true });
-    }
+    const hasUpdates = currentCommit !== upstreamCommit && currentCommit !== 'none';
     
     return {
-      ...updateResult,
-      type: "direct"
+      hasUpdates,
+      method: 'git',
+      currentCommit: currentCommit.substring(0, 8),
+      upstreamCommit: upstreamCommit.substring(0, 8),
+      newCommits: newCommits.length,
+      beforeState,
+      commitDiff: newCommits
     };
-    
   } catch (error) {
-    console.error("Direct file update failed:", error);
+    console.error("Real update check failed:", error);
+    return { hasUpdates: false, method: 'git', error: error.message };
+  }
+}
+
+// ACTUAL GIT UPDATE - Force reset to upstream
+async function performGitUpdate() {
+  console.log("=== PERFORMING GIT UPDATE ===");
+  
+  try {
+    // Get state before update
+    const beforeState = getDirectoryHash(process.cwd());
+    
+    // Backup important files
+    await backupImportantFiles();
+    
+    // Force reset to upstream
+    console.log("Resetting to wolf-bot-upstream/main...");
+    const resetOutput = await run("git reset --hard wolf-bot-upstream/main");
+    console.log(`Reset output: ${resetOutput}`);
+    
+    // Clean untracked files (optional)
+    try {
+      await run("git clean -fd -e node_modules -e logs -e session -e settings.js -e config.json -e .env");
+    } catch (cleanError) {
+      console.log("Clean failed (non-critical):", cleanError.message);
+    }
+    
+    // Restore backups
+    await restoreBackup();
+    
+    // Get state after update
+    const afterState = getDirectoryHash(process.cwd());
+    
+    // Get new commit
+    const newCommit = await run("git rev-parse HEAD");
+    
+    return {
+      success: true,
+      method: 'git',
+      newCommit: newCommit.substring(0, 8),
+      beforeState,
+      afterState,
+      changed: beforeState !== afterState,
+      message: `Reset to upstream: ${newCommit.substring(0, 8)}`
+    };
+  } catch (error) {
+    console.error("Git update failed:", error);
+    // Restore on failure
+    await restoreBackup();
     throw error;
   }
 }
 
-// Update from wolf-bot repo - Panel-friendly version
-async function updateFromWolfBotPanel(hotReload = false) {
-  console.log("Using panel-friendly update method...");
+// Backup important files
+async function backupImportantFiles() {
+  const backupDir = path.join(process.cwd(), '.update_backup');
   
-  try {
-    // First try ZIP method
-    const zipResult = await updateViaZip(hotReload);
-    
-    // If package.json was updated, install dependencies
-    const needsNpmInstall = zipResult.updatedFiles.some(file => 
-      file.includes('package.json') || file.includes('package-lock.json')
-    );
-    
-    if (needsNpmInstall) {
-      console.log("Installing updated dependencies...");
-      await runSafe("npm install --no-audit --no-fund --loglevel=error");
-    }
-    
-    return {
-      ...zipResult,
-      type: "zip",
-      noRestart: true
-    };
-    
-  } catch (error) {
-    console.error("Panel update failed:", error);
-    
-    // Fallback to simple file copy
-    try {
-      console.log("Trying fallback update method...");
-      
-      // Preserve important files
-      await preserveLocalFiles();
-      
-      // Download and extract wolf-bot
-      const tmpDir = path.join(process.cwd(), 'tmp_fallback');
-      const repoUrl = "https://github.com/777Wolf-dot/wolf-bot/archive/refs/heads/main.zip";
-      
-      if (fs.existsSync(tmpDir)) {
-        fs.rmSync(tmpDir, { recursive: true });
-      }
-      fs.mkdirSync(tmpDir, { recursive: true });
-      
-      // Download using curl or wget
-      let downloadCmd;
-      if (await run("which curl").then(() => true).catch(() => false)) {
-        downloadCmd = `curl -L "${repoUrl}" -o "${path.join(tmpDir, 'update.zip')}" --silent`;
-      } else {
-        downloadCmd = `wget "${repoUrl}" -O "${path.join(tmpDir, 'update.zip')}" --quiet`;
-      }
-      
-      await run(downloadCmd);
-      
-      // Extract
-      if (await run("which unzip").then(() => true).catch(() => false)) {
-        await run(`unzip -o "${path.join(tmpDir, 'update.zip')}" -d "${tmpDir}"`);
-      } else {
-        await run(`7z x "${path.join(tmpDir, 'update.zip')}" -o"${tmpDir}" -y`);
-      }
-      
-      // Find extracted folder
-      const items = fs.readdirSync(tmpDir);
-      const sourceFolder = items.find(item => item.includes('wolf-bot'));
-      if (!sourceFolder) throw new Error("Could not find extracted files");
-      
-      const sourcePath = path.join(tmpDir, sourceFolder);
-      
-      // Copy files (excluding protected ones)
-      await copyDirectoryContents(sourcePath, process.cwd(), [
-        '.git', 'node_modules', 'session', 'data', 'logs',
-        'settings.js', 'config.json', '.env', 'tmp_*'
-      ]);
-      
-      // Cleanup
-      fs.rmSync(tmpDir, { recursive: true });
-      
-      return {
-        success: true,
-        source: "wolf-bot fallback",
-        type: "fallback",
-        updatedFiles: [],
-        noRestart: true
-      };
-      
-    } catch (fallbackError) {
-      throw new Error(`All update methods failed: ${error.message}, ${fallbackError.message}`);
-    }
+  if (fs.existsSync(backupDir)) {
+    fs.rmSync(backupDir, { recursive: true });
   }
-}
-
-// Copy directory contents with exclusions
-async function copyDirectoryContents(src, dest, exclude = []) {
-  const items = fs.readdirSync(src, { withFileTypes: true });
   
-  for (const item of items) {
-    const srcPath = path.join(src, item.name);
-    const destPath = path.join(dest, item.name);
-    
-    // Check if excluded
-    if (exclude.some(pattern => {
-      if (pattern.includes('*')) {
-        const regex = new RegExp(pattern.replace('*', '.*'));
-        return regex.test(item.name);
-      }
-      return item.name === pattern;
-    })) {
-      console.log(`Skipping excluded: ${item.name}`);
-      continue;
-    }
-    
-    if (item.isDirectory()) {
-      if (!fs.existsSync(destPath)) {
-        fs.mkdirSync(destPath, { recursive: true });
-      }
-      await copyDirectoryContents(srcPath, destPath, exclude);
-    } else {
-      // Skip if it's a protected config file that exists
-      const protectedFiles = ['settings.js', 'config.json', '.env'];
-      if (protectedFiles.includes(item.name.toLowerCase()) && fs.existsSync(destPath)) {
-        console.log(`Preserving existing: ${item.name}`);
-        continue;
-      }
-      
-      fs.copyFileSync(srcPath, destPath);
-      console.log(`Updated: ${item.name}`);
-    }
-  }
-}
-
-// Preserve important local files that shouldn't be overwritten
-async function preserveLocalFiles() {
-  const filesToPreserve = [
+  fs.mkdirSync(backupDir, { recursive: true });
+  
+  const filesToBackup = [
     'settings.js',
     'config.json',
     '.env',
     'session',
     'data',
     'logs',
-    'tmp_*'
+    'database.json',
+    'storage.json'
   ];
   
-  const tmpDir = path.join(process.cwd(), 'tmp_preserve_' + Date.now());
-  if (!fs.existsSync(tmpDir)) {
-    fs.mkdirSync(tmpDir, { recursive: true });
-  }
+  console.log("Backing up important files...");
   
-  for (const pattern of filesToPreserve) {
-    try {
-      if (pattern.includes('*')) {
-        // Handle wildcard patterns
-        const files = fs.readdirSync(process.cwd()).filter(file => 
-          file.startsWith(pattern.replace('*', ''))
-        );
-        
-        for (const file of files) {
-          const filePath = path.join(process.cwd(), file);
-          const tmpPath = path.join(tmpDir, file);
-          
-          if (fs.existsSync(filePath)) {
-            if (fs.statSync(filePath).isDirectory()) {
-              await copyDir(filePath, tmpPath);
-            } else {
-              fs.copyFileSync(filePath, tmpPath);
-            }
-            console.log(`Preserved: ${file}`);
-          }
-        }
-      } else {
-        const filePath = path.join(process.cwd(), pattern);
-        const tmpPath = path.join(tmpDir, pattern);
-        
-        if (fs.existsSync(filePath)) {
-          if (fs.statSync(filePath).isDirectory()) {
-            await copyDir(filePath, tmpPath);
-          } else {
-            fs.copyFileSync(filePath, tmpPath);
-          }
-          console.log(`Preserved: ${pattern}`);
-        }
-      }
-    } catch (error) {
-      console.warn(`Could not preserve ${pattern}:`, error.message);
-    }
-  }
-  
-  // Return cleanup function
-  return async () => {
-    if (fs.existsSync(tmpDir)) {
-      // Restore preserved files if needed
-      const items = fs.readdirSync(tmpDir);
-      for (const item of items) {
-        const srcPath = path.join(tmpDir, item);
-        const destPath = path.join(process.cwd(), item);
-        
-        if (fs.existsSync(destPath)) {
-          // Backup current file
-          const backupPath = destPath + '.backup';
-          if (fs.statSync(destPath).isDirectory()) {
-            await copyDir(destPath, backupPath);
-            fs.rmSync(destPath, { recursive: true });
-            await copyDir(srcPath, destPath);
-          } else {
-            fs.copyFileSync(destPath, backupPath);
-            fs.copyFileSync(srcPath, destPath);
-          }
-        } else {
-          if (fs.statSync(srcPath).isDirectory()) {
-            await copyDir(srcPath, destPath);
-          } else {
-            fs.copyFileSync(srcPath, destPath);
-          }
-        }
-      }
+  for (const file of filesToBackup) {
+    const src = path.join(process.cwd(), file);
+    if (fs.existsSync(src)) {
+      const dest = path.join(backupDir, file);
       
-      // Cleanup
-      fs.rmSync(tmpDir, { recursive: true });
+      try {
+        if (fs.statSync(src).isDirectory()) {
+          copyDirSync(src, dest);
+        } else {
+          fs.copyFileSync(src, dest);
+        }
+        console.log(`✓ Backed up: ${file}`);
+      } catch (error) {
+        console.warn(`✗ Failed to backup ${file}:`, error.message);
+      }
     }
-  };
+  }
+  
+  return backupDir;
 }
 
-// Copy directory (simple version)
-async function copyDir(src, dest) {
+// Restore backup
+async function restoreBackup() {
+  const backupDir = path.join(process.cwd(), '.update_backup');
+  
+  if (!fs.existsSync(backupDir)) {
+    console.log("No backup to restore");
+    return;
+  }
+  
+  console.log("Restoring backups...");
+  
+  const items = fs.readdirSync(backupDir);
+  
+  for (const item of items) {
+    const src = path.join(backupDir, item);
+    const dest = path.join(process.cwd(), item);
+    
+    try {
+      if (fs.statSync(src).isDirectory()) {
+        if (fs.existsSync(dest)) {
+          fs.rmSync(dest, { recursive: true });
+        }
+        copyDirSync(src, dest);
+      } else {
+        fs.copyFileSync(src, dest);
+      }
+      console.log(`✓ Restored: ${item}`);
+    } catch (error) {
+      console.warn(`✗ Failed to restore ${item}:`, error.message);
+    }
+  }
+  
+  // Cleanup
+  try {
+    fs.rmSync(backupDir, { recursive: true });
+    console.log("Cleaned up backup directory");
+  } catch (error) {
+    console.warn("Failed to cleanup backup:", error.message);
+  }
+}
+
+// Simple directory copy
+function copyDirSync(src, dest) {
   if (!fs.existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true });
   }
   
-  const entries = fs.readdirSync(src, { withFileTypes: true });
+  const items = fs.readdirSync(src, { withFileTypes: true });
   
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
+  for (const item of items) {
+    const srcPath = path.join(src, item.name);
+    const destPath = path.join(dest, item.name);
     
-    if (entry.isDirectory()) {
-      await copyDir(srcPath, destPath);
+    if (item.isDirectory()) {
+      copyDirSync(srcPath, destPath);
     } else {
       fs.copyFileSync(srcPath, destPath);
     }
   }
 }
 
-// Update via ZIP from wolf-bot repo
-async function updateViaZip(hotReload = false) {
-  const zipUrl = "https://github.com/777Wolf-dot/wolf-bot/archive/refs/heads/main.zip";
-  const tmpDir = path.join(process.cwd(), "tmp_update_" + Date.now());
-  const zipPath = path.join(tmpDir, "wolf-bot-update.zip");
-  const extractDir = path.join(tmpDir, "extracted");
+// DIRECT DOWNLOAD UPDATE - Bypass git completely
+async function performDirectUpdate() {
+  console.log("=== PERFORMING DIRECT UPDATE ===");
+  
+  const beforeState = getDirectoryHash(process.cwd());
+  const backupDir = await backupImportantFiles();
+  const tempDir = path.join(process.cwd(), '.direct_update_temp');
   
   try {
-    // Clean/create temp directory
-    if (fs.existsSync(tmpDir)) {
-      await run(`rm -rf ${tmpDir}`);
+    // Clean temp dir
+    if (fs.existsSync(tempDir)) {
+      fs.rmSync(tempDir, { recursive: true });
     }
-    fs.mkdirSync(tmpDir, { recursive: true });
-    fs.mkdirSync(extractDir, { recursive: true });
+    fs.mkdirSync(tempDir, { recursive: true });
     
-    console.log(`Downloading ZIP from wolf-bot: ${zipUrl}`);
+    // Download using wget or curl
+    console.log("Downloading latest version...");
+    const zipPath = path.join(tempDir, 'latest.zip');
     
-    // Download using curl or wget
     let downloadCmd;
-    if (await run("which curl").then(() => true).catch(() => false)) {
-      downloadCmd = `curl -L "${zipUrl}" -o "${zipPath}" --connect-timeout 30 --max-time 300 --silent`;
-    } else if (await run("which wget").then(() => true).catch(() => false)) {
-      downloadCmd = `wget "${zipUrl}" -O "${zipPath}" --timeout=30 --tries=3 --quiet`;
-    } else {
-      throw new Error("Neither curl nor wget is available");
+    try {
+      await run("which wget");
+      downloadCmd = `wget https://github.com/777Wolf-dot/wolf-bot/archive/refs/heads/main.zip -O "${zipPath}" --timeout=30 --tries=3`;
+    } catch {
+      downloadCmd = `curl -L https://github.com/777Wolf-dot/wolf-bot/archive/refs/heads/main.zip -o "${zipPath}" --connect-timeout 30 --max-time 300`;
     }
     
     await run(downloadCmd);
     
+    // Check if download succeeded
     if (!fs.existsSync(zipPath) || fs.statSync(zipPath).size === 0) {
-      throw new Error("Downloaded ZIP file is empty or doesn't exist");
+      throw new Error("Download failed or empty");
     }
     
-    console.log(`Downloaded ${fs.statSync(zipPath).size} bytes from wolf-bot`);
+    console.log(`Downloaded: ${fs.statSync(zipPath).size} bytes`);
     
-    // Extract ZIP
-    console.log("Extracting ZIP...");
+    // Extract
+    console.log("Extracting...");
+    await run(`unzip -o "${zipPath}" -d "${tempDir}"`);
     
-    if (await run("which unzip").then(() => true).catch(() => false)) {
-      await run(`unzip -o "${zipPath}" -d "${extractDir}" -x "*.git*"`);
-    } else if (await run("which 7z").then(() => true).catch(() => false)) {
-      await run(`7z x "${zipPath}" -o"${extractDir}" -y -x!*.git*`);
-    } else {
-      throw new Error("No extraction tool found (install unzip or 7z)");
-    }
+    // Find extracted folder
+    const items = fs.readdirSync(tempDir);
+    let sourceDir = tempDir;
     
-    // Find the extracted content
-    const extractedItems = fs.readdirSync(extractDir);
-    let sourceDir = extractDir;
-    
-    // Look for wolf-bot-main folder
-    const wolfBotFolder = extractedItems.find(item => 
-      item.toLowerCase().includes('wolf-bot')
-    );
-    
-    if (wolfBotFolder) {
-      sourceDir = path.join(extractDir, wolfBotFolder);
-      console.log(`Found source folder: ${wolfBotFolder}`);
-    }
-    
-    console.log(`Copying files from ${sourceDir} to ${process.cwd()}`);
-    
-    // For hot reload, track what files were updated
-    const updatedFiles = [];
-    
-    // Copy files, excluding protected items
-    await copyDirectoryContents(sourceDir, process.cwd(), [
-      '.git', 'node_modules', 'tmp', 'logs', 'session', 'data',
-      'settings.js', 'config.json', '.env', 'tmp_*', 'package-lock.json'
-    ]);
-    
-    // Cleanup
-    await run(`rm -rf ${tmpDir}`);
-    
-    return { 
-      success: true, 
-      source: "wolf-bot ZIP",
-      url: zipUrl,
-      updatedFiles: hotReload ? updatedFiles : []
-    };
-  } catch (error) {
-    // Cleanup on error
-    if (fs.existsSync(tmpDir)) {
-      await run(`rm -rf ${tmpDir}`).catch(() => {});
-    }
-    throw new Error(`ZIP update from wolf-bot failed: ${error.message}`);
-  }
-}
-
-// Enhanced settings loader with hot reload support
-async function loadSettings() {
-  const possiblePaths = [
-    path.join(process.cwd(), "settings.js"),
-    path.join(process.cwd(), "config", "settings.js"),
-    path.join(__dirname, "..", "settings.js"),
-    path.join(__dirname, "..", "..", "settings.js"),
-  ];
-  
-  let settings = {};
-  
-  for (const settingsPath of possiblePaths) {
-    try {
-      if (fs.existsSync(settingsPath)) {
-        console.log(`Loading settings from: ${settingsPath}`);
-        
-        // Clear any existing cache
-        clearModuleCache(settingsPath);
-        
-        // Load the module
-        const module = await import(`file://${settingsPath}`);
-        settings = module.default || module;
-        
-        // Watch for changes if not already watching
-        if (!fileWatcher.watchers.has(settingsPath)) {
-          fileWatcher.watchFile(settingsPath, async () => {
-            console.log(`🔄 Settings file changed, reloading...`);
-            try {
-              clearModuleCache(settingsPath);
-              const newModule = await import(`file://${settingsPath}`);
-              Object.assign(settings, newModule.default || newModule);
-              console.log(`✅ Settings reloaded successfully`);
-            } catch (error) {
-              console.error(`❌ Failed to reload settings:`, error);
-            }
-          });
-        }
-        
+    for (const item of items) {
+      if (fs.statSync(path.join(tempDir, item)).isDirectory() && item.includes('wolf-bot')) {
+        sourceDir = path.join(tempDir, item);
         break;
       }
-    } catch (error) {
-      console.warn(`Failed to load settings from ${settingsPath}:`, error.message);
+    }
+    
+    console.log(`Source directory: ${sourceDir}`);
+    
+    // Copy files (excluding protected ones)
+    console.log("Copying files...");
+    const exclude = [
+      '.git',
+      'node_modules',
+      'logs',
+      'session',
+      'data',
+      'settings.js',
+      'config.json',
+      '.env',
+      '.update_backup',
+      '.direct_update_temp'
+    ];
+    
+    copyDirWithExclusions(sourceDir, process.cwd(), exclude);
+    
+    // Restore backups
+    await restoreBackup();
+    
+    // Get after state
+    const afterState = getDirectoryHash(process.cwd());
+    
+    // Get version info if available
+    let version = "unknown";
+    const packagePath = path.join(process.cwd(), 'package.json');
+    if (fs.existsSync(packagePath)) {
+      try {
+        const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+        version = packageJson.version || "unknown";
+      } catch { /* ignore */ }
+    }
+    
+    // Cleanup
+    fs.rmSync(tempDir, { recursive: true });
+    
+    return {
+      success: true,
+      method: 'direct',
+      version,
+      beforeState,
+      afterState,
+      changed: beforeState !== afterState,
+      message: `Direct update to version ${version}`
+    };
+  } catch (error) {
+    console.error("Direct update failed:", error);
+    
+    // Restore backup on error
+    await restoreBackup();
+    
+    // Cleanup
+    if (fs.existsSync(tempDir)) {
+      fs.rmSync(tempDir, { recursive: true });
+    }
+    
+    throw error;
+  }
+}
+
+function copyDirWithExclusions(src, dest, exclude) {
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true });
+  }
+  
+  const items = fs.readdirSync(src, { withFileTypes: true });
+  
+  for (const item of items) {
+    if (exclude.includes(item.name)) {
+      console.log(`Skipping: ${item.name}`);
       continue;
     }
+    
+    const srcPath = path.join(src, item.name);
+    const destPath = path.join(dest, item.name);
+    
+    if (item.isDirectory()) {
+      copyDirWithExclusions(srcPath, destPath, exclude);
+    } else {
+      try {
+        fs.copyFileSync(srcPath, destPath);
+        console.log(`Copied: ${item.name}`);
+      } catch (error) {
+        console.warn(`Failed to copy ${item.name}:`, error.message);
+      }
+    }
   }
-  
-  if (Object.keys(settings).length === 0) {
-    console.warn("No settings file found, using empty settings");
-  }
-  
-  return settings;
 }
 
-// Update progress bar animation
-function getProgressBar(percentage) {
-  const filled = Math.round((percentage / 100) * 10);
-  const empty = 10 - filled;
-  return `█`.repeat(filled) + `▒`.repeat(empty);
+// Install dependencies with verification
+async function installDependenciesWithCheck() {
+  const packagePath = path.join(process.cwd(), 'package.json');
+  if (!fs.existsSync(packagePath)) {
+    return { installed: false, reason: 'no_package_json' };
+  }
+  
+  const nodeModulesPath = path.join(process.cwd(), 'node_modules');
+  const beforeExists = fs.existsSync(nodeModulesPath);
+  
+  try {
+    console.log("Installing dependencies...");
+    
+    // Check package.json modification time
+    const packageStat = fs.statSync(packagePath);
+    const now = new Date();
+    const packageAge = now - packageStat.mtime;
+    
+    // Only install if package.json is new or node_modules doesn't exist
+    if (!beforeExists || packageAge < 3600000) { // 1 hour
+      await run("npm install --no-audit --no-fund --loglevel=error", 300000);
+      
+      const afterExists = fs.existsSync(nodeModulesPath);
+      return { 
+        installed: true, 
+        wasInstalled: !beforeExists && afterExists,
+        message: afterExists ? "Dependencies installed" : "Installation may have failed"
+      };
+    } else {
+      return { 
+        installed: true, 
+        wasInstalled: false,
+        message: "node_modules already exists and package.json is old"
+      };
+    }
+  } catch (error) {
+    console.error("Dependency installation failed:", error.message);
+    return { installed: false, error: error.message };
+  }
 }
 
-// Main command handler - NO RESTART VERSION
+// Verify update actually happened
+function verifyUpdate(beforeState, afterState, updateResult) {
+  const changed = beforeState !== afterState;
+  
+  if (!changed) {
+    console.warn("⚠️ WARNING: No changes detected after update!");
+    console.log(`Before hash: ${beforeState}`);
+    console.log(`After hash:  ${afterState}`);
+    
+    // Check if we're already up to date
+    if (updateResult?.method === 'git' && updateResult.currentCommit === updateResult.upstreamCommit) {
+      return { verified: true, status: 'already_updated', message: 'Already up to date' };
+    }
+    
+    return { verified: false, status: 'no_changes', message: 'Update did not change any files' };
+  }
+  
+  console.log("✅ Changes detected - update verified!");
+  console.log(`Before hash: ${beforeState}`);
+  console.log(`After hash:  ${afterState}`);
+  
+  return { verified: true, status: 'updated', message: 'Files were changed' };
+}
+
+// Main update command with VERIFICATION
 export default {
-  name: "update",
-  description: "Update bot from wolf-bot repository (no restart required)",
-  category: "owner",
+  name: 'update',
+  description: 'Update bot with verification',
+  category: 'owner',
   ownerOnly: true,
 
   async execute(sock, m, args) {
     const jid = m.key.remoteJid;
     const sender = m.key.participant || m.key.remoteJid;
     
-    // Send initial message and store its key for editing
-    const initialMessage = await sock.sendMessage(jid, { 
-      text: "🔄 WolfBot Update System\nChecking for updates...\nInitializing update process..."
-    }, { quoted: m });
-    
-    let updateMessageKey = initialMessage.key;
-    
-    // Edit message helper
-    const editMessage = async (text) => {
+    // Simple message sending
+    const sendMessage = async (text) => {
       try {
-        await sock.sendMessage(jid, { 
-          text,
-          edit: updateMessageKey
-        }, { quoted: m });
+        return await sock.sendMessage(jid, { text }, { quoted: m });
       } catch (error) {
-        console.log("Could not edit message, sending new one:", error.message);
-        const newMsg = await sock.sendMessage(jid, { text }, { quoted: m });
-        updateMessageKey = newMsg.key;
+        console.error("Failed to send message:", error.message);
+        return null;
       }
     };
     
-    // Animate progress
-    const animateProgress = async (baseText, progress = 0) => {
-      const bar = getProgressBar(progress);
-      const progressText = `${baseText}\n${bar} ${progress}%`;
-      await editMessage(progressText);
-    };
+    let statusMsg = await sendMessage("🔄 *WolfBot Update*\nChecking for updates...\n\n⏳ Initializing...");
     
     try {
-      // Load settings
-      await animateProgress("🔍 Loading bot settings...", 10);
-      const settings = await loadSettings();
+      // Quick permission check
+      let settings = {};
+      try {
+        const settingsPath = path.join(process.cwd(), 'settings.js');
+        if (fs.existsSync(settingsPath)) {
+          const module = await import(`file://${settingsPath}`);
+          settings = module.default || module;
+        }
+      } catch { /* ignore */ }
       
-      // Check if owner
       const isOwner = m.key.fromMe || 
         (settings.ownerNumber && sender.includes(settings.ownerNumber)) ||
         (settings.botOwner && sender.includes(settings.botOwner));
       
       if (!isOwner) {
-        await editMessage("❌ Permission Denied\nOnly the bot owner can update the bot.");
+        await sock.sendMessage(jid, { 
+          text: "❌ *Permission Denied*\nOnly the bot owner can update.",
+          edit: statusMsg.key 
+        });
         return;
       }
       
-      // Parse arguments
-      const forceMethod = args[0]?.toLowerCase();
-      const hotReload = args.includes('hot') || args.includes('live') || true; // Always enable hot reload
-      const skipNpm = args.includes('skip-npm') || args.includes('no-npm');
+      // Parse method
+      const method = args[0]?.toLowerCase();
+      const useMethod = method === 'git' ? 'git' : method === 'direct' ? 'direct' : 'auto';
       
-      await animateProgress("📁 Checking update method...", 20);
+      // Step 1: Check current state
+      await sock.sendMessage(jid, { 
+        text: "🔍 *Checking current state...*\nGetting file hash...",
+        edit: statusMsg.key 
+      });
       
-      // Always use panel-friendly method (no git, no restart)
+      const beforeState = getDirectoryHash(process.cwd());
+      console.log(`Initial state hash: ${beforeState}`);
+      
+      // Step 2: Check for updates
+      await sock.sendMessage(jid, { 
+        text: "🌐 *Checking for updates...*\nContacting GitHub...",
+        edit: statusMsg.key 
+      });
+      
+      const updateCheck = await checkForRealUpdates();
+      console.log("Update check result:", updateCheck);
+      
+      // Step 3: Perform update
       let updateResult;
       
-      try {
-        await animateProgress("📦 Downloading updates...", 40);
-        updateResult = await updateFromWolfBotPanel(hotReload);
+      if (useMethod === 'git' || (useMethod === 'auto' && updateCheck.method === 'git' && !updateCheck.error)) {
+        if (!updateCheck.hasUpdates && updateCheck.currentCommit && updateCheck.upstreamCommit) {
+          await sock.sendMessage(jid, { 
+            text: `✅ *Already Up to Date!*\n\nCurrent: ${updateCheck.currentCommit}\nUpstream: ${updateCheck.upstreamCommit}\n\nNo updates available.`,
+            edit: statusMsg.key 
+          });
+          return;
+        }
         
-        await animateProgress("📝 Applying updates...", 60);
+        await sock.sendMessage(jid, { 
+          text: `🔄 *Updating via Git...*\n\nFrom: ${updateCheck.currentCommit || 'none'}\nTo: ${updateCheck.upstreamCommit || 'fetching...'}`,
+          edit: statusMsg.key 
+        });
         
-        // Install dependencies if needed and not skipped
-        if (!skipNpm && updateResult.updatedFiles && updateResult.updatedFiles.some(file => 
-          file.includes('package.json') || file.includes('package-lock.json')
-        )) {
-          await animateProgress("📦 Installing dependencies...", 75);
+        updateResult = await performGitUpdate();
+      } else {
+        await sock.sendMessage(jid, { 
+          text: "📦 *Updating via Direct Download...*\n\nBypassing git, downloading directly from GitHub...",
+          edit: statusMsg.key 
+        });
+        
+        updateResult = await performDirectUpdate();
+      }
+      
+      // Step 4: Verify update
+      await sock.sendMessage(jid, { 
+        text: "🔍 *Verifying update...*\nChecking if files were changed...",
+        edit: statusMsg.key 
+      });
+      
+      const afterState = getDirectoryHash(process.cwd());
+      const verification = verifyUpdate(beforeState, afterState, updateResult);
+      
+      // Step 5: Install dependencies
+      await sock.sendMessage(jid, { 
+        text: "📦 *Installing dependencies...*\nThis may take a moment...",
+        edit: statusMsg.key 
+      });
+      
+      const depsResult = await installDependenciesWithCheck();
+      
+      // Step 6: Show results
+      let resultMessage = `🔄 *Update Results*\n\n`;
+      
+      if (updateResult.method === 'git') {
+        resultMessage += `*Method:* Git\n`;
+        resultMessage += `*Commit:* ${updateResult.newCommit}\n`;
+      } else {
+        resultMessage += `*Method:* Direct Download\n`;
+        resultMessage += `*Version:* ${updateResult.version}\n`;
+      }
+      
+      resultMessage += `\n*Verification:* ${verification.verified ? '✅ PASS' : '⚠️ FAIL'}\n`;
+      resultMessage += `*Status:* ${verification.message}\n`;
+      
+      if (updateCheck.newCommits > 0) {
+        resultMessage += `*New Commits:* ${updateCheck.newCommits}\n`;
+      }
+      
+      resultMessage += `\n*Dependencies:* ${depsResult.installed ? '✅ Installed' : '❌ Failed'}\n`;
+      if (depsResult.message) {
+        resultMessage += `*Note:* ${depsResult.message}\n`;
+      }
+      
+      if (!verification.verified && verification.status !== 'already_updated') {
+        resultMessage += `\n⚠️ *WARNING:* No changes detected!\n`;
+        resultMessage += `The update may not have worked.\n`;
+        resultMessage += `Try: \`!update direct\` for direct download method.`;
+      } else {
+        resultMessage += `\n✅ *Update successful!*`;
+        
+        // Only restart if actually updated
+        if (verification.status === 'updated') {
+          resultMessage += `\n\n🔄 *Restarting bot in 3 seconds...*`;
+          
+          await sock.sendMessage(jid, { 
+            text: resultMessage,
+            edit: statusMsg.key 
+          });
+          
+          // Wait and restart
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          
           try {
-            const npmResult = await runSafe("npm install --no-audit --no-fund --loglevel=error");
-            if (npmResult.success) {
-              await animateProgress("✅ Dependencies installed", 85);
-            } else {
-              await animateProgress("⚠️ Dependency install had issues", 85);
-              console.warn("npm install issues:", npmResult.stderr);
-            }
-          } catch (npmError) {
-            console.error("npm install failed:", npmError);
-            await animateProgress("⚠️ Dependency install failed", 85);
+            await run("pm2 restart all");
+          } catch {
+            await run("npm restart");
           }
-        }
-        
-        // Hot reload updated modules
-        if (hotReload && updateResult.updatedFiles && updateResult.updatedFiles.length > 0) {
-          await animateProgress("🔄 Hot reloading modules...", 90);
-          
-          try {
-            // Reload command modules
-            const commandFiles = updateResult.updatedFiles.filter(file => 
-              file.includes('/commands/') && file.endsWith('.js')
-            );
-            
-            // Reload handler modules
-            const handlerFiles = updateResult.updatedFiles.filter(file => 
-              file.includes('/handlers/') && file.endsWith('.js')
-            );
-            
-            const modulesToReload = [...commandFiles, ...handlerFiles];
-            
-            if (modulesToReload.length > 0) {
-              const reloadResults = await hotReloadModules(modulesToReload);
-              const successCount = reloadResults.filter(r => r.success).length;
-              
-              console.log(`Hot reloaded ${successCount}/${modulesToReload.length} modules`);
-            }
-          } catch (reloadError) {
-            console.error("Hot reload failed:", reloadError);
-          }
-        }
-        
-        // Success message
-        let successMessage = "✅ Update Complete!\n";
-        successMessage += `Source: ${updateResult.source}\n`;
-        
-        if (updateResult.updatedFiles && updateResult.updatedFiles.length > 0) {
-          successMessage += `Files Updated: ${updateResult.updatedFiles.length}\n`;
-        }
-        
-        successMessage += "✅ Bot continues running - No restart needed!\n";
-        successMessage += "Some changes may require command reload: `!reload`";
-        
-        await editMessage(successMessage);
-        
-      } catch (updateError) {
-        console.error("Update failed:", updateError);
-        
-        // Try alternative simple method
-        try {
-          await animateProgress("🔄 Trying alternative update...", 50);
-          
-          // Simple file copy method
-          await preserveLocalFiles();
-          
-          // Download main files directly
-          const mainFiles = ['index.js', 'package.json', 'README.md'];
-          const filesUpdated = [];
-          
-          for (const file of mainFiles) {
-            try {
-              const fileUrl = `https://raw.githubusercontent.com/777Wolf-dot/wolf-bot/main/${file}`;
-              const destPath = path.join(process.cwd(), file);
-              
-              if (await run("which curl").then(() => true).catch(() => false)) {
-                await run(`curl -L "${fileUrl}" -o "${destPath}" --silent`);
-              } else {
-                await run(`wget "${fileUrl}" -O "${destPath}" --quiet`);
-              }
-              
-              if (fs.existsSync(destPath)) {
-                filesUpdated.push(file);
-              }
-            } catch (fileError) {
-              console.warn(`Could not update ${file}:`, fileError.message);
-            }
-          }
-          
-          await editMessage(
-            `✅ Partial Update Applied\n` +
-            `Updated ${filesUpdated.length} main files\n` +
-            `Bot continues running\n` +
-            `For full update, use manual method.`
-          );
-          
-        } catch (finalError) {
-          throw new Error(`All update methods failed: ${updateError.message}`);
+          return;
         }
       }
       
+      await sock.sendMessage(jid, { 
+        text: resultMessage,
+        edit: statusMsg.key 
+      });
+      
     } catch (error) {
-      console.error("Update error:", error);
+      console.error("Update failed:", error);
       
-      let errorMessage = 
-        "❌ Update Failed\n" +
-        `Error: ${error.message}\n\n`;
-      
-      errorMessage += "Suggestions:\n";
-      errorMessage += "• Check internet connection\n";
-      errorMessage += "• Ensure bot has write permissions\n";
-      errorMessage += "• Try: `!update skip-npm` (skip dependency install)\n";
-      errorMessage += "• Manual update: Download from https://github.com/777Wolf-dot/wolf-bot";
-      
-      await editMessage(errorMessage);
+      await sock.sendMessage(jid, { 
+        text: `❌ *Update Failed*\n\n*Error:* ${error.message}\n\n*Debug Info:*\n- Check panel logs\n- Try: \`!update direct\`\n- SSH and run manually`,
+        edit: statusMsg.key 
+      });
     }
   }
 };
-
-// Dynamic command loader with hot reload
-export class DynamicCommandLoader {
-  constructor(commandsDir = path.join(process.cwd(), 'commands')) {
-    this.commandsDir = commandsDir;
-    this.commands = new Map();
-    this.commandFiles = new Map();
-  }
-  
-  async loadAllCommands() {
-    console.log(`📂 Loading commands from: ${this.commandsDir}`);
-    
-    if (!fs.existsSync(this.commandsDir)) {
-      console.warn(`Commands directory not found: ${this.commandsDir}`);
-      return this.commands;
-    }
-    
-    const files = fs.readdirSync(this.commandsDir)
-      .filter(file => file.endsWith('.js') || file.endsWith('.mjs'));
-    
-    for (const file of files) {
-      await this.loadCommand(file);
-    }
-    
-    // Watch for changes
-    this.watchCommands();
-    
-    return this.commands;
-  }
-  
-  async loadCommand(filename) {
-    const filePath = path.join(this.commandsDir, filename);
-    
-    try {
-      // Clear cache
-      clearModuleCache(filePath);
-      
-      // Import the module
-      const module = await import(`file://${filePath}`);
-      const command = module.default || module;
-      
-      if (command && command.name) {
-        this.commands.set(command.name, command);
-        this.commandFiles.set(command.name, filePath);
-        console.log(`✅ Loaded command: ${command.name}`);
-        return command;
-      } else {
-        console.warn(`Invalid command module in ${filename}`);
-      }
-    } catch (error) {
-      console.error(`❌ Failed to load command ${filename}:`, error);
-    }
-    
-    return null;
-  }
-  
-  watchCommands() {
-    // Watch the commands directory for changes
-    fileWatcher.watchDirectory(this.commandsDir, async (changedPath) => {
-      const filename = path.basename(changedPath);
-      
-      if (filename.endsWith('.js') || filename.endsWith('.mjs')) {
-        console.log(`🔄 Command file changed: ${filename}`);
-        
-        // Find which command this file belongs to
-        for (const [cmdName, cmdPath] of this.commandFiles.entries()) {
-          if (cmdPath === changedPath) {
-            // Reload the command
-            await this.loadCommand(filename);
-            console.log(`✅ Reloaded command: ${cmdName}`);
-            break;
-          }
-        }
-      }
-    });
-  }
-  
-  getCommand(name) {
-    return this.commands.get(name);
-  }
-  
-  getAllCommands() {
-    return Array.from(this.commands.values());
-  }
-}
