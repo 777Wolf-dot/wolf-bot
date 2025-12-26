@@ -1178,21 +1178,19 @@ case 3: {
 
 
 
-
-      case 4: {
+case 4: {
   // 🖼️ Full info + image + commands
   
-  // Add these helper functions (same as other cases)
+  // Add these helper functions at the start of case 4 (same as case 7)
   const getBotMode = () => {
     try {
-      // Check multiple possible locations with priority order
       const possiblePaths = [
-        './bot_mode.json',  // Root directory (most likely)
-        path.join(__dirname, 'bot_mode.json'),  // Same directory as menu
-        path.join(__dirname, '../bot_mode.json'),  // Parent directory
-        path.join(__dirname, '../../bot_mode.json'),  // 2 levels up
-        path.join(__dirname, '../../../bot_mode.json'),  // 3 levels up
-        path.join(__dirname, '../commands/owner/bot_mode.json'),  // Owner commands directory
+        './bot_mode.json',
+        path.join(__dirname, 'bot_mode.json'),
+        path.join(__dirname, '../bot_mode.json'),
+        path.join(__dirname, '../../bot_mode.json'),
+        path.join(__dirname, '../../../bot_mode.json'),
+        path.join(__dirname, '../commands/owner/bot_mode.json'),
       ];
       
       for (const modePath of possiblePaths) {
@@ -1201,7 +1199,6 @@ case 3: {
             const modeData = JSON.parse(fs.readFileSync(modePath, 'utf8'));
             
             if (modeData.mode) {
-              // Format for display
               let displayMode;
               switch(modeData.mode.toLowerCase()) {
                 case 'public':
@@ -1210,15 +1207,21 @@ case 3: {
                 case 'silent':
                   displayMode = '🔇 Silent';
                   break;
+                case 'private':
+                  displayMode = '🔒 Private';
+                  break;
+                case 'group-only':
+                  displayMode = '👥 Group Only';
+                  break;
+                case 'maintenance':
+                  displayMode = '🛠️ Maintenance';
+                  break;
                 default:
                   displayMode = `⚙️ ${modeData.mode.charAt(0).toUpperCase() + modeData.mode.slice(1)}`;
               }
-              
               return displayMode;
             }
-          } catch (parseError) {
-            // Continue to next path
-          }
+          } catch (parseError) {}
         }
       }
       
@@ -1233,23 +1236,20 @@ case 3: {
         return process.env.BOT_MODE === 'silent' ? '🔇 Silent' : '🌍 Public';
       }
       
-    } catch (error) {
-      // Error handling
-    }
+    } catch (error) {}
     
-    return '🌍 Public'; // Default fallback
+    return '🌍 Public';
   };
   
   const getBotName = () => {
     try {
-      // Check multiple possible locations with priority order
       const possiblePaths = [
-        './bot_settings.json',  // Root directory (most likely)
-        path.join(__dirname, 'bot_settings.json'),  // Same directory as menu
-        path.join(__dirname, '../bot_settings.json'),  // Parent directory
-        path.join(__dirname, '../../bot_settings.json'),  // 2 levels up
-        path.join(__dirname, '../../../bot_settings.json'),  // 3 levels up
-        path.join(__dirname, '../commands/owner/bot_settings.json'),  // Owner commands directory
+        './bot_settings.json',
+        path.join(__dirname, 'bot_settings.json'),
+        path.join(__dirname, '../bot_settings.json'),
+        path.join(__dirname, '../../bot_settings.json'),
+        path.join(__dirname, '../../../bot_settings.json'),
+        path.join(__dirname, '../commands/owner/bot_settings.json'),
       ];
       
       for (const settingsPath of possiblePaths) {
@@ -1261,31 +1261,345 @@ case 3: {
             if (settings.botName && settings.botName.trim() !== '') {
               return settings.botName.trim();
             }
-          } catch (parseError) {
-            // Continue to next path
-          }
+          } catch (parseError) {}
         }
       }
       
-      // Fallback to global variables
       if (global.BOT_NAME) {
         return global.BOT_NAME;
       }
       
-      // Fallback to environment variable
       if (process.env.BOT_NAME) {
         return process.env.BOT_NAME;
       }
       
-    } catch (error) {
-      // Error handling
-    }
+    } catch (error) {}
     
-    return 'WOLFBOT'; // Default fallback
+    return 'WOLFBOT';
   };
   
-  // Load bot name using the helper function
+  const getOwnerName = () => {
+    try {
+      const botSettingsPaths = [
+        './bot_settings.json',
+        path.join(__dirname, 'bot_settings.json'),
+        path.join(__dirname, '../bot_settings.json'),
+        path.join(__dirname, '../../bot_settings.json'),
+      ];
+      
+      for (const settingsPath of botSettingsPaths) {
+        if (fs.existsSync(settingsPath)) {
+          try {
+            const settingsData = fs.readFileSync(settingsPath, 'utf8');
+            const settings = JSON.parse(settingsData);
+            
+            if (settings.ownerName && settings.ownerName.trim() !== '') {
+              return settings.ownerName.trim();
+            }
+          } catch (parseError) {}
+        }
+      }
+      
+      const ownerPath = path.join(__dirname, 'owner.json');
+      if (fs.existsSync(ownerPath)) {
+        const ownerData = fs.readFileSync(ownerPath, 'utf8');
+        const ownerInfo = JSON.parse(ownerData);
+        
+        if (ownerInfo.owner && ownerInfo.owner.trim() !== '') {
+          return ownerInfo.owner.trim();
+        } else if (ownerInfo.number && ownerInfo.number.trim() !== '') {
+          return ownerInfo.number.trim();
+        } else if (ownerInfo.phone && ownerInfo.phone.trim() !== '') {
+          return ownerInfo.phone.trim();
+        } else if (ownerInfo.contact && ownerInfo.contact.trim() !== '') {
+          return ownerInfo.contact.trim();
+        } else if (Array.isArray(ownerInfo) && ownerInfo.length > 0) {
+          const owner = typeof ownerInfo[0] === 'string' ? ownerInfo[0] : "Unknown";
+          return owner;
+        }
+      }
+      
+      if (global.OWNER_NAME) {
+        return global.OWNER_NAME;
+      }
+      if (global.owner) {
+        return global.owner;
+      }
+      if (process.env.OWNER_NUMBER) {
+        return process.env.OWNER_NUMBER;
+      }
+      
+    } catch (error) {}
+    
+    return 'Unknown';
+  };
+  
+  const getBotPrefix = () => {
+    try {
+      const botSettingsPaths = [
+        './bot_settings.json',
+        path.join(__dirname, 'bot_settings.json'),
+        path.join(__dirname, '../bot_settings.json'),
+        path.join(__dirname, '../../bot_settings.json'),
+      ];
+      
+      for (const settingsPath of botSettingsPaths) {
+        if (fs.existsSync(settingsPath)) {
+          try {
+            const settingsData = fs.readFileSync(settingsPath, 'utf8');
+            const settings = JSON.parse(settingsData);
+            
+            if (settings.prefix && settings.prefix.trim() !== '') {
+              return settings.prefix.trim();
+            }
+          } catch (parseError) {}
+        }
+      }
+      
+      if (global.prefix) {
+        return global.prefix;
+      }
+      
+      if (process.env.PREFIX) {
+        return process.env.PREFIX;
+      }
+      
+    } catch (error) {}
+    
+    return '.';
+  };
+  
+  const getBotVersion = () => {
+    try {
+      const ownerPath = path.join(__dirname, 'owner.json');
+      if (fs.existsSync(ownerPath)) {
+        const ownerData = fs.readFileSync(ownerPath, 'utf8');
+        const ownerInfo = JSON.parse(ownerData);
+        
+        if (ownerInfo.version && ownerInfo.version.trim() !== '') {
+          return ownerInfo.version.trim();
+        }
+      }
+      
+      const botSettingsPaths = [
+        './bot_settings.json',
+        path.join(__dirname, 'bot_settings.json'),
+        path.join(__dirname, '../bot_settings.json'),
+      ];
+      
+      for (const settingsPath of botSettingsPaths) {
+        if (fs.existsSync(settingsPath)) {
+          try {
+            const settingsData = fs.readFileSync(settingsPath, 'utf8');
+            const settings = JSON.parse(settingsData);
+            
+            if (settings.version && settings.version.trim() !== '') {
+              return settings.version.trim();
+            }
+          } catch (parseError) {}
+        }
+      }
+      
+      if (global.VERSION) {
+        return global.VERSION;
+      }
+      
+      if (global.version) {
+        return global.version;
+      }
+      
+      if (process.env.VERSION) {
+        return process.env.VERSION;
+      }
+      
+    } catch (error) {}
+    
+    return 'v1.0.0';
+  };
+  
+  const getDeploymentPlatform = () => {
+    // Detect deployment platform
+    if (process.env.REPL_ID || process.env.REPLIT_DB_URL) {
+      return {
+        name: 'Replit',
+        status: 'Active',
+        icon: '🌀'
+      };
+    } else if (process.env.HEROKU_APP_NAME) {
+      return {
+        name: 'Heroku',
+        status: 'Active',
+        icon: '🦸'
+      };
+    } else if (process.env.RENDER_SERVICE_ID) {
+      return {
+        name: 'Render',
+        status: 'Active',
+        icon: '⚡'
+      };
+    } else if (process.env.RAILWAY_ENVIRONMENT) {
+      return {
+        name: 'Railway',
+        status: 'Active',
+        icon: '🚂'
+      };
+    } else if (process.env.VERCEL) {
+      return {
+        name: 'Vercel',
+        status: 'Active',
+        icon: '▲'
+      };
+    } else if (process.env.GLITCH_PROJECT_REMIX) {
+      return {
+        name: 'Glitch',
+        status: 'Active',
+        icon: '🎏'
+      };
+    } else if (process.env.KOYEB) {
+      return {
+        name: 'Koyeb',
+        status: 'Active',
+        icon: '☁️'
+      };
+    } else if (process.env.CYCLIC_URL) {
+      return {
+        name: 'Cyclic',
+        status: 'Active',
+        icon: '🔄'
+      };
+    } else if (process.env.PANEL) {
+      return {
+        name: 'PteroPanel',
+        status: 'Active',
+        icon: '🖥️'
+      };
+    } else if (process.env.SSH_CONNECTION || process.env.SSH_CLIENT) {
+      return {
+        name: 'VPS/SSH',
+        status: 'Active',
+        icon: '🖥️'
+      };
+    } else if (process.platform === 'win32') {
+      return {
+        name: 'Windows PC',
+        status: 'Active',
+        icon: '💻'
+      };
+    } else if (process.platform === 'linux') {
+      return {
+        name: 'Linux VPS',
+        status: 'Active',
+        icon: '🐧'
+      };
+    } else if (process.platform === 'darwin') {
+      return {
+        name: 'MacOS',
+        status: 'Active',
+        icon: '🍎'
+      };
+    } else {
+      return {
+        name: 'Local Machine',
+        status: 'Active',
+        icon: '🏠'
+      };
+    }
+  };
+  
+  const getTimeZone = () => {
+    try {
+      // Try to get timezone from system
+      if (process.env.TZ) {
+        return process.env.TZ;
+      }
+      
+      // Try to detect from Intl
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (timeZone) {
+        return timeZone;
+      }
+      
+      // Fallback based on environment
+      if (process.env.REPL_ID) {
+        return 'America/Los_Angeles'; // Replit default
+      } else if (process.env.HEROKU_APP_NAME) {
+        return 'UTC'; // Heroku default
+      } else if (process.env.RENDER) {
+        return 'UTC'; // Render default
+      }
+      
+    } catch (error) {}
+    
+    return 'UTC';
+  };
+  
+  const getCorePower = () => {
+    try {
+      const cpus = os.cpus();
+      if (cpus && cpus.length > 0) {
+        const model = cpus[0].model;
+        const cores = cpus.length;
+        const speed = cpus[0].speed;
+        
+        // Calculate performance score
+        let performance = 'Low';
+        let icon = '🐢';
+        
+        if (cores >= 8 && speed >= 3000) {
+          performance = 'Ultra';
+          icon = '🚀';
+        } else if (cores >= 4 && speed >= 2500) {
+          performance = 'High';
+          icon = '⚡';
+        } else if (cores >= 2 && speed >= 2000) {
+          performance = 'Medium';
+          icon = '⚙️';
+        }
+        
+        return {
+          cores: cores,
+          speed: `${(speed / 1000).toFixed(1)} GHz`,
+          performance: performance,
+          icon: icon,
+          model: model.length > 30 ? model.substring(0, 30) + '...' : model
+        };
+      }
+    } catch (error) {}
+    
+    return {
+      cores: 'N/A',
+      speed: 'N/A',
+      performance: 'Unknown',
+      icon: '❓',
+      model: 'Unknown CPU'
+    };
+  };
+  
+  // Get current time and date
+  const now = new Date();
+  const currentTime = now.toLocaleTimeString('en-US', { 
+    hour12: true, 
+    hour: '2-digit', 
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  
+  const currentDate = now.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  // Load bot information using helper functions
   const botName = getBotName();
+  const ownerName = getOwnerName();
+  const botPrefix = getBotPrefix();
+  const botVersion = getBotVersion();
+  const botMode = getBotMode();
+  const deploymentPlatform = getDeploymentPlatform();
+  const timeZone = getTimeZone();
+  const corePower = getCorePower();
   
   const start = performance.now();
   const uptime = process.uptime();
@@ -1296,42 +1610,27 @@ case 3: {
   const speed = (performance.now() - start).toFixed(2);
   const usedMem = (process.memoryUsage().rss / 1024 / 1024).toFixed(1);
   const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(0);
-  const memPercent = Math.min(((usedMem / (totalMem * 1024)) * 100).toFixed(0), 100);
-  const memBar = "█".repeat(Math.floor(memPercent / 10)) + "░".repeat(10 - Math.floor(memPercent / 10));
-
-  // Load owner from owner.json file (improved version)
-  let ownerNumber = "Unknown";
-  try {
-    const ownerPath = path.join(__dirname, 'owner.json');
-    if (fs.existsSync(ownerPath)) {
-      const ownerData = fs.readFileSync(ownerPath, 'utf8');
-      const ownerInfo = JSON.parse(ownerData);
-      
-      // Try different possible field names in owner.json
-      if (ownerInfo.owner && ownerInfo.owner.trim() !== '') {
-        ownerNumber = ownerInfo.owner.trim();
-      } else if (ownerInfo.number && ownerInfo.number.trim() !== '') {
-        ownerNumber = ownerInfo.number.trim();
-      } else if (ownerInfo.phone && ownerInfo.phone.trim() !== '') {
-        ownerNumber = ownerInfo.phone.trim();
-      } else if (ownerInfo.contact && ownerInfo.contact.trim() !== '') {
-        ownerNumber = ownerInfo.contact.trim();
-      } else if (Array.isArray(ownerInfo) && ownerInfo.length > 0) {
-        // If it's an array, take the first one
-        ownerNumber = typeof ownerInfo[0] === 'string' ? ownerInfo[0] : "Unknown";
-      }
-    }
-  } catch (ownerError) {
-    // Fallback to environment variable or global
-    ownerNumber = global.owner || process.env.OWNER_NUMBER || "Unknown";
-  }
-
-  // Load bot mode using the helper function
-  const botMode = getBotMode();
-
-  const host = process.env.REPL_ID ? "Replit" : process.env.HEROKU_APP_NAME ? "Heroku" : process.env.RENDER ? "Render" : "Panel";
-  const prefix = global.prefix || ".";
-  const version = global.version || "v2.6.2";
+  
+  // SAFE CALCULATION: Prevent negative or invalid percentages
+  const memPercentNum = ((usedMem / (totalMem * 1024)) * 100);
+  const memPercent = Math.min(Math.max(parseFloat(memPercentNum.toFixed(0)), 0), 100);
+  
+  // SAFE BAR CALCULATION: Prevent negative repeat values
+  const filledBars = Math.max(Math.floor(memPercent / 10), 0);
+  const emptyBars = Math.max(10 - filledBars, 0);
+  const memBar = "█".repeat(filledBars) + "░".repeat(emptyBars);
+  
+  // Get Node.js version
+  const nodeVersion = process.version;
+  
+  // Calculate command speed in milliseconds
+  const commandSpeed = `${speed}ms`;
+  
+  // Get CPU load with safe calculation
+  const cpuLoad = Math.min(parseFloat(os.loadavg()[0].toFixed(2)), 5);
+  const cpuLoadBars = Math.max(Math.floor(cpuLoad), 0);
+  const cpuLoadEmpty = Math.max(5 - cpuLoadBars, 0);
+  const cpuLoadBar = "█".repeat(cpuLoadBars) + "░".repeat(cpuLoadEmpty);
 
   const imgPath1 = path.join(__dirname, "media", "wolfbot.jpg");
   const imgPath2 = path.join(__dirname, "../media/wolfbot.jpg");
@@ -1343,17 +1642,26 @@ case 3: {
   const buffer = fs.readFileSync(imagePath);
 
   const infoCaption = `
-│────── ${botName} ──────│
+│────── ${botName} MENU ──────│
+┃ Date: ${currentDate}
+┃ Time: ${currentTime}
 ┃ User: ${m.pushName || "Anonymous"}
-┃ Owner: ${ownerNumber}
+┃ Owner: ${ownerName}
 ┃ Mode: ${botMode}
-┃ Host: ${host}
-┃ Speed: ${speed} ms
-┃ Prefix: [ ${prefix} ]
+┃ Prefix: [ ${botPrefix} ]
+┃ Version: ${botVersion}
+┃ Panel: ${deploymentPlatform.name}
+┃ Status: ${deploymentPlatform.status}
+┃ Speed: ${commandSpeed}
+┃ CPU Load: ${cpuLoadBar} ${cpuLoad}
 ┃ Uptime: ${uptimeStr}
-┃ Version: ${version}
 ┃ Usage: ${usedMem} MB of ${totalMem} GB
 ┃ RAM: ${memBar} ${memPercent}%
+┃ ${corePower.icon} Cores: ${corePower.cores} @ ${corePower.speed}
+┃ Power: ${corePower.performance} Performance
+┃ CPU: ${corePower.model}
+┃ Node: ${nodeVersion}
+┃ Timezone: ${timeZone}
 └────────────────
 `;
 
@@ -1362,15 +1670,28 @@ case 3: {
 │ │ promote
 │ │ demote
 │ │ kick
+│ │ kickall
 │ │ ban
 │ │ unban
 │ │ banlist
 │ │ clearbanlist
 │ │ warn
+│ │ resetwarn
+│ │ setwarn
 │ │ mute
 │ │ unmute
 │ │ gctime
+│ │ antileave
+│ │ antilink
+│ │ welcome
 │ │ antisticker
+│ │ antiviewonce
+│ │ antiimage
+│ │ antivideo
+│ │ antiaudio
+│ │ antimention
+│ │ antistatusmention
+│ │ antigrouplink
 │ │ groupinfo
 │ │ tagadmin
 │ │ tagall
@@ -1380,47 +1701,72 @@ case 3: {
 │ │ revoke
 │ │ setdesc
 │ │ fangtrace
-│ │ disp
-│ │ kickall
 │ │ getgpp
-│ │ vcf
+│ └─────────────────
+
+│ ┌── MENU COMMANDS ──
+│ │ togglemenuinfo
+│ │ setmenuimage
+│ │ resetmenuinfo
+│ │ menustyle
 │ └─────────────────
 
 │ ┌── OWNER CONTROLS ──
+│ │ setbotname
+│ │ setowner
 │ │ setprefix
+│ │ iamowner
+│ │ about
 │ │ block
 │ │ unblock
+│ │ blockdetect
 │ │ silent
-│ │ setbotname
-│ │ setpp
-│ │ restart
-│ │ autotype
+│ │ anticall
 │ │ mode
+│ │ online
+│ │ setpp
+│ │ repo
+│ │ restart
+│ │ workingreload
+│ │ reloadenv
+│ │ getsettings
+│ │ setsetting
+│ │ test
+│ │ disk
+│ │ hostip
+│ │ findcommands
+│ └─────────────────
+
+│ ┌── AUTOMATION ──
+│ │ autoread
+│ │ autotyping
+│ │ autorecording
+│ │ autoreact
+│ │ autoreactstatus
+│ │ autobio
+│ │ autorec
 │ └─────────────────
 
 │ ┌── GENERAL UTILITIES ─
 │ │ ping
+│ │ ping2
 │ │ time
-│ │ uptime
-│ │ about
-│ │ repo
-│ │ alive
+│ │ connection
 │ │ define
-│ │ wiki
 │ │ news
-│ │ weather
 │ │ covid
-│ │ quote
-│ │ translate
+│ │ iplookup
+│ │ getip
+│ │ getpp
+│ │ getgpp
+│ │ prefixinfo
 │ │ shorturl
 │ │ qrencode
-│ │ qrdecode
-│ │ reverseimage
-│ │ toaudio
-│ │ tovoice
+│ │ take
+│ │ imgbb
+│ │ tiktok
 │ │ save
-│ │ goodmorning
-│ │ goodnight
+│ │ pair
 │ └─────────────────
 
 │ ┌── MUSIC & FUN ──
@@ -1435,18 +1781,20 @@ case 3: {
 │ └─────────────────
 
 │ ┌── MEDIA & AI ──
-│ │ tiktokdl
-│ │ instagram
 │ │ youtube
+│ │ tiktok
+│ │ instagram
 │ │ facebook
 │ │ snapchat
-│ │ gemini
+│ │ apk
 │ │ gpt
+│ │ gemini
 │ │ deepseek
+│ │ deepseek+
+│ │ analyze
+│ │ suno
 │ │ wolfbot
 │ │ videogen
-│ │ suno
-│ │ analyze
 │ └─────────────────
 
 │ ┌── IMAGE TOOLS ──
@@ -1462,9 +1810,6 @@ case 3: {
 │ │ shodan
 │ │ iplookup
 │ │ getip
-│ │ pwcheck
-│ │ portscan
-│ │ subdomains
 │ └─────────────────
 
 │ ┌── LOGO DESIGN ──
@@ -1485,43 +1830,51 @@ case 3: {
 │ │ rainbowlogo
 │ │ sunlogo
 │ │ moonlogo
-│ │ volcanologo
-│ │ thunderlogo
-│ │ windlogo
-│ │ earthlogo
-│ │ waterlogo
-│ │ forestlogo
 │ │ dragonlogo
 │ │ phoenixlogo
 │ │ wizardlogo
 │ │ crystallogo
-│ │ magiclogo
 │ │ darkmagiclogo
 │ │ shadowlogo
 │ │ smokelogo
 │ │ bloodlogo
-│ │ shadowflamelogo
-│ │ venomlogo
-│ │ skullogo
-│ │ nightlogo
-│ │ hellfirelogo
 │ │ neonlogo
 │ │ glowlogo
-│ │ lightlogo
-│ │ neonflamelogo
-│ │ cyberlogo
 │ │ matrixlogo
-│ │ techlogo
-│ │ hologramlogo
-│ │ vaporlogo
-│ │ pixelogo
-│ │ futuristiclogo
-│ │ digitalogo
-│ │ cartoonlogo
-│ │ comiclogo
-│ │ graffitilogo
-│ │ retrologo
-│ │ popartlogo
+│ └─────────────────
+
+│ ┌── GITHUB COMMANDS ──
+│ │ gitclone
+│ │ gitinfo
+│ │ repo
+│ │ commits
+│ │ stars
+│ │ watchers
+│ │ release
+│ └─────────────────
+
+│ ┌── ANIME COMMANDS ──
+│ │ awoo
+│ │ bj
+│ │ bully
+│ │ cringe
+│ │ cry
+│ │ cuddle
+│ │ dance
+│ │ glomp
+│ │ highfive
+│ │ kill
+│ │ kiss
+│ │ lick
+│ │ megumin
+│ │ neko
+│ │ pat
+│ │ shinobu
+│ │ trap
+│ │ trap2
+│ │ waifu
+│ │ wink
+│ │ yeet
 │ └─────────────────
 
 │── 🐺 POWERED BY WOLFTECH 🐺 ──
@@ -1530,8 +1883,6 @@ case 3: {
   await sock.sendMessage(jid, { image: buffer, caption: infoCaption + commandsText, mimetype: "image/jpeg" }, { quoted: m });
   break;
 }
-
-
 
 
 
