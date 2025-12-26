@@ -1,636 +1,520 @@
-// // restart.js - GUARANTEED WORKING RESTART COMMAND
-// import { exec } from 'child_process';
-// import { promisify } from 'util';
-// import fs from 'fs';
-// import path from 'path';
-// import { fileURLToPath } from 'url';
+import { exec } from "child_process";
+import { promisify } from "util";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import os from "os";
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-
-// const execAsync = promisify(exec);
-
-// export default {
-//   name: "restart",
-//   aliases: ["reboot", "refresh", "r"],
-//   description: "Restart the bot - GUARANTEED WORKING",
-//   category: "owner",
-//   isOwner: true,
-  
-//   async execute(sock, m, args) {
-//     const jid = m.key.remoteJid;
-    
-//     try {
-//       // ============================================
-//       // STEP 1: AUTHORIZATION CHECK
-//       // ============================================
-//       let isAuthorized = false;
-      
-//       // Method 1: Check if message is from bot itself
-//       if (m.key.fromMe) isAuthorized = true;
-      
-//       // Method 2: Check settings for owner number
-//       try {
-//         const settings = await import(`file://${path.join(__dirname, '../settings.js')}`);
-//         const ownerNumber = settings.default?.ownerNumber || settings.default?.botOwner;
-        
-//         if (ownerNumber) {
-//           const senderId = m.key.participant || m.key.remoteJid;
-//           if (senderId.includes(ownerNumber.replace('@s.whatsapp.net', ''))) {
-//             isAuthorized = true;
-//           }
-//         }
-//       } catch (e) {
-//         console.log('[RESTART] Could not load settings:', e.message);
-//       }
-      
-//       // Method 3: Hardcoded owner check (SAFEST)
-//       const HARDCODED_OWNERS = [
-//         '919876543210@s.whatsapp.net', // Replace with YOUR number
-//         // Add more numbers if needed
-//       ];
-      
-//       const senderId = m.key.participant || m.key.remoteJid;
-//       if (HARDCODED_OWNERS.some(owner => senderId.includes(owner.replace('@s.whatsapp.net', '')))) {
-//         isAuthorized = true;
-//       }
-      
-//       if (!isAuthorized) {
-//         await sock.sendMessage(jid, { 
-//           text: '❌ *PERMISSION DENIED*\n\nOnly bot owner can use this command!' 
-//         }, { quoted: m });
-//         return;
-//       }
-      
-//       console.log(`🚀 [RESTART] Initiated by: ${m.pushName || 'Unknown'}`);
-      
-//       // ============================================
-//       // STEP 2: SEND INITIAL MESSAGE
-//       // ============================================
-//       const statusMsg = await sock.sendMessage(jid, { 
-//         text: `🔁 *BOT RESTART INITIATED*\n\n✅ Owner verified\n⏳ Starting restart sequence...` 
-//       }, { quoted: m });
-      
-//       // ============================================
-//       // STEP 3: CRITICAL SESSION CLEANUP (PREVENTS 428 ERROR)
-//       // ============================================
-//       await sock.sendMessage(jid, { 
-//         text: `🔁 *BOT RESTART INITIATED*\n\n✅ Owner verified ✅\n🧹 Cleaning session data...`,
-//         edit: statusMsg.key
-//       });
-      
-//       const sessionPath = path.join(process.cwd(), 'session');
-//       if (fs.existsSync(sessionPath)) {
-//         console.log(`[RESTART] Cleaning session: ${sessionPath}`);
-        
-//         // Files that cause 428 error - MUST DELETE
-//         const criticalFiles = [
-//           'app-state-sync-version.json',  // MAIN CULPRIT for 428 error
-//           'message-history.json',          // Also causes issues
-//           'sender-key-memory.json',        // Security data
-//           'creds.json',                    // Force fresh login
-//         ];
-        
-//         // Optional files to clean
-//         const optionalFiles = [
-//           'baileys_store.json',
-//           'baileys_store_multi.json',
-//           'pre-key-ids.json',
-//           'session-ids.json'
-//         ];
-        
-//         let deletedCount = 0;
-        
-//         // Delete critical files
-//         for (const file of criticalFiles) {
-//           const filePath = path.join(sessionPath, file);
-//           if (fs.existsSync(filePath)) {
-//             try {
-//               fs.unlinkSync(filePath);
-//               deletedCount++;
-//               console.log(`✓ Deleted: ${file}`);
-//             } catch (e) {
-//               console.log(`✗ Failed to delete ${file}:`, e.message);
-//             }
-//           }
-//         }
-        
-//         // Try to delete optional files
-//         for (const file of optionalFiles) {
-//           const filePath = path.join(sessionPath, file);
-//           if (fs.existsSync(filePath)) {
-//             try {
-//               fs.unlinkSync(filePath);
-//               console.log(`✓ Deleted (optional): ${file}`);
-//             } catch (e) {}
-//           }
-//         }
-        
-//         console.log(`[RESTART] Deleted ${deletedCount} session files`);
-        
-//         if (deletedCount === 0) {
-//           console.log('[RESTART] No session files found to delete');
-//         }
-//       } else {
-//         console.log('[RESTART] No session folder found');
-//       }
-      
-//       // ============================================
-//       // STEP 4: DETERMINE RESTART METHOD
-//       // ============================================
-//       await sock.sendMessage(jid, { 
-//         text: `🔁 *BOT RESTART INITIATED*\n\n✅ Owner verified ✅\n🧹 Cleaning session data... ✅\n🔍 Detecting restart method...`,
-//         edit: statusMsg.key
-//       });
-      
-//       let restartMethod = 'process_exit';
-//       let restartCommand = '';
-      
-//       try {
-//         // Check for PM2
-//         await execAsync('pm2 --version');
-//         restartMethod = 'pm2';
-//         restartCommand = 'pm2 restart all';
-//         console.log('[RESTART] Using PM2 method');
-        
-//       } catch (e) {
-//         // Check for Forever
-//         try {
-//           await execAsync('forever --version');
-//           restartMethod = 'forever';
-//           restartCommand = 'forever restartall';
-//           console.log('[RESTART] Using Forever method');
-          
-//         } catch (e2) {
-//           // Check for package.json restart script
-//           const packagePath = path.join(process.cwd(), 'package.json');
-//           if (fs.existsSync(packagePath)) {
-//             const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-//             if (pkg.scripts && pkg.scripts.restart) {
-//               restartMethod = 'npm_restart';
-//               restartCommand = 'npm run restart';
-//               console.log('[RESTART] Using npm restart method');
-//             } else if (pkg.scripts && pkg.scripts.start) {
-//               restartMethod = 'npm_start';
-//               restartCommand = 'npm start';
-//               console.log('[RESTART] Using npm start method');
-//             }
-//           }
-          
-//           // Fallback to nodemon if exists
-//           const nodemonPath = path.join(process.cwd(), 'nodemon.json');
-//           if (fs.existsSync(nodemonPath)) {
-//             restartMethod = 'nodemon';
-//             restartCommand = 'npx nodemon';
-//             console.log('[RESTART] Using nodemon method');
-//           }
-//         }
-//       }
-      
-//       // ============================================
-//       // STEP 5: EXECUTE RESTART
-//       // ============================================
-//       await sock.sendMessage(jid, { 
-//         text: `🔁 *BOT RESTART INITIATED*\n\n✅ Owner verified ✅\n🧹 Cleaning session data... ✅\n🔍 Detecting restart method... ✅\n🚀 Method: ${restartMethod.toUpperCase()}\n\n⏳ Executing restart...`,
-//         edit: statusMsg.key
-//       });
-      
-//       // Send final goodbye message
-//       await sock.sendMessage(jid, { 
-//         text: `👋 *Goodbye!*\n\nBot is restarting now...\n🔄 Will reconnect in 10-15 seconds\n📱 Status: ${restartMethod.toUpperCase()} method` 
-//       });
-      
-//       console.log(`[RESTART] Executing: ${restartCommand || 'Process exit'}`);
-      
-//       // ============================================
-//       // STEP 6: GRACEFUL SHUTDOWN & RESTART
-//       // ============================================
-//       setTimeout(async () => {
-//         try {
-//           // 1. Close WhatsApp connection
-//           console.log('[RESTART] Closing WhatsApp connection...');
-//           await sock.end();
-//           console.log('[RESTART] Connection closed successfully');
-          
-//         } catch (sockError) {
-//           console.log('[RESTART] Error closing socket:', sockError.message);
-//         }
-        
-//         // 2. Execute restart command
-//         setTimeout(() => {
-//           if (restartCommand) {
-//             console.log(`[RESTART] Running: ${restartCommand}`);
-            
-//             // Execute the restart command
-//             const child = exec(restartCommand, {
-//               windowsHide: true,
-//               detached: true,
-//               stdio: 'ignore'
-//             });
-            
-//             child.unref();
-            
-//             // Exit current process
-//             setTimeout(() => {
-//               console.log('[RESTART] Exiting current process...');
-//               process.exit(0);
-//             }, 1000);
-            
-//           } else {
-//             // No restart command found, just exit
-//             console.log('[RESTART] No restart method found, exiting process...');
-            
-//             // Exit with code 1 to signal need for restart
-//             // (Useful if you have auto-restart script)
-//             process.exit(1);
-//           }
-//         }, 1000);
-        
-//       }, 3000); // Wait 3 seconds before shutting down
-      
-//     } catch (error) {
-//       console.error("❌ [RESTART] FATAL ERROR:", error);
-      
-//       try {
-//         await sock.sendMessage(jid, { 
-//           text: `❌ *RESTART FAILED!*\n\nError: ${error.message}\n\n⚠️ Please restart manually!` 
-//         }, { quoted: m });
-//       } catch (sendError) {
-//         console.log('[RESTART] Could not send error message:', sendError.message);
-//       }
-//     }
-//   },
-// };
-
-
-
-
-
-
-
-
-
-
-
-// // restart.js — CLEAN + PANEL-SAFE VERSION
-// import { exec } from "child_process";
-// import fs from "fs";
-// import path from "path";
-// import { fileURLToPath } from "url";
-
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-
-// // Simple RUN helper
-// function run(cmd) {
-//   return new Promise((resolve, reject) => {
-//     exec(cmd, { windowsHide: true }, (err, stdout, stderr) => {
-//       if (err) return reject(stderr || stdout || err.message);
-//       resolve(stdout);
-//     });
-//   });
-// }
-
-// export default {
-//   name: "restart",
-//   aliases: ["reboot", "refresh", "r"],
-//   description: "Restart bot safely without affecting session",
-//   category: "owner",
-//   isOwner: true,
-
-//   async execute(sock, m) {
-//     const jid = m.key.remoteJid;
-
-//     try {
-//       // Owner verification
-//       if (!m.key.fromMe) {
-//         let isOwner = false;
-
-//         try {
-//           const settings = await import(`file://${path.join(__dirname, "../settings.js")}`);
-//           const ownerNumber = settings.default?.ownerNumber;
-
-//           if (ownerNumber) {
-//             const sender = m.key.participant || m.key.remoteJid;
-//             if (sender.includes(ownerNumber.replace("@s.whatsapp.net", ""))) {
-//               isOwner = true;
-//             }
-//           }
-//         } catch {}
-
-//         if (!isOwner) {
-//           await sock.sendMessage(jid, { text: "❌ Only owner can restart the bot." });
-//           return;
-//         }
-//       }
-
-//       // Feedback
-//       await sock.sendMessage(jid, { text: "_Restarting bot... 🔄_" }, { quoted: m });
-//       try {
-//         await sock.sendMessage(jid, { react: { text: "♻️", key: m.key } });
-//       } catch {}
-
-//       // Call restart process
-//       await restartProcess(sock, jid);
-
-//     } catch (e) {
-//       console.error("[RESTART ERROR]:", e);
-//       await sock.sendMessage(jid, { text: `❌ Restart failed: ${e.message}` });
-//     }
-//   },
-// };
-
-// // ======================================
-// //            RESTART PROCESS
-// // ======================================
-
-// async function restartProcess(sock, chatId) {
-//   try {
-//     await sock.sendMessage(chatId, { text: "🔄 Cleaning cache & closing connection..." });
-//   } catch {}
-
-//   // Close Baileys socket gracefully
-//   try {
-//     await sock.end();
-//   } catch {}
-
-//   // CLEAN ONLY SAFE FILES (DO NOT DELETE creds.json)
-//   const sessionDir = path.join(process.cwd(), "session");
-
-//   const safeFiles = [
-//     "sender-key-memory.json",
-//     "app-state-sync-version.json",
-//     "message-history.json",
-//     "baileys_store.json",
-//     "baileys_store_multi.json"
-//   ];
-
-//   if (fs.existsSync(sessionDir)) {
-//     safeFiles.forEach(file => {
-//       const filePath = path.join(sessionDir, file);
-//       if (fs.existsSync(filePath)) {
-//         try {
-//           fs.rmSync(filePath, { force: true });
-//           console.log("[RESTART] Deleted", file);
-//         } catch {}
-//       }
-//     });
-//   }
-
-//   // Give panel/terminal time to catch up
-//   setTimeout(() => {
-//     console.log("[RESTART] Exiting process now...");
-//     process.exit(0); // PANEL AUTO-RESTARTS
-//   }, 800);
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// restart.js - Works EXACTLY like your existing system
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
+const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Your existing run function converted to ES6
-function run(cmd) {
-    return new Promise((resolve, reject) => {
-        exec(cmd, { windowsHide: true }, (err, stdout, stderr) => {
-            if (err) return reject(new Error((stderr || stdout || err.message || '').toString()));
-            resolve((stdout || '').toString());
-        });
-    });
+// Enhanced exec with timeout
+async function run(cmd, timeout = 30000) {
+  try {
+    const { stdout, stderr } = await execAsync(cmd, { timeout });
+    if (stderr && !stderr.includes('warning')) {
+      console.warn(`Command stderr: ${stderr}`);
+    }
+    return stdout.trim();
+  } catch (error) {
+    console.error(`Command failed: ${cmd}`, error.message);
+    throw error;
+  }
 }
 
-// Your existing restartProcess function converted to ES6
-async function restartProcess(sock, chatId, message) {
-    try {
-        // Send final confirmation message to the user
-        await sock.sendMessage(chatId, { text: '_Silent Wolf restarting... Cleaning session data..._' }, { quoted: message });
-    } catch {}
-    
-    // 1. Gracefully close the Baileys socket
-    try {
-        await sock.end(); 
-    } catch (e) {
-        console.error('Error during graceful Baileys shutdown:', e.message);
-    }
-    
-    // 🛑 2. CRITICAL STEP: DELETE VOLATILE SESSION FILES
-    // Delete files that track message state and history sync, as these are the source of 428 errors.
-    const sessionPath = path.join(process.cwd(), 'session');
-    
-    const filesToDelete = [
-        'app-state-sync-version.json',
-        'message-history.json',
-        'sender-key-memory.json',
-        'baileys_store_multi.json', // Included for comprehensive cleanup
-        'baileys_store.json', // Included if a non-multi store is used
-        'creds.json' // Added to handle login prompt issue
-    ];
-
-    if (fs.existsSync(sessionPath)) {
-        console.log(`[RESTART] Clearing volatile session data in: ${sessionPath}`);
-        
-        filesToDelete.forEach(fileName => {
-            const filePath = path.join(sessionPath, fileName);
-            if (fs.existsSync(filePath)) {
-                try {
-                    fs.rmSync(filePath, { force: true });
-                    console.log(`[RESTART] Deleted: ${fileName}`);
-                } catch (e) {
-                    console.error(`[RESTART] Failed to delete ${fileName}:`, e.message);
-                }
-            }
-        });
-    }
-
-    // 3. Trigger restart via PM2 or Process Exit
-    try {
-        // Preferred: PM2 (This is the original logic, keep it)
-        await run('pm2 restart all');
-        return;
-    } catch {}
-    
-    // Panels usually auto-restart when the process exits.
-    // Exit immediately now that cleanup is complete.
-    setTimeout(() => {
-        process.exit(0);
-    }, 0); 
-}
-
-// Main command handler - EXACTLY like your updateCommand but for restart only
-export default {
-  name: "restart",
-  aliases: ["reboot", "refresh", "start"],
-  description: "Restart the bot (like .update but without git/zip)",
-  category: "owner",
-  isOwner: true,
+// Load settings
+async function loadSettings() {
+  const possiblePaths = [
+    path.join(process.cwd(), "settings.js"),
+    path.join(process.cwd(), "config", "settings.js"),
+    path.join(__dirname, "..", "settings.js"),
+    path.join(__dirname, "..", "..", "settings.js"),
+  ];
   
-  async execute(sock, m, args) {
-    const jid = m.key.remoteJid;
-    const commandText = m.message.extendedTextMessage?.text || m.message.conversation || '';
-    
-    // Check if it's a simple restart or update
-    const isSimpleRestart = commandText.toLowerCase().includes('restart') && 
-                           !commandText.toLowerCase().includes('update');
-    
-    // Check if user is sudo/owner
-    let senderIsSudo = false;
-    
-    if (m.key.fromMe) {
-        senderIsSudo = true;
-    } else {
-        // Try to load settings to check owner
-        try {
-            // Dynamic import for ES modules
-            const settings = await import(`file://${path.join(__dirname, '../settings.js')}`);
-            const ownerNumber = settings.default?.ownerNumber || settings.default?.botOwner;
-            
-            if (ownerNumber) {
-                const senderId = m.key.participant || m.key.remoteJid;
-                if (senderId.includes(ownerNumber.replace('@s.whatsapp.net', ''))) {
-                    senderIsSudo = true;
-                }
-            }
-        } catch (e) {
-            console.log('[RESTART] Could not load settings:', e.message);
-        }
-        
-        // Hardcoded owner check as fallback
-        const HARDCODED_OWNERS = [
-            '919876543210' // REPLACE WITH YOUR NUMBER
-        ];
-        
-        const senderId = m.key.participant || m.key.remoteJid;
-        if (HARDCODED_OWNERS.some(num => senderId.includes(num))) {
-            senderIsSudo = true;
-        }
-    }
-    
-    if (!m.key.fromMe && !senderIsSudo) {
-        await sock.sendMessage(jid, { text: 'Only bot owner or sudo can use .restart or .Start command' }, { quoted: m });
-        return;
-    }
-
+  for (const settingsPath of possiblePaths) {
     try {
-        // ============================================
-        // STEP 1: SEND INITIAL MESSAGES (like your system)
-        // ============================================
-        await sock.sendMessage(jid, { text: '_Restarting bot ...🏂_' }, { quoted: m });
-        
-        // Add reaction ✅
-        try {
-            await sock.sendMessage(jid, {
-                react: { text: '💓', key: m.key }
-            });
-        } catch (e) {}
-        
-        // ============================================
-        // STEP 2: CHECK IF IT'S UPDATE OR RESTART
-        // ============================================
-        // If it's NOT a simple restart (means it's .update command)
-        // We'll implement both in one command for convenience
-        const wantsUpdate = commandText.toLowerCase().includes('update') || 
-                          args.includes('--update') || 
-                          args.includes('--git');
-        
-        if (wantsUpdate && !isSimpleRestart) {
-            // ============================================
-            // UPDATE LOGIC (from your existing system)
-            // ============================================
-            await sock.sendMessage(jid, { text: '_Updating 💉 bot database. please wait…_' }, { quoted: m });
-            
-            // Add reaction ✅
-            try {
-                await sock.sendMessage(jid, {
-                    react: { text: '🆙', key: m.key }
-                });
-            } catch (e) {}
-            
-            // Check for git repo
-            async function hasGitRepo() {
-                const gitDir = path.join(process.cwd(), '.git');
-                if (!fs.existsSync(gitDir)) return false;
-                try {
-                    await run('git --version');
-                    return true;
-                } catch {
-                    return false;
-                }
-            }
-            
-            async function updateViaGit() {
-                const oldRev = (await run('git rev-parse HEAD').catch(() => 'unknown')).trim();
-                await run('git fetch --all --prune');
-                const newRev = (await run('git rev-parse origin/main')).trim();
-                const alreadyUpToDate = oldRev === newRev;
-                const commits = alreadyUpToDate ? '' : await run(`git log --pretty=format:"%h %s (%an)" ${oldRev}..${newRev}`).catch(() => '');
-                const files = alreadyUpToDate ? '' : await run(`git diff --name-status ${oldRev} ${newRev}`).catch(() => '');
-                await run(`git reset --hard ${newRev}`);
-                await run('git clean -fd');
-                return { oldRev, newRev, alreadyUpToDate, commits, files };
-            }
-            
-            if (await hasGitRepo()) {
-                const { oldRev, newRev, alreadyUpToDate, commits, files } = await updateViaGit();
-                const summary = alreadyUpToDate ? `✅ Already up to date: ${newRev}` : `✅ Updated to ${newRev}`;
-                console.log('[RESTART/UPDATE] Git update summary:', summary);
-                await run('npm install --no-audit --no-fund');
-            } else {
-                // ZIP update logic (simplified)
-                await sock.sendMessage(jid, { text: '⚠️ Git not available. Using simple restart.' });
-            }
-        }
-        
-        // ============================================
-        // STEP 3: SEND FINAL MESSAGE BEFORE RESTART
-        // ============================================
-        try {
-            // Try to get version from settings
-            let versionText = '';
-            try {
-                const settings = await import(`file://${path.join(__dirname, '../settings.js')}`);
-                versionText = settings.default?.version ? ` v${settings.default.version}` : '';
-            } catch {}
-            
-            await sock.sendMessage(jid, { text: `_Finalizing restart${versionText}..._` });
-            
-        } catch {
-            await sock.sendMessage(jid, { text: '_Finalizing restart..._' });
-        }
-        
-        // ============================================
-        // STEP 4: EXECUTE THE RESTART
-        // ============================================
-        // This is where the actual restart logic is executed.
-        await restartProcess(sock, jid, m); 
-        
-    } catch (err) {
-        console.error('[RESTART] Failed:', err);
-        await sock.sendMessage(jid, { text: `❌ Restart failed:\n${String(err.message || err)}` }, { quoted: m });
+      if (fs.existsSync(settingsPath)) {
+        console.log(`Loading settings from: ${settingsPath}`);
+        const module = await import(`file://${settingsPath}`);
+        return module.default || module;
+      }
+    } catch (error) {
+      console.warn(`Failed to load settings from ${settingsPath}:`, error.message);
+      continue;
     }
-  },
+  }
+  
+  console.warn("No settings file found, using empty settings");
+  return {};
+}
+
+// System info functions
+async function getSystemInfo() {
+  const info = {
+    platform: os.platform(),
+    arch: os.arch(),
+    uptime: formatUptime(os.uptime()),
+    totalMemory: formatBytes(os.totalmem()),
+    freeMemory: formatBytes(os.freemem()),
+    loadAvg: os.loadavg().map(n => n.toFixed(2)).join(', '),
+    cpus: os.cpus().length,
+    nodeVersion: process.version,
+    pid: process.pid,
+    botUptime: formatUptime(process.uptime()),
+    cwd: process.cwd()
+  };
+
+  // Get process manager
+  try {
+    if (await run("which pm2").then(() => true).catch(() => false)) {
+      info.processManager = "PM2";
+      try {
+        const pm2Info = await run("pm2 jlist");
+        const processes = JSON.parse(pm2Info);
+        info.pm2Processes = processes.length;
+        // Find current process
+        const currentProcess = processes.find(p => p.pid === process.pid);
+        if (currentProcess) {
+          info.pm2Name = currentProcess.name;
+          info.pm2Status = currentProcess.pm2_env.status;
+        }
+      } catch (e) {
+        info.processManager = "PM2 (no info)";
+      }
+    } else if (await run("which forever").then(() => true).catch(() => false)) {
+      info.processManager = "Forever";
+    } else {
+      info.processManager = "Direct";
+    }
+  } catch (error) {
+    info.processManager = "Unknown";
+  }
+
+  // Get bot package info
+  try {
+    const packagePath = path.join(process.cwd(), 'package.json');
+    if (fs.existsSync(packagePath)) {
+      const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+      info.botName = packageJson.name || "WolfBot";
+      info.botVersion = packageJson.version || "Unknown";
+    }
+  } catch (error) {
+    info.botName = "WolfBot";
+    info.botVersion = "Unknown";
+  }
+
+  return info;
+}
+
+// Format uptime
+function formatUptime(seconds) {
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  
+  const parts = [];
+  if (days > 0) parts.push(`${days}d`);
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0) parts.push(`${minutes}m`);
+  if (secs > 0 || parts.length === 0) parts.push(`${secs}s`);
+  
+  return parts.join(' ');
+}
+
+// Format bytes
+function formatBytes(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Restart types
+const RESTART_TYPES = {
+  NORMAL: "normal",
+  GRACEFUL: "graceful", 
+  SOFT: "soft",
+  IMMEDIATE: "immediate",
+  UPDATE: "update"
 };
 
-// Export additional functions if needed by other modules
-export { restartProcess, run };
+// Restart process
+async function restartProcess(type = RESTART_TYPES.NORMAL, options = {}) {
+  const {
+    delay = 0,
+    reason = "Manual restart",
+    updateFirst = false
+  } = options;
+
+  console.log(`🔄 Starting ${type} restart...`);
+  console.log(`Reason: ${reason}`);
+  console.log(`Delay: ${delay}ms`);
+
+  // Apply delay
+  if (delay > 0) {
+    console.log(`Waiting ${delay}ms before restart...`);
+    await new Promise(resolve => setTimeout(resolve, delay));
+  }
+
+  try {
+    // Get system info
+    const systemInfo = await getSystemInfo();
+    
+    // Update first if requested
+    if (updateFirst) {
+      console.log("🔄 Running update before restart...");
+      try {
+        // You would integrate with your update module here
+        // For now, just check git status
+        const gitStatus = await run("git status --porcelain").catch(() => "");
+        if (gitStatus) {
+          console.log("Found uncommitted changes, stashing...");
+          await run("git stash");
+        }
+        await run("git pull");
+        console.log("✅ Update completed");
+      } catch (updateError) {
+        console.warn("Update failed:", updateError.message);
+      }
+    }
+
+    // Handle different restart types
+    switch (type) {
+      case RESTART_TYPES.SOFT:
+        console.log("🔄 Performing soft restart...");
+        // Just clear module cache and continue
+        if (require.cache) {
+          const cacheKeys = Object.keys(require.cache);
+          let cleared = 0;
+          for (const key of cacheKeys) {
+            if (!key.includes('node_modules') && !key.includes('internal')) {
+              delete require.cache[key];
+              cleared++;
+            }
+          }
+          console.log(`Cleared ${cleared} modules from cache`);
+        }
+        return { success: true, type: "soft", message: "Soft restart completed" };
+
+      case RESTART_TYPES.GRACEFUL:
+        console.log("🔄 Performing graceful restart...");
+        // Add any graceful shutdown logic here
+        // For now, same as normal but with a longer delay
+        break;
+
+      case RESTART_TYPES.IMMEDIATE:
+        console.log("⚡ Performing immediate restart...");
+        // No cleanup, just restart
+        break;
+
+      case RESTART_TYPES.UPDATE:
+        console.log("📦 Update and restart...");
+        // Update was already done above
+        break;
+
+      case RESTART_TYPES.NORMAL:
+      default:
+        console.log("🔁 Performing normal restart...");
+        break;
+    }
+
+    // Actual restart logic
+    let restartCmd;
+    let restartMethod = "exit";
+    
+    if (systemInfo.processManager.includes("PM2")) {
+      if (systemInfo.pm2Name) {
+        restartCmd = `pm2 restart ${systemInfo.pm2Name}`;
+      } else {
+        restartCmd = "pm2 restart all";
+      }
+      restartMethod = "pm2";
+    } else if (systemInfo.processManager.includes("Forever")) {
+      restartCmd = "forever restartall";
+      restartMethod = "forever";
+    } else {
+      // No process manager, just exit
+      restartCmd = "exit";
+      restartMethod = "exit";
+    }
+
+    console.log(`Restart method: ${restartMethod}`);
+    
+    if (restartMethod === "exit") {
+      // Set environment variable to indicate restart
+      process.env.WOLFBOT_RESTART = "true";
+      process.env.WOLFBOT_RESTART_REASON = reason;
+      process.env.WOLFBOT_RESTART_TYPE = type;
+      
+      // Give time for final logs/messages
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      console.log("Exiting process for restart...");
+      process.exit(0);
+    } else {
+      console.log(`Executing: ${restartCmd}`);
+      const result = await run(restartCmd);
+      console.log("Restart command result:", result);
+    }
+
+    return {
+      success: true,
+      type,
+      method: restartMethod,
+      command: restartCmd,
+      message: `Restart initiated via ${restartMethod}`
+    };
+
+  } catch (error) {
+    console.error("Restart failed:", error);
+    
+    // Fallback to simple exit
+    console.log("Attempting fallback restart...");
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    process.exit(1);
+    
+    return { success: false, error: error.message };
+  }
+}
+
+// Progress bar animation
+function getProgressBar(percentage, length = 10) {
+  const filled = Math.round((percentage / 100) * length);
+  const empty = length - filled;
+  return '█'.repeat(filled) + '▒'.repeat(empty);
+}
+
+// Countdown animation
+async function countdownAnimation(editMessage, seconds, message) {
+  for (let i = seconds; i > 0; i--) {
+    const bar = getProgressBar((seconds - i) / seconds * 100);
+    await editMessage(`${message}\n${bar} Restarting in ${i}s...`);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+}
+
+// Main restart command
+export default {
+  name: "restart",
+  description: "Restart the bot with various options",
+  category: "owner",
+  ownerOnly: true,
+
+  async execute(sock, m, args) {
+    const jid = m.key.remoteJid;
+    const sender = m.key.participant || m.key.remoteJid;
+    
+    // Send initial message
+    const initialMessage = await sock.sendMessage(jid, { 
+      text: "🔁 WolfBot Restart System\nInitializing restart process..."
+    }, { quoted: m });
+    
+    let messageKey = initialMessage.key;
+    
+    // Edit message helper
+    const editMessage = async (text) => {
+      try {
+        await sock.sendMessage(jid, { 
+          text,
+          edit: messageKey
+        }, { quoted: m });
+      } catch (error) {
+        console.log("Could not edit message:", error.message);
+        const newMsg = await sock.sendMessage(jid, { text }, { quoted: m });
+        messageKey = newMsg.key;
+      }
+    };
+
+    try {
+      // Load settings
+      await editMessage("🔍 Loading bot settings...");
+      const settings = await loadSettings();
+      
+      // Check if owner
+      const isOwner = m.key.fromMe || 
+        (settings.ownerNumber && sender.includes(settings.ownerNumber)) ||
+        (settings.botOwner && sender.includes(settings.botOwner));
+      
+      if (!isOwner) {
+        await editMessage("❌ Permission Denied\nOnly the bot owner can restart the bot.");
+        return;
+      }
+      
+      // Parse arguments
+      const restartType = args[0]?.toLowerCase() || "normal";
+      const hasDelay = args.find(arg => arg.startsWith('delay='));
+      const hasReason = args.find(arg => arg.startsWith('reason='));
+      const updateFirst = args.includes('update') || args.includes('--update');
+      const force = args.includes('force') || args.includes('--force');
+      
+      let delay = 0;
+      let reason = "Manual restart";
+      
+      // Parse delay
+      if (hasDelay) {
+        const delayValue = parseInt(hasDelay.split('=')[1]);
+        if (!isNaN(delayValue) && delayValue > 0) {
+          delay = delayValue;
+        }
+      }
+      
+      // Parse reason
+      if (hasReason) {
+        reason = hasReason.split('=')[1].replace(/_/g, ' ');
+      }
+      
+      // Show restart info
+      await editMessage("📊 Getting system information...");
+      const systemInfo = await getSystemInfo();
+      
+      const infoText = 
+        `🤖 *Bot Information*\n` +
+        `• Name: ${systemInfo.botName}\n` +
+        `• Version: ${systemInfo.botVersion}\n` +
+        `• Uptime: ${systemInfo.botUptime}\n` +
+        `• PID: ${systemInfo.pid}\n\n` +
+        
+        `🖥️ *System Status*\n` +
+        `• OS: ${systemInfo.platform}\n` +
+        `• System Uptime: ${systemInfo.uptime}\n` +
+        `• CPUs: ${systemInfo.cpus}\n` +
+        `• Memory: ${systemInfo.freeMemory} free of ${systemInfo.totalMemory}\n` +
+        `• Load Average: ${systemInfo.loadAvg}\n\n` +
+        
+        `⚙️ *Process Manager*\n` +
+        `• Type: ${systemInfo.processManager}\n` +
+        (systemInfo.pm2Name ? `• PM2 Name: ${systemInfo.pm2Name}\n` : '') +
+        (systemInfo.pm2Status ? `• Status: ${systemInfo.pm2Status}\n` : '') +
+        (systemInfo.pm2Processes ? `• Total Processes: ${systemInfo.pm2Processes}\n` : '');
+      
+      await editMessage(infoText + "\n\n⚡ *Restart Configuration*\n" +
+        `• Type: ${restartType.toUpperCase()}\n` +
+        `• Delay: ${delay}s\n` +
+        `• Reason: ${reason}\n` +
+        `• Update First: ${updateFirst ? 'Yes' : 'No'}\n\n` +
+        `Type \`confirm\` within 30 seconds to proceed or \`cancel\` to abort.`
+      );
+      
+      // Wait for confirmation (unless force)
+      if (!force) {
+        let confirmed = false;
+        let cancelled = false;
+        
+        // Set up confirmation listener
+        const listener = async ({ messages }) => {
+          for (const msg of messages) {
+            if (msg.key.remoteJid !== jid) continue;
+            const msgSender = msg.key.participant || msg.key.remoteJid;
+            if (msgSender !== sender) continue;
+            
+            const text = msg.message?.conversation || 
+                        msg.message?.extendedTextMessage?.text || "";
+            
+            if (text.toLowerCase() === 'confirm') {
+              confirmed = true;
+              sock.ev.off('messages.upsert', listener);
+            } else if (text.toLowerCase() === 'cancel') {
+              cancelled = true;
+              sock.ev.off('messages.upsert', listener);
+            }
+          }
+        };
+        
+        sock.ev.on('messages.upsert', listener);
+        
+        // Wait for confirmation with timeout
+        for (let i = 0; i < 30; i++) {
+          if (confirmed || cancelled) break;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+        sock.ev.off('messages.upsert', listener);
+        
+        if (cancelled) {
+          await editMessage("❌ Restart cancelled by user.");
+          return;
+        }
+        
+        if (!confirmed) {
+          await editMessage("⏰ Restart confirmation timeout. Operation cancelled.");
+          return;
+        }
+      }
+      
+      // Start restart process
+      await editMessage(`✅ Confirmed! Starting ${restartType} restart...\nDelay: ${delay}s\nReason: ${reason}`);
+      
+      // Countdown if delay
+      if (delay > 0) {
+        await countdownAnimation(editMessage, delay, 
+          `⏳ Restart countdown (${restartType.toUpperCase()})...\nReason: ${reason}`
+        );
+      }
+      
+      // Update first if requested
+      if (updateFirst) {
+        await editMessage("📦 Checking for updates before restart...");
+        try {
+          // Check git status
+          const status = await run("git status --porcelain").catch(() => "");
+          if (status) {
+            await editMessage("📝 Stashing local changes...");
+            await run("git stash");
+          }
+          
+          await editMessage("⬇️ Pulling latest changes...");
+          const pullResult = await run("git pull");
+          await editMessage(`✅ Update successful!\n${pullResult}`);
+        } catch (updateError) {
+          await editMessage(`⚠️ Update failed: ${updateError.message}\nContinuing with restart...`);
+        }
+      }
+      
+      // Execute restart
+      const restartResult = await restartProcess(restartType, {
+        delay: delay * 1000, // Convert to milliseconds
+        reason,
+        updateFirst
+      });
+      
+      if (restartResult.success) {
+        if (restartType === "soft") {
+          await editMessage(
+            "✅ Soft restart completed!\n" +
+            "Modules have been reloaded.\n" +
+            "Bot continues running without interruption."
+          );
+        } else {
+          const finalMessage = 
+            "🚀 Restart initiated!\n" +
+            `Type: ${restartType.toUpperCase()}\n` +
+            `Method: ${restartResult.method}\n` +
+            `Reason: ${reason}\n\n` +
+            "The bot will be back in a few moments...";
+          
+          await editMessage(finalMessage);
+          
+          // Small delay to ensure message is sent
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      } else {
+        await editMessage(
+          "❌ Restart failed!\n" +
+          `Error: ${restartResult.error || 'Unknown error'}\n` +
+          "Please check logs for details."
+        );
+      }
+      
+    } catch (error) {
+      console.error("Restart command error:", error);
+      await editMessage(
+        `❌ Restart Error\n` +
+        `Error: ${error.message}\n` +
+        "Please check logs for details."
+      );
+    }
+  }
+};
