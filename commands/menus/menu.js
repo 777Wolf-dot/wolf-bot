@@ -1642,26 +1642,26 @@ case 4: {
   const buffer = fs.readFileSync(imagePath);
 
   const infoCaption = `
-│────── ${botName} MENU ──────│
-┃ Date: ${currentDate}
-┃ Time: ${currentTime}
-┃ User: ${m.pushName || "Anonymous"}
-┃ Owner: ${ownerName}
-┃ Mode: ${botMode}
-┃ Prefix: [ ${botPrefix} ]
-┃ Version: ${botVersion}
-┃ Panel: ${deploymentPlatform.name}
-┃ Status: ${deploymentPlatform.status}
-┃ Speed: ${commandSpeed}
-┃ CPU Load: ${cpuLoadBar} ${cpuLoad}
-┃ Uptime: ${uptimeStr}
-┃ Usage: ${usedMem} MB of ${totalMem} GB
-┃ RAM: ${memBar} ${memPercent}%
-┃ ${corePower.icon} Cores: ${corePower.cores} @ ${corePower.speed}
-┃ Power: ${corePower.performance} Performance
-┃ CPU: ${corePower.model}
-┃ Node: ${nodeVersion}
-┃ Timezone: ${timeZone}
+│────*${botName}* *MENU* ────│
+┃ *Date: ${currentDate}*
+┃ *Time: ${currentTime}*
+┃ *User: ${m.pushName || "Anonymous"}*
+┃ *Owner: ${ownerName}*
+┃ *Mode: ${botMode}*
+┃ *Prefix: [ ${botPrefix} ]*
+┃ *Version: ${botVersion}*
+┃ *Panel: ${deploymentPlatform.name}*
+┃ *Status: ${deploymentPlatform.status}*
+┃ *Speed: ${commandSpeed}*
+┃ *CPU Load: ${cpuLoadBar} ${cpuLoad}*
+┃ *Uptime: ${uptimeStr}*
+┃ *Usage: ${usedMem} MB of ${totalMem} GB*
+┃ *RAM: ${memBar} ${memPercent}%*
+┃ *${corePower.icon} Cores: ${corePower.cores} @ ${corePower.speed}*
+┃ *Power: ${corePower.performance} Performance*
+┃ *CPU: ${corePower.model}*
+┃ *Node: ${nodeVersion}*
+┃ *Timezone: ${timeZone}*
 └────────────────
 `;
 
