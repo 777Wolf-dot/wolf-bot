@@ -21,615 +21,615 @@
   ],
   "logs": [
     {
-      "sender": "254742272267",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766853826097
-    },
-    {
-      "sender": "260761275707",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766853829036
-    },
-    {
-      "sender": "254742272267",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766853839411
-    },
-    {
-      "sender": "2347083961658",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766853844923
-    },
-    {
       "sender": "2348155931801",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766853852241
-    },
-    {
-      "sender": "260761275707",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766853890898
-    },
-    {
-      "sender": "254700327068",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766853990391
-    },
-    {
-      "sender": "2347083961658",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766854050185
-    },
-    {
-      "sender": "254700327068",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766854119597
-    },
-    {
-      "sender": "2347083961658",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766854213513
-    },
-    {
-      "sender": "254110343407",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766854252600
-    },
-    {
-      "sender": "2347083961658",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766854423522
-    },
-    {
-      "sender": "254715051506",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766854590410
-    },
-    {
-      "sender": "254745995857",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766854601067
-    },
-    {
-      "sender": "2347083961658",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766854657082
-    },
-    {
-      "sender": "254793460414",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766854745434
-    },
-    {
-      "sender": "254745995857",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766854813353
-    },
-    {
-      "sender": "254725979273",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766854837415
-    },
-    {
-      "sender": "254725979273",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766854849497
-    },
-    {
-      "sender": "260770441675",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766855008488
-    },
-    {
-      "sender": "254711921079",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766855034415
+      "timestamp": 1766908038990
     },
     {
       "sender": "260760157870",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766855159397
+      "timestamp": 1766908039788
     },
     {
-      "sender": "254116088862",
+      "sender": "255615667337",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766855181787
+      "timestamp": 1766908042038
     },
     {
-      "sender": "254720015560",
+      "sender": "254768638925",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766855325573
+      "timestamp": 1766908096932
     },
     {
-      "sender": "254790919376",
+      "sender": "254752589553",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766855327192
+      "timestamp": 1766908109522
     },
     {
-      "sender": "254700327068",
+      "sender": "260966566253",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766855396802
+      "timestamp": 1766908120079
     },
     {
-      "sender": "260966088867",
+      "sender": "254734971054",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766855458945
+      "timestamp": 1766908213873
+    },
+    {
+      "sender": "254734971054",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766908214109
+    },
+    {
+      "sender": "254742272267",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766908215001
+    },
+    {
+      "sender": "254734971054",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766908215267
+    },
+    {
+      "sender": "254734971054",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766908215501
+    },
+    {
+      "sender": "260966566253",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766908216531
+    },
+    {
+      "sender": "254734971054",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766908216821
+    },
+    {
+      "sender": "254734971054",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766908217129
+    },
+    {
+      "sender": "254793544290",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766908252125
     },
     {
       "sender": "260760157870",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766855595173
+      "timestamp": 1766908279396
     },
     {
-      "sender": "260773595539",
+      "sender": "260760157870",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766855634917
+      "timestamp": 1766908380485
     },
     {
-      "sender": "254116088862",
+      "sender": "254112614820",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766855640011
+      "timestamp": 1766908546888
     },
     {
-      "sender": "260964074680",
+      "sender": "255653028085",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766855662553
+      "timestamp": 1766908656542
     },
     {
-      "sender": "260964280292",
+      "sender": "254112537667",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766855772490
+      "timestamp": 1766908663509
     },
     {
-      "sender": "260776828093",
+      "sender": "255653028085",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766855833572
-    },
-    {
-      "sender": "254720015560",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766855879835
-    },
-    {
-      "sender": "254720015560",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766855978215
-    },
-    {
-      "sender": "260776828093",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856099143
-    },
-    {
-      "sender": "254743185189",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856103661
-    },
-    {
-      "sender": "260776828093",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856111044
-    },
-    {
-      "sender": "260776828093",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856121578
-    },
-    {
-      "sender": "254700327068",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856132981
-    },
-    {
-      "sender": "260776828093",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856133357
-    },
-    {
-      "sender": "260776828093",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856145516
-    },
-    {
-      "sender": "2347083961658",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856226860
-    },
-    {
-      "sender": "254700327068",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856254477
-    },
-    {
-      "sender": "254758176351",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856263791
-    },
-    {
-      "sender": "254700327068",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856274688
-    },
-    {
-      "sender": "254789782879",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856308803
-    },
-    {
-      "sender": "260761275707",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856317915
-    },
-    {
-      "sender": "260970496737",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856318679
-    },
-    {
-      "sender": "254789782879",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856352899
-    },
-    {
-      "sender": "2347083961658",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856398823
-    },
-    {
-      "sender": "260776828093",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856440415
-    },
-    {
-      "sender": "260765811784",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856557833
-    },
-    {
-      "sender": "2347083961658",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856562758
-    },
-    {
-      "sender": "254108413522",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856597045
-    },
-    {
-      "sender": "254797161544",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856694973
-    },
-    {
-      "sender": "260765811784",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856750487
-    },
-    {
-      "sender": "2347083961658",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856750912
+      "timestamp": 1766908663908
     },
     {
       "sender": "254753879768",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766856807239
+      "timestamp": 1766908869282
     },
     {
-      "sender": "260770632556",
+      "sender": "255653028085",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766856807921
+      "timestamp": 1766909024765
     },
     {
-      "sender": "254796979424",
+      "sender": "255653028085",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766856809284
+      "timestamp": 1766909032231
     },
     {
-      "sender": "254796979424",
+      "sender": "255653028085",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766856813533
+      "timestamp": 1766909036042
     },
     {
-      "sender": "254782349148",
+      "sender": "255653028085",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766856945802
+      "timestamp": 1766909039159
     },
     {
-      "sender": "2348127123844",
+      "sender": "255653028085",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766856959493
+      "timestamp": 1766909042668
     },
     {
-      "sender": "254743121515",
+      "sender": "255653028085",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766856984738
-    },
-    {
-      "sender": "254743121515",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766856997424
-    },
-    {
-      "sender": "254743121515",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766857007749
-    },
-    {
-      "sender": "2347083961658",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766857031571
-    },
-    {
-      "sender": "2348127123844",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766857031987
-    },
-    {
-      "sender": "254719761655",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766857070063
-    },
-    {
-      "sender": "260964280292",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766857073070
-    },
-    {
-      "sender": "254782349148",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766857109011
-    },
-    {
-      "sender": "254115846537",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766857125527
-    },
-    {
-      "sender": "254789782879",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766857163068
-    },
-    {
-      "sender": "260979439872",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766857237458
-    },
-    {
-      "sender": "254743121515",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766857251022
-    },
-    {
-      "sender": "2347083961658",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766857338046
-    },
-    {
-      "sender": "260765811784",
-      "reaction": "🐺",
-      "type": "status",
-      "timestamp": 1766857364707
+      "timestamp": 1766909046662
     },
     {
       "sender": "254115076372",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857380376
+      "timestamp": 1766909099344
     },
     {
-      "sender": "254707440601",
+      "sender": "254115076372",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857412684
+      "timestamp": 1766909100395
     },
     {
-      "sender": "254707440601",
+      "sender": "254115076372",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857414584
+      "timestamp": 1766909112210
     },
     {
-      "sender": "254707440601",
+      "sender": "260964830720",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857416387
+      "timestamp": 1766909225864
     },
     {
-      "sender": "254707440601",
+      "sender": "260964830720",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857418249
+      "timestamp": 1766909313822
     },
     {
-      "sender": "254707440601",
+      "sender": "260774874667",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857419946
+      "timestamp": 1766909325183
     },
     {
-      "sender": "254707440601",
+      "sender": "254722745701",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857421714
+      "timestamp": 1766909423925
     },
     {
-      "sender": "254707440601",
+      "sender": "254722745701",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857423448
+      "timestamp": 1766909428511
     },
     {
-      "sender": "254707440601",
+      "sender": "260774874667",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857425134
+      "timestamp": 1766909446939
     },
     {
-      "sender": "254707440601",
+      "sender": "260967415240",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857426858
+      "timestamp": 1766909561530
     },
     {
-      "sender": "254707440601",
+      "sender": "260774874667",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857428547
+      "timestamp": 1766909593384
     },
     {
-      "sender": "254707440601",
+      "sender": "254742272267",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857430217
+      "timestamp": 1766909714812
     },
     {
-      "sender": "254707440601",
+      "sender": "254108413522",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857431876
+      "timestamp": 1766909830217
     },
     {
-      "sender": "254707440601",
+      "sender": "260767076220",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857433580
+      "timestamp": 1766909898225
     },
     {
-      "sender": "254707440601",
+      "sender": "254728640349",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857435340
+      "timestamp": 1766910076607
     },
     {
-      "sender": "254707440601",
+      "sender": "254728640349",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857437017
+      "timestamp": 1766910080389
     },
     {
-      "sender": "254707440601",
+      "sender": "254724455112",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857438701
+      "timestamp": 1766910084264
     },
     {
-      "sender": "254707440601",
+      "sender": "254115076372",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857440380
+      "timestamp": 1766910092781
     },
     {
-      "sender": "254707440601",
+      "sender": "254115076372",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857442185
+      "timestamp": 1766910101675
     },
     {
-      "sender": "254707440601",
+      "sender": "254768188297",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857443924
+      "timestamp": 1766910115100
     },
     {
-      "sender": "254707440601",
+      "sender": "254742272267",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857445570
+      "timestamp": 1766910116934
     },
     {
-      "sender": "254790919376",
+      "sender": "254768188297",
       "reaction": "🐺",
       "type": "status",
-      "timestamp": 1766857502948
+      "timestamp": 1766910132700
+    },
+    {
+      "sender": "254768188297",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910146827
+    },
+    {
+      "sender": "254768188297",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910161503
+    },
+    {
+      "sender": "254116217770",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910176718
+    },
+    {
+      "sender": "260966566253",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910315493
+    },
+    {
+      "sender": "260966566253",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910316800
+    },
+    {
+      "sender": "254784766028",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910374284
+    },
+    {
+      "sender": "254768188297",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910377429
+    },
+    {
+      "sender": "254720015560",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910424580
+    },
+    {
+      "sender": "254798820507",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910440638
+    },
+    {
+      "sender": "254720015560",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910513652
+    },
+    {
+      "sender": "254702858465",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910522931
+    },
+    {
+      "sender": "254784766028",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910546497
+    },
+    {
+      "sender": "254768188297",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910810727
+    },
+    {
+      "sender": "254769460582",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910848125
+    },
+    {
+      "sender": "254769460582",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910851119
+    },
+    {
+      "sender": "260962347198",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910904679
+    },
+    {
+      "sender": "260760157870",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766910935037
+    },
+    {
+      "sender": "260779291415",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911051293
+    },
+    {
+      "sender": "260765200301",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911116897
+    },
+    {
+      "sender": "254115606707",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911180237
+    },
+    {
+      "sender": "260760157870",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911232926
+    },
+    {
+      "sender": "260962347198",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911233841
+    },
+    {
+      "sender": "254794390185",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911235339
+    },
+    {
+      "sender": "254113118246",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911387000
+    },
+    {
+      "sender": "254768188297",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911398067
+    },
+    {
+      "sender": "254742272267",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911601326
+    },
+    {
+      "sender": "260970496737",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911732722
+    },
+    {
+      "sender": "254713076215",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911797571
+    },
+    {
+      "sender": "254108413522",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911803307
+    },
+    {
+      "sender": "254703397679",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911826787
+    },
+    {
+      "sender": "260760157870",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911827776
+    },
+    {
+      "sender": "254796291679",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911828951
+    },
+    {
+      "sender": "254115264242",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911830060
+    },
+    {
+      "sender": "254705101772",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911831241
+    },
+    {
+      "sender": "254740938228",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911832329
+    },
+    {
+      "sender": "254748138295",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911834423
+    },
+    {
+      "sender": "254740938228",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911836651
+    },
+    {
+      "sender": "254748138295",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911838552
+    },
+    {
+      "sender": "254740938228",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911839489
+    },
+    {
+      "sender": "254748138295",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911842392
+    },
+    {
+      "sender": "254740938228",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911842590
+    },
+    {
+      "sender": "254740938228",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911845442
+    },
+    {
+      "sender": "254748138295",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911848170
+    },
+    {
+      "sender": "254740938228",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911848373
+    },
+    {
+      "sender": "254748138295",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911851710
+    },
+    {
+      "sender": "254740938228",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911851911
+    },
+    {
+      "sender": "254740938228",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911854724
+    },
+    {
+      "sender": "254740938228",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911857538
+    },
+    {
+      "sender": "254740938228",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911860382
+    },
+    {
+      "sender": "254740938228",
+      "reaction": "🐺",
+      "type": "status",
+      "timestamp": 1766911863196
     }
   ],
-  "totalReacted": 600,
+  "totalReacted": 749,
   "lastReacted": {
-    "sender": "254790919376",
+    "sender": "254740938228",
     "reaction": "🐺",
     "type": "status",
-    "timestamp": 1766857502948
+    "timestamp": 1766911863196
   },
-  "consecutiveReactions": 1,
-  "lastSender": "254790919376",
+  "consecutiveReactions": 5,
+  "lastSender": "254740938228",
   "settings": {
     "rateLimitDelay": 500,
     "reactToAll": true,

@@ -2,514 +2,514 @@
   "enabled": true,
   "logs": [
     {
-      "sender": "260966088867",
+      "sender": "260966566253",
       "action": "viewed",
-      "timestamp": 1766853615239
+      "timestamp": 1766907347991
     },
     {
-      "sender": "254712416173",
+      "sender": "254724455112",
       "action": "viewed",
-      "timestamp": 1766853633235
+      "timestamp": 1766907483155
     },
     {
-      "sender": "254795968849",
+      "sender": "254724455112",
       "action": "viewed",
-      "timestamp": 1766853664527
+      "timestamp": 1766907487733
     },
     {
-      "sender": "254115936017",
+      "sender": "254724455112",
       "action": "viewed",
-      "timestamp": 1766853693601
+      "timestamp": 1766907490265
     },
     {
-      "sender": "254736313893",
+      "sender": "254724455112",
       "action": "viewed",
-      "timestamp": 1766853716120
+      "timestamp": 1766907494356
     },
     {
-      "sender": "254742272267",
+      "sender": "254724455112",
       "action": "viewed",
-      "timestamp": 1766853825439
+      "timestamp": 1766907496879
     },
     {
-      "sender": "260761275707",
+      "sender": "254724455112",
       "action": "viewed",
-      "timestamp": 1766853828448
+      "timestamp": 1766907498535
     },
     {
-      "sender": "254742272267",
+      "sender": "254797373671",
       "action": "viewed",
-      "timestamp": 1766853839005
+      "timestamp": 1766907507635
     },
     {
-      "sender": "2347083961658",
+      "sender": "23233406747",
       "action": "viewed",
-      "timestamp": 1766853844239
+      "timestamp": 1766907674041
+    },
+    {
+      "sender": "254117013133",
+      "action": "viewed",
+      "timestamp": 1766907695345
+    },
+    {
+      "sender": "23233406747",
+      "action": "viewed",
+      "timestamp": 1766907758661
+    },
+    {
+      "sender": "260765200301",
+      "action": "viewed",
+      "timestamp": 1766907844345
+    },
+    {
+      "sender": "254743121515",
+      "action": "viewed",
+      "timestamp": 1766907884218
+    },
+    {
+      "sender": "254112614820",
+      "action": "viewed",
+      "timestamp": 1766907965743
+    },
+    {
+      "sender": "260967415240",
+      "action": "viewed",
+      "timestamp": 1766907973180
+    },
+    {
+      "sender": "254768638925",
+      "action": "viewed",
+      "timestamp": 1766907976950
     },
     {
       "sender": "2348155931801",
       "action": "viewed",
-      "timestamp": 1766853851489
+      "timestamp": 1766908038165
     },
     {
-      "sender": "260761275707",
+      "sender": "255615667337",
       "action": "viewed",
-      "timestamp": 1766853890524
+      "timestamp": 1766908041289
     },
     {
-      "sender": "254700327068",
+      "sender": "254768638925",
       "action": "viewed",
-      "timestamp": 1766853989686
+      "timestamp": 1766908096647
     },
     {
-      "sender": "2347083961658",
+      "sender": "254752589553",
       "action": "viewed",
-      "timestamp": 1766854049819
+      "timestamp": 1766908108763
     },
     {
-      "sender": "254700327068",
+      "sender": "260966566253",
       "action": "viewed",
-      "timestamp": 1766854119154
+      "timestamp": 1766908119255
     },
     {
-      "sender": "2347083961658",
+      "sender": "254734971054",
       "action": "viewed",
-      "timestamp": 1766854212739
+      "timestamp": 1766908212937
     },
     {
-      "sender": "254110343407",
+      "sender": "254793544290",
       "action": "viewed",
-      "timestamp": 1766854251921
-    },
-    {
-      "sender": "2347083961658",
-      "action": "viewed",
-      "timestamp": 1766854423095
-    },
-    {
-      "sender": "254715051506",
-      "action": "viewed",
-      "timestamp": 1766854589711
-    },
-    {
-      "sender": "254745995857",
-      "action": "viewed",
-      "timestamp": 1766854600222
-    },
-    {
-      "sender": "2347083961658",
-      "action": "viewed",
-      "timestamp": 1766854656394
-    },
-    {
-      "sender": "254793460414",
-      "action": "viewed",
-      "timestamp": 1766854744778
-    },
-    {
-      "sender": "254745995857",
-      "action": "viewed",
-      "timestamp": 1766854812955
-    },
-    {
-      "sender": "254725979273",
-      "action": "viewed",
-      "timestamp": 1766854836670
-    },
-    {
-      "sender": "254725979273",
-      "action": "viewed",
-      "timestamp": 1766854849109
-    },
-    {
-      "sender": "260770441675",
-      "action": "viewed",
-      "timestamp": 1766855007785
-    },
-    {
-      "sender": "254711921079",
-      "action": "viewed",
-      "timestamp": 1766855033681
+      "timestamp": 1766908250922
     },
     {
       "sender": "260760157870",
       "action": "viewed",
-      "timestamp": 1766855158698
-    },
-    {
-      "sender": "254116088862",
-      "action": "viewed",
-      "timestamp": 1766855181001
-    },
-    {
-      "sender": "254720015560",
-      "action": "viewed",
-      "timestamp": 1766855324851
-    },
-    {
-      "sender": "254790919376",
-      "action": "viewed",
-      "timestamp": 1766855326341
-    },
-    {
-      "sender": "254700327068",
-      "action": "viewed",
-      "timestamp": 1766855395884
-    },
-    {
-      "sender": "260966088867",
-      "action": "viewed",
-      "timestamp": 1766855458207
+      "timestamp": 1766908278358
     },
     {
       "sender": "260760157870",
       "action": "viewed",
-      "timestamp": 1766855594371
+      "timestamp": 1766908380240
     },
     {
-      "sender": "260773595539",
+      "sender": "254112614820",
       "action": "viewed",
-      "timestamp": 1766855634296
+      "timestamp": 1766908545763
     },
     {
-      "sender": "254116088862",
+      "sender": "255653028085",
       "action": "viewed",
-      "timestamp": 1766855639306
+      "timestamp": 1766908655513
     },
     {
-      "sender": "260964074680",
+      "sender": "254112537667",
       "action": "viewed",
-      "timestamp": 1766855661920
-    },
-    {
-      "sender": "260964280292",
-      "action": "viewed",
-      "timestamp": 1766855771782
-    },
-    {
-      "sender": "260776828093",
-      "action": "viewed",
-      "timestamp": 1766855832867
-    },
-    {
-      "sender": "254720015560",
-      "action": "viewed",
-      "timestamp": 1766855878801
-    },
-    {
-      "sender": "254720015560",
-      "action": "viewed",
-      "timestamp": 1766855977848
-    },
-    {
-      "sender": "260776828093",
-      "action": "viewed",
-      "timestamp": 1766856098782
-    },
-    {
-      "sender": "254743185189",
-      "action": "viewed",
-      "timestamp": 1766856102826
-    },
-    {
-      "sender": "260776828093",
-      "action": "viewed",
-      "timestamp": 1766856110614
-    },
-    {
-      "sender": "260776828093",
-      "action": "viewed",
-      "timestamp": 1766856121185
-    },
-    {
-      "sender": "254700327068",
-      "action": "viewed",
-      "timestamp": 1766856132277
-    },
-    {
-      "sender": "260776828093",
-      "action": "viewed",
-      "timestamp": 1766856144799
-    },
-    {
-      "sender": "2347083961658",
-      "action": "viewed",
-      "timestamp": 1766856226025
-    },
-    {
-      "sender": "254700327068",
-      "action": "viewed",
-      "timestamp": 1766856254158
-    },
-    {
-      "sender": "254758176351",
-      "action": "viewed",
-      "timestamp": 1766856263082
-    },
-    {
-      "sender": "254700327068",
-      "action": "viewed",
-      "timestamp": 1766856274281
-    },
-    {
-      "sender": "254789782879",
-      "action": "viewed",
-      "timestamp": 1766856308005
-    },
-    {
-      "sender": "260761275707",
-      "action": "viewed",
-      "timestamp": 1766856317316
-    },
-    {
-      "sender": "254789782879",
-      "action": "viewed",
-      "timestamp": 1766856352527
-    },
-    {
-      "sender": "2347083961658",
-      "action": "viewed",
-      "timestamp": 1766856398469
-    },
-    {
-      "sender": "260776828093",
-      "action": "viewed",
-      "timestamp": 1766856439919
-    },
-    {
-      "sender": "260765811784",
-      "action": "viewed",
-      "timestamp": 1766856557169
-    },
-    {
-      "sender": "2347083961658",
-      "action": "viewed",
-      "timestamp": 1766856562054
-    },
-    {
-      "sender": "254108413522",
-      "action": "viewed",
-      "timestamp": 1766856596255
-    },
-    {
-      "sender": "254797161544",
-      "action": "viewed",
-      "timestamp": 1766856693781
-    },
-    {
-      "sender": "260765811784",
-      "action": "viewed",
-      "timestamp": 1766856750167
+      "timestamp": 1766908662570
     },
     {
       "sender": "254753879768",
       "action": "viewed",
-      "timestamp": 1766856806426
+      "timestamp": 1766908867575
     },
     {
-      "sender": "254796979424",
+      "sender": "255653028085",
       "action": "viewed",
-      "timestamp": 1766856808631
+      "timestamp": 1766909023625
     },
     {
-      "sender": "254796979424",
+      "sender": "255653028085",
       "action": "viewed",
-      "timestamp": 1766856813194
+      "timestamp": 1766909031993
     },
     {
-      "sender": "254782349148",
+      "sender": "255653028085",
       "action": "viewed",
-      "timestamp": 1766856945014
+      "timestamp": 1766909035793
     },
     {
-      "sender": "2348127123844",
+      "sender": "255653028085",
       "action": "viewed",
-      "timestamp": 1766856958749
+      "timestamp": 1766909038935
     },
     {
-      "sender": "254743121515",
+      "sender": "255653028085",
       "action": "viewed",
-      "timestamp": 1766856984086
+      "timestamp": 1766909042354
     },
     {
-      "sender": "254743121515",
+      "sender": "255653028085",
       "action": "viewed",
-      "timestamp": 1766856997004
-    },
-    {
-      "sender": "254743121515",
-      "action": "viewed",
-      "timestamp": 1766857007349
-    },
-    {
-      "sender": "2347083961658",
-      "action": "viewed",
-      "timestamp": 1766857030828
-    },
-    {
-      "sender": "254719761655",
-      "action": "viewed",
-      "timestamp": 1766857068955
-    },
-    {
-      "sender": "260964280292",
-      "action": "viewed",
-      "timestamp": 1766857072378
-    },
-    {
-      "sender": "254782349148",
-      "action": "viewed",
-      "timestamp": 1766857108635
-    },
-    {
-      "sender": "254115846537",
-      "action": "viewed",
-      "timestamp": 1766857124810
-    },
-    {
-      "sender": "254789782879",
-      "action": "viewed",
-      "timestamp": 1766857162298
-    },
-    {
-      "sender": "260979439872",
-      "action": "viewed",
-      "timestamp": 1766857236588
-    },
-    {
-      "sender": "254743121515",
-      "action": "viewed",
-      "timestamp": 1766857250620
-    },
-    {
-      "sender": "2347083961658",
-      "action": "viewed",
-      "timestamp": 1766857337392
-    },
-    {
-      "sender": "260765811784",
-      "action": "viewed",
-      "timestamp": 1766857363872
+      "timestamp": 1766909046349
     },
     {
       "sender": "254115076372",
       "action": "viewed",
-      "timestamp": 1766857379605
+      "timestamp": 1766909098308
     },
     {
-      "sender": "254707440601",
+      "sender": "260777021831",
       "action": "viewed",
-      "timestamp": 1766857412003
+      "timestamp": 1766909099418
     },
     {
-      "sender": "254707440601",
+      "sender": "254115076372",
       "action": "viewed",
-      "timestamp": 1766857414247
+      "timestamp": 1766909111968
     },
     {
-      "sender": "254707440601",
+      "sender": "260964830720",
       "action": "viewed",
-      "timestamp": 1766857416018
+      "timestamp": 1766909224873
     },
     {
-      "sender": "254707440601",
+      "sender": "260964830720",
       "action": "viewed",
-      "timestamp": 1766857417922
+      "timestamp": 1766909313502
     },
     {
-      "sender": "254707440601",
+      "sender": "260774874667",
       "action": "viewed",
-      "timestamp": 1766857419641
+      "timestamp": 1766909324251
     },
     {
-      "sender": "254707440601",
+      "sender": "254722745701",
       "action": "viewed",
-      "timestamp": 1766857421299
+      "timestamp": 1766909423066
     },
     {
-      "sender": "254707440601",
+      "sender": "254722745701",
       "action": "viewed",
-      "timestamp": 1766857423045
+      "timestamp": 1766909428280
     },
     {
-      "sender": "254707440601",
+      "sender": "260774874667",
       "action": "viewed",
-      "timestamp": 1766857424773
+      "timestamp": 1766909445252
     },
     {
-      "sender": "254707440601",
+      "sender": "260967415240",
       "action": "viewed",
-      "timestamp": 1766857426483
+      "timestamp": 1766909560658
     },
     {
-      "sender": "254707440601",
+      "sender": "260774874667",
       "action": "viewed",
-      "timestamp": 1766857428222
+      "timestamp": 1766909593130
     },
     {
-      "sender": "254707440601",
+      "sender": "254742272267",
       "action": "viewed",
-      "timestamp": 1766857429874
+      "timestamp": 1766909713957
     },
     {
-      "sender": "254707440601",
+      "sender": "254108413522",
       "action": "viewed",
-      "timestamp": 1766857431536
+      "timestamp": 1766909829327
     },
     {
-      "sender": "254707440601",
+      "sender": "260767076220",
       "action": "viewed",
-      "timestamp": 1766857433231
+      "timestamp": 1766909897034
     },
     {
-      "sender": "254707440601",
+      "sender": "254728640349",
       "action": "viewed",
-      "timestamp": 1766857434972
+      "timestamp": 1766910075378
     },
     {
-      "sender": "254707440601",
+      "sender": "254728640349",
       "action": "viewed",
-      "timestamp": 1766857436660
+      "timestamp": 1766910080148
     },
     {
-      "sender": "254707440601",
+      "sender": "254724455112",
       "action": "viewed",
-      "timestamp": 1766857438331
+      "timestamp": 1766910083292
     },
     {
-      "sender": "254707440601",
+      "sender": "254115076372",
       "action": "viewed",
-      "timestamp": 1766857440051
+      "timestamp": 1766910091835
     },
     {
-      "sender": "254707440601",
+      "sender": "254115076372",
       "action": "viewed",
-      "timestamp": 1766857441782
+      "timestamp": 1766910101405
     },
     {
-      "sender": "254707440601",
+      "sender": "254768188297",
       "action": "viewed",
-      "timestamp": 1766857443590
+      "timestamp": 1766910114146
     },
     {
-      "sender": "254707440601",
+      "sender": "254742272267",
       "action": "viewed",
-      "timestamp": 1766857445236
+      "timestamp": 1766910116079
     },
     {
-      "sender": "254790919376",
+      "sender": "254768188297",
       "action": "viewed",
-      "timestamp": 1766857502239
+      "timestamp": 1766910132467
+    },
+    {
+      "sender": "254768188297",
+      "action": "viewed",
+      "timestamp": 1766910146543
+    },
+    {
+      "sender": "254768188297",
+      "action": "viewed",
+      "timestamp": 1766910161254
+    },
+    {
+      "sender": "254116217770",
+      "action": "viewed",
+      "timestamp": 1766910175722
+    },
+    {
+      "sender": "260966566253",
+      "action": "viewed",
+      "timestamp": 1766910314476
+    },
+    {
+      "sender": "260966566253",
+      "action": "viewed",
+      "timestamp": 1766910316554
+    },
+    {
+      "sender": "254784766028",
+      "action": "viewed",
+      "timestamp": 1766910373298
+    },
+    {
+      "sender": "254768188297",
+      "action": "viewed",
+      "timestamp": 1766910377193
+    },
+    {
+      "sender": "254720015560",
+      "action": "viewed",
+      "timestamp": 1766910423201
+    },
+    {
+      "sender": "254798820507",
+      "action": "viewed",
+      "timestamp": 1766910439698
+    },
+    {
+      "sender": "254720015560",
+      "action": "viewed",
+      "timestamp": 1766910440878
+    },
+    {
+      "sender": "254720015560",
+      "action": "viewed",
+      "timestamp": 1766910513396
+    },
+    {
+      "sender": "254702858465",
+      "action": "viewed",
+      "timestamp": 1766910521155
+    },
+    {
+      "sender": "254784766028",
+      "action": "viewed",
+      "timestamp": 1766910546274
+    },
+    {
+      "sender": "254768188297",
+      "action": "viewed",
+      "timestamp": 1766910809859
+    },
+    {
+      "sender": "254769460582",
+      "action": "viewed",
+      "timestamp": 1766910847215
+    },
+    {
+      "sender": "254769460582",
+      "action": "viewed",
+      "timestamp": 1766910850895
+    },
+    {
+      "sender": "260962347198",
+      "action": "viewed",
+      "timestamp": 1766910903783
+    },
+    {
+      "sender": "260760157870",
+      "action": "viewed",
+      "timestamp": 1766910934091
+    },
+    {
+      "sender": "260779291415",
+      "action": "viewed",
+      "timestamp": 1766911050103
+    },
+    {
+      "sender": "260765200301",
+      "action": "viewed",
+      "timestamp": 1766911116007
+    },
+    {
+      "sender": "254115606707",
+      "action": "viewed",
+      "timestamp": 1766911179392
+    },
+    {
+      "sender": "260760157870",
+      "action": "viewed",
+      "timestamp": 1766911232698
+    },
+    {
+      "sender": "254794390185",
+      "action": "viewed",
+      "timestamp": 1766911234461
+    },
+    {
+      "sender": "254113118246",
+      "action": "viewed",
+      "timestamp": 1766911384934
+    },
+    {
+      "sender": "254768188297",
+      "action": "viewed",
+      "timestamp": 1766911397152
+    },
+    {
+      "sender": "254742272267",
+      "action": "viewed",
+      "timestamp": 1766911600478
+    },
+    {
+      "sender": "260970496737",
+      "action": "viewed",
+      "timestamp": 1766911731856
+    },
+    {
+      "sender": "254713076215",
+      "action": "viewed",
+      "timestamp": 1766911796722
+    },
+    {
+      "sender": "254108413522",
+      "action": "viewed",
+      "timestamp": 1766911802447
+    },
+    {
+      "sender": "254703397679",
+      "action": "viewed",
+      "timestamp": 1766911826586
+    },
+    {
+      "sender": "254796291679",
+      "action": "viewed",
+      "timestamp": 1766911831594
+    },
+    {
+      "sender": "254740938228",
+      "action": "viewed",
+      "timestamp": 1766911836453
+    },
+    {
+      "sender": "254748138295",
+      "action": "viewed",
+      "timestamp": 1766911837811
+    },
+    {
+      "sender": "254740938228",
+      "action": "viewed",
+      "timestamp": 1766911839289
+    },
+    {
+      "sender": "254748138295",
+      "action": "viewed",
+      "timestamp": 1766911841664
+    },
+    {
+      "sender": "254740938228",
+      "action": "viewed",
+      "timestamp": 1766911845231
+    },
+    {
+      "sender": "254748138295",
+      "action": "viewed",
+      "timestamp": 1766911847447
+    },
+    {
+      "sender": "254748138295",
+      "action": "viewed",
+      "timestamp": 1766911850976
+    },
+    {
+      "sender": "254740938228",
+      "action": "viewed",
+      "timestamp": 1766911854527
+    },
+    {
+      "sender": "254740938228",
+      "action": "viewed",
+      "timestamp": 1766911857324
+    },
+    {
+      "sender": "254740938228",
+      "action": "viewed",
+      "timestamp": 1766911860184
+    },
+    {
+      "sender": "254740938228",
+      "action": "viewed",
+      "timestamp": 1766911862978
+    },
+    {
+      "sender": "254740938228",
+      "action": "viewed",
+      "timestamp": 1766911865831
     }
   ],
-  "totalViewed": 492,
+  "totalViewed": 621,
   "lastViewed": {
-    "sender": "254790919376",
+    "sender": "254740938228",
     "action": "viewed",
-    "timestamp": 1766857502239
+    "timestamp": 1766911865831
   },
-  "consecutiveViews": 1,
-  "lastSender": "254790919376",
+  "consecutiveViews": 5,
+  "lastSender": "254740938228",
   "settings": {
     "rateLimitDelay": 1000,
     "viewToAll": true,

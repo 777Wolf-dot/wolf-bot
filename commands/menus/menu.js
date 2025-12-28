@@ -5806,7 +5806,7 @@ case 7: {
 
 
 
-🐺🌕POWERED BY WOLFTECH🌕🐺
+🐺POWERED BY WOLFTECH🐺
 
 `;
 

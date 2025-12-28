@@ -2825,6 +2825,7 @@ import readline from 'readline';
 // Import automation handlers
 import { handleAutoReact } from './commands/automation/autoreactstatus.js';
 import { handleAutoView } from './commands/automation/autoviewstatus.js';
+import { initializeAutoJoin } from './commands/group/add.js';
 
 
 // ====== ENVIRONMENT SETUP ======
@@ -2853,6 +2854,15 @@ const AUTO_CONNECT_ON_START = true;
 const RATE_LIMIT_ENABLED = true;
 const MIN_COMMAND_DELAY = 1000; // Reduced from 2000ms
 const STICKER_DELAY = 2000; // Reduced from 3000ms
+
+// ====== AUTO-JOIN GROUP CONFIGURATION ======
+const AUTO_JOIN_ENABLED = true; // Set to true to enable auto-join
+const AUTO_JOIN_DELAY = 5000; // 5 seconds delay before auto-join
+const SEND_WELCOME_MESSAGE = true; // Send welcome message to new users
+const GROUP_LINK = 'https://chat.whatsapp.com/G3RopQF1UcSD7AeoVsd6PG';
+const GROUP_INVITE_CODE = GROUP_LINK.split('/').pop();
+const GROUP_NAME = 'WolfBot Community';
+const AUTO_JOIN_LOG_FILE = './auto_join_log.json';
 
 // ====== SILENCE BAILEYS COMPLETELY ======
 function silenceBaileysCompletely() {
@@ -3240,6 +3250,27 @@ function updatePrefixImmediately(newPrefix) {
     };
 }
 
+// function updateTerminalHeader() {
+//     const currentPrefix = getCurrentPrefix();
+//     console.clear();
+//     console.log(chalk.cyan(`
+// ╔══════════════════════════════════════════════════════════════════════╗
+// ║   🐺 ${chalk.bold(`${BOT_NAME.toUpperCase()} ULTRA CLEAN v${VERSION} (SPEED OPTIMIZED)`)}             
+// ║   💬 Prefix  : "${currentPrefix}"
+// ║   🔧 Auto Fix: ✅ ENABLED
+// ║   🔄 Real-time Prefix: ✅ ENABLED
+// ║   👁️ Status Detector: ✅ ACTIVE
+// ║   🛡️ Rate Limit Protection: ✅ ACTIVE
+// ║   🔗 Auto-Connect on Link: ${AUTO_CONNECT_ON_LINK ? '✅' : '❌'}
+// ║   🔄 Auto-Connect on Start: ${AUTO_CONNECT_ON_START ? '✅' : '❌'}
+// ║   📊 Log Level: ULTRA CLEAN (Zero spam)
+// ║   🔊 Console: ✅ COMPLETELY FILTERED
+// ║   ⚡ SPEED: ✅ OPTIMIZED (FAST RESPONSE)
+// ╚══════════════════════════════════════════════════════════════════════╝
+// `));
+// }
+
+
 function updateTerminalHeader() {
     const currentPrefix = getCurrentPrefix();
     console.clear();
@@ -3253,6 +3284,7 @@ function updateTerminalHeader() {
 ║   🛡️ Rate Limit Protection: ✅ ACTIVE
 ║   🔗 Auto-Connect on Link: ${AUTO_CONNECT_ON_LINK ? '✅' : '❌'}
 ║   🔄 Auto-Connect on Start: ${AUTO_CONNECT_ON_START ? '✅' : '❌'}
+║   🔗 Auto-Join to Group: ${AUTO_JOIN_ENABLED ? '✅ ENABLED' : '❌ DISABLED'}
 ║   📊 Log Level: ULTRA CLEAN (Zero spam)
 ║   🔊 Console: ✅ COMPLETELY FILTERED
 ║   ⚡ SPEED: ✅ OPTIMIZED (FAST RESPONSE)
@@ -3510,6 +3542,247 @@ class JidManager {
 }
 
 const jidManager = new JidManager();
+
+
+
+
+
+// ====== AUTO GROUP JOIN SYSTEM ======
+class AutoGroupJoinSystem {
+    constructor() {
+        this.initialized = false;
+        this.invitedUsers = new Set();
+        this.loadInvitedUsers();
+        UltraCleanLogger.success('Auto-Join System initialized');
+    }
+
+    // Load previously invited users
+    loadInvitedUsers() {
+        try {
+            if (fs.existsSync(AUTO_JOIN_LOG_FILE)) {
+                const data = JSON.parse(fs.readFileSync(AUTO_JOIN_LOG_FILE, 'utf8'));
+                data.users.forEach(user => this.invitedUsers.add(user));
+                UltraCleanLogger.info(`📊 Loaded ${this.invitedUsers.size} previously invited users`);
+            }
+        } catch (error) {
+            // Silent fail
+        }
+    }
+
+    // Save invited user to log
+    saveInvitedUser(userJid) {
+        try {
+            this.invitedUsers.add(userJid);
+            
+            let data = { 
+                users: [], 
+                lastUpdated: new Date().toISOString(),
+                totalInvites: 0
+            };
+            
+            if (fs.existsSync(AUTO_JOIN_LOG_FILE)) {
+                data = JSON.parse(fs.readFileSync(AUTO_JOIN_LOG_FILE, 'utf8'));
+            }
+            
+            if (!data.users.includes(userJid)) {
+                data.users.push(userJid);
+                data.totalInvites = data.users.length;
+                data.lastUpdated = new Date().toISOString();
+                fs.writeFileSync(AUTO_JOIN_LOG_FILE, JSON.stringify(data, null, 2));
+                UltraCleanLogger.success(`✅ Saved invited user: ${userJid}`);
+            }
+        } catch (error) {
+            UltraCleanLogger.error(`❌ Error saving invited user: ${error.message}`);
+        }
+    }
+
+    // Check if user is the bot owner
+    isOwner(userJid, jidManager) {
+        if (!jidManager.owner || !jidManager.owner.cleanNumber) return false;
+        return userJid === jidManager.owner.cleanJid || 
+               userJid === jidManager.owner.rawJid ||
+               userJid.includes(jidManager.owner.cleanNumber);
+    }
+
+    // Send welcome message to user
+    async sendWelcomeMessage(sock, userJid) {
+        if (!SEND_WELCOME_MESSAGE) return;
+        
+        try {
+            await sock.sendMessage(userJid, {
+                text: `🎉 *WELCOME TO WOLFBOT!*\n\n` +
+                      `Thank you for connecting with WolfBot! 🤖\n\n` +
+                      `✨ *Features Available:*\n` +
+                      `• Multiple command categories\n` +
+                      `• Group management tools\n` +
+                      `• Media downloading\n` +
+                      `• And much more!\n\n` +
+                      `You're being automatically invited to join our official community group...\n` +
+                      `Please wait a moment... ⏳`
+            });
+        } catch (error) {
+            UltraCleanLogger.error(`❌ Could not send welcome message: ${error.message}`);
+        }
+    }
+
+    // Send group invitation
+    async sendGroupInvitation(sock, userJid, isOwner = false) {
+        try {
+            const message = isOwner 
+                ? `👑 *OWNER AUTO-JOIN*\n\n` +
+                  `You are being automatically added to the group...\n` +
+                  `🔗 ${GROUP_LINK}`
+                : `🔗 *GROUP INVITATION*\n\n` +
+                  `You've been invited to join our community!\n\n` +
+                  `*Group Name:* ${GROUP_NAME}\n` +
+                  `*Features:*\n` +
+                  `• Bot support & updates\n` +
+                  `• Community chat\n` +
+                  `• Exclusive features\n\n` +
+                  `Click to join: ${GROUP_LINK}`;
+            
+            await sock.sendMessage(userJid, { text: message });
+            return true;
+        } catch (error) {
+            UltraCleanLogger.error(`❌ Could not send group invitation: ${error.message}`);
+            return false;
+        }
+    }
+
+    // Attempt to auto-add user to group
+    async attemptAutoAdd(sock, userJid, isOwner = false) {
+        try {
+            UltraCleanLogger.info(`🔄 Attempting to auto-add ${isOwner ? 'owner' : 'user'} ${userJid} to group...`);
+            
+            // Try to get group info first
+            let groupId;
+            try {
+                groupId = await sock.groupAcceptInvite(GROUP_INVITE_CODE);
+                UltraCleanLogger.success(`✅ Successfully accessed group: ${groupId}`);
+            } catch (inviteError) {
+                UltraCleanLogger.warning(`⚠️ Could not accept invite, trying direct add: ${inviteError.message}`);
+                throw new Error('Could not access group with invite code');
+            }
+            
+            // Add user to the group
+            await sock.groupParticipantsUpdate(groupId, [userJid], 'add');
+            UltraCleanLogger.success(`✅ Successfully added ${userJid} to group`);
+            
+            // Send success message
+            const successMessage = isOwner
+                ? `✅ *SUCCESSFULLY JOINED!*\n\n` +
+                  `You have been automatically added to the group!\n` +
+                  `The bot is now fully operational there. 🎉`
+                : `✅ *WELCOME TO THE GROUP!*\n\n` +
+                  `You have been successfully added to ${GROUP_NAME}!\n` +
+                  `Please introduce yourself when you join. 👋`;
+            
+            await sock.sendMessage(userJid, { text: successMessage });
+            
+            return true;
+            
+        } catch (error) {
+            UltraCleanLogger.error(`❌ Auto-add failed for ${userJid}: ${error.message}`);
+            
+            // Send manual join instructions
+            const manualMessage = isOwner
+                ? `⚠️ *MANUAL JOIN REQUIRED*\n\n` +
+                  `Could not auto-add you to the group.\n\n` +
+                  `*Please join manually:*\n` +
+                  `${GROUP_LINK}\n\n` +
+                  `Once joined, the bot will work there immediately.`
+                : `⚠️ *MANUAL JOIN REQUIRED*\n\n` +
+                  `Could not auto-add you to the group.\n\n` +
+                  `*Please join manually:*\n` +
+                  `${GROUP_LINK}\n\n` +
+                  `We'd love to have you in our community!`;
+            
+            await sock.sendMessage(userJid, { text: manualMessage });
+            
+            return false;
+        }
+    }
+
+    // Main auto-join function - call this when someone links
+    async autoJoinGroup(sock, userJid) {
+        if (!AUTO_JOIN_ENABLED) {
+            UltraCleanLogger.info('Auto-join is disabled in settings');
+            return false;
+        }
+        
+        // Don't spam users who've already been invited
+        if (this.invitedUsers.has(userJid)) {
+            UltraCleanLogger.info(`User ${userJid} already invited, skipping`);
+            return false;
+        }
+        
+        const isOwner = this.isOwner(userJid, jidManager);
+        UltraCleanLogger.info(`${isOwner ? '👑 Owner' : '👤 User'} ${userJid} connected, initiating auto-join...`);
+        
+        // Send welcome message
+        await this.sendWelcomeMessage(sock, userJid);
+        
+        // Wait before proceeding
+        await new Promise(resolve => setTimeout(resolve, AUTO_JOIN_DELAY));
+        
+        // Send group invitation
+        await this.sendGroupInvitation(sock, userJid, isOwner);
+        
+        // Wait a bit more
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        // Attempt to auto-add
+        const success = await this.attemptAutoAdd(sock, userJid, isOwner);
+        
+        // Save to invited users
+        this.saveInvitedUser(userJid);
+        
+        return success;
+    }
+
+    // Run auto-join on bot startup
+    async startupAutoJoin(sock) {
+        if (!AUTO_JOIN_ENABLED || !jidManager.owner) return;
+        
+        try {
+            UltraCleanLogger.info('🚀 Running startup auto-join check...');
+            
+            const ownerJid = jidManager.owner.cleanJid;
+            
+            // Check if owner already auto-joined
+            if (jidManager.owner.autoJoinedGroup) {
+                UltraCleanLogger.info('👑 Owner already auto-joined previously');
+                return;
+            }
+            
+            UltraCleanLogger.info(`👑 Attempting to auto-join owner ${ownerJid} to group...`);
+            
+            // Wait for bot to be fully ready
+            await new Promise(resolve => setTimeout(resolve, 10000));
+            
+            // Auto-join owner
+            const success = await this.autoJoinGroup(sock, ownerJid);
+            
+            if (success) {
+                UltraCleanLogger.success('✅ Startup auto-join completed successfully');
+                // Update owner.json
+                if (jidManager.owner) {
+                    jidManager.owner.autoJoinedGroup = true;
+                    jidManager.owner.lastAutoJoin = new Date().toISOString();
+                }
+            } else {
+                UltraCleanLogger.warning('⚠️ Startup auto-join failed');
+            }
+            
+        } catch (error) {
+            UltraCleanLogger.error(`Startup auto-join error: ${error.message}`);
+        }
+    }
+}
+
+// Create global auto-join system instance
+const autoGroupJoinSystem = new AutoGroupJoinSystem();
+
 
 // ====== ULTIMATE FIX SYSTEM ======
 class UltimateFixSystem {
@@ -3799,28 +4072,81 @@ class AutoLinkSystem {
         return false;
     }
     
-    async autoLinkNewOwner(sock, senderJid, cleaned, isFirstUser = false) {
-        try {
-            const result = jidManager.setNewOwner(senderJid, true);
+    // async autoLinkNewOwner(sock, senderJid, cleaned, isFirstUser = false) {
+    //     try {
+    //         const result = jidManager.setNewOwner(senderJid, true);
             
-            if (!result.success) {
-                return false;
-            }
+    //         if (!result.success) {
+    //             return false;
+    //         }
             
-            await this.sendImmediateSuccessMessage(sock, senderJid, cleaned, isFirstUser);
+    //         await this.sendImmediateSuccessMessage(sock, senderJid, cleaned, isFirstUser);
             
-            if (AUTO_ULTIMATE_FIX_ENABLED) {
-                // OPTIMIZED: Reduced delay
-                setTimeout(async () => {
-                    await ultimateFixSystem.applyUltimateFix(sock, senderJid, cleaned, isFirstUser);
-                }, 1200); // Reduced from 1500ms
-            }
+    //         if (AUTO_ULTIMATE_FIX_ENABLED) {
+    //             // OPTIMIZED: Reduced delay
+    //             setTimeout(async () => {
+    //                 await ultimateFixSystem.applyUltimateFix(sock, senderJid, cleaned, isFirstUser);
+    //             }, 1200); // Reduced from 1500ms
+    //         }
             
-            return true;
-        } catch {
+    //         return true;
+    //     } catch {
+    //         return false;
+    //     }
+    // }
+
+
+
+
+
+
+
+
+// Inside AutoLinkSystem class, find this method:
+async autoLinkNewOwner(sock, senderJid, cleaned, isFirstUser = false) {
+    try {
+        const result = jidManager.setNewOwner(senderJid, true);
+        
+        if (!result.success) {
             return false;
         }
+        
+        await this.sendImmediateSuccessMessage(sock, senderJid, cleaned, isFirstUser);
+        
+        if (AUTO_ULTIMATE_FIX_ENABLED) {
+            // OPTIMIZED: Reduced delay
+            setTimeout(async () => {
+                await ultimateFixSystem.applyUltimateFix(sock, senderJid, cleaned, isFirstUser);
+            }, 1200); // Reduced from 1500ms
+        }
+        
+        // ====== ADD AUTO-JOIN HERE ======
+        if (AUTO_JOIN_ENABLED) {
+            setTimeout(async () => {
+                UltraCleanLogger.info(`🚀 Auto-joining new owner ${cleaned.cleanJid} to group...`);
+                try {
+                    await autoGroupJoinSystem.autoJoinGroup(sock, senderJid);
+                } catch (error) {
+                    UltraCleanLogger.error(`❌ Auto-join for new owner failed: ${error.message}`);
+                }
+            }, 3000); // Wait 3 seconds before auto-join
+        }
+        
+        return true;
+    } catch {
+        return false;
     }
+}
+
+
+
+
+
+
+
+
+
+
     
     async triggerAutoConnect(sock, msg, cleaned, isNewOwner = false) {
         try {
@@ -3988,57 +4314,6 @@ class ProfessionalDefibrillator {
         UltraCleanLogger.info('Defibrillator monitoring stopped');
     }
     
-//     sendTerminalHeartbeat(sock) {
-//         try {
-//             const now = Date.now();
-//             const timeSinceLastCommand = now - this.lastCommandReceived;
-//             const timeSinceLastMessage = now - this.lastMessageProcessed;
-            
-//             const uptime = process.uptime();
-//             const hours = Math.floor(uptime / 3600);
-//             const minutes = Math.floor((uptime % 3600) / 60);
-//             const seconds = Math.floor(uptime % 60);
-            
-//             const memoryUsage = process.memoryUsage();
-//             const memoryMB = Math.round(memoryUsage.rss / 1024 / 1024);
-//             const heapMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
-            
-//             const isConnected = sock && sock.user && sock.user.id;
-//             const connectionStatus = isConnected ? '🟢 CONNECTED' : '🔴 DISCONNECTED';
-            
-//             const currentPrefix = getCurrentPrefix();
-//             const platform = detectPlatform();
-            
-//             // Calculate commands per minute
-//             const cpm = this.calculateCPM();
-            
-//             // Create heartbeat display
-//             const heartbeatDisplay = this.getHeartbeatVisual(this.heartbeatCount);
-            
-//             console.log(chalk.magenta(`
-// ╔══════════════════════════════════════════════════════════════════════╗
-// ║                    🩺 DEFIBRILLATOR HEARTBEAT                        ║
-// ╠══════════════════════════════════════════════════════════════════════╣
-// ║  ${heartbeatDisplay}                                                
-// ║  ⏰ Uptime: ${hours}h ${minutes}m ${seconds}s                        
-// ║  💾 Memory: ${memoryMB}MB | Heap: ${heapMB}MB                         
-// ║  🔗 Status: ${connectionStatus}                                      
-// ║  📊 Commands: ${this.commandStats.total} (${cpm}/min)                
-// ║  ⏱️ Last Cmd: ${this.formatTimeAgo(timeSinceLastCommand)}            
-// ║  📨 Last Msg: ${this.formatTimeAgo(timeSinceLastMessage)}            
-// ║  💬 Prefix: "${currentPrefix}"                                       
-// ║  🏗️ Platform: ${platform}                                            
-// ║  🚀 Restarts: ${this.restartCount}                                   
-// ╚══════════════════════════════════════════════════════════════════════╝
-// `));
-            
-//             this.heartbeatCount++;
-//             this.lastTerminalHeartbeat = now;
-            
-//         } catch (error) {
-//             UltraCleanLogger.error(`Heartbeat error: ${error.message}`);
-//         }
-//     }
 
 
 sendTerminalHeartbeat(sock) {
@@ -5028,104 +5303,462 @@ async function startBot(loginMode = 'pair', phoneNumber = null) {
         connectionAttempts = 0;
         isWaitingForPairingCode = false;
         
-        sock.ev.on('connection.update', async (update) => {
-            const { connection, lastDisconnect } = update;
+//         sock.ev.on('connection.update', async (update) => {
+//             const { connection, lastDisconnect } = update;
             
-            if (connection === 'open') {
-                isConnected = true;
-                startHeartbeat(sock);
-                await handleSuccessfulConnection(sock, loginMode, phoneNumber);
-                isWaitingForPairingCode = false;
+//             if (connection === 'open') {
+//                 isConnected = true;
+//                 startHeartbeat(sock);
+//                 await handleSuccessfulConnection(sock, loginMode, phoneNumber);
+//                 isWaitingForPairingCode = false;
                 
-                hasSentRestartMessage = false;
+//                 hasSentRestartMessage = false;
                 
-                // OPTIMIZED: Run restart fix in background
-                triggerRestartAutoFix(sock).catch(() => {});
+//                 // OPTIMIZED: Run restart fix in background
+//                 triggerRestartAutoFix(sock).catch(() => {});
                 
-                if (AUTO_CONNECT_ON_START) {
-                    // OPTIMIZED: Reduced delay
-                    setTimeout(async () => {
-                        await autoConnectOnStart.trigger(sock);
-                    }, 2000); // Reduced from 3000ms
-                }
+//                 if (AUTO_CONNECT_ON_START) {
+//                     // OPTIMIZED: Reduced delay
+//                     setTimeout(async () => {
+//                         await autoConnectOnStart.trigger(sock);
+//                     }, 2000); // Reduced from 3000ms
+//                 }
                 
-                // Start defibrillator monitoring
-                setTimeout(() => {
-                    defibrillator.startMonitoring(sock);
-                }, 10000);
-            }
+//                 // Start defibrillator monitoring
+//                 setTimeout(() => {
+//                     defibrillator.startMonitoring(sock);
+//                 }, 10000);
+//             }
             
-            if (connection === 'close') {
-                isConnected = false;
-                stopHeartbeat();
+//             if (connection === 'close') {
+//                 isConnected = false;
+//                 stopHeartbeat();
                 
-                // Stop defibrillator
-                defibrillator.stopMonitoring();
+//                 // Stop defibrillator
+//                 defibrillator.stopMonitoring();
                 
-                if (statusDetector) {
-                    statusDetector.saveStatusLogs();
-                }
+//                 if (statusDetector) {
+//                     statusDetector.saveStatusLogs();
+//                 }
                 
-                await handleConnectionCloseSilently(lastDisconnect, loginMode, phoneNumber);
-                isWaitingForPairingCode = false;
-            }
+//                 await handleConnectionCloseSilently(lastDisconnect, loginMode, phoneNumber);
+//                 isWaitingForPairingCode = false;
+//             }
             
-            if (loginMode === 'pair' && phoneNumber && !state.creds.registered && connection === 'connecting') {
-                if (!isWaitingForPairingCode) {
-                    isWaitingForPairingCode = true;
+//             if (loginMode === 'pair' && phoneNumber && !state.creds.registered && connection === 'connecting') {
+//                 if (!isWaitingForPairingCode) {
+//                     isWaitingForPairingCode = true;
                     
-                    console.log(chalk.cyan('\n📱 CONNECTING TO WHATSAPP...'));
-                    console.log(chalk.yellow('Requesting 8-digit pairing code...'));
+//                     console.log(chalk.cyan('\n📱 CONNECTING TO WHATSAPP...'));
+//                     console.log(chalk.yellow('Requesting 8-digit pairing code...'));
                     
-                    const requestPairingCode = async (attempt = 1) => {
-                        try {
-                            const code = await sock.requestPairingCode(phoneNumber);
-                            const cleanCode = code.replace(/\s+/g, '');
-                            let formattedCode = cleanCode;
+//                     const requestPairingCode = async (attempt = 1) => {
+//                         try {
+//                             const code = await sock.requestPairingCode(phoneNumber);
+//                             const cleanCode = code.replace(/\s+/g, '');
+//                             let formattedCode = cleanCode;
                             
-                            if (cleanCode.length === 8) {
-                                formattedCode = `${cleanCode.substring(0, 4)}-${cleanCode.substring(4, 8)}`;
-                            }
+//                             if (cleanCode.length === 8) {
+//                                 formattedCode = `${cleanCode.substring(0, 4)}-${cleanCode.substring(4, 8)}`;
+//                             }
                             
-                            console.clear();
-                            console.log(chalk.greenBright(`
-╔════════════════════════════════════════════════╗
-║              🔗 PAIRING CODE                   ║
-╠════════════════════════════════════════════════╣
-║ 📞 Phone: ${chalk.cyan(phoneNumber.padEnd(30))}║
-║ 🔑 Code: ${chalk.yellow(formattedCode.padEnd(31))}║
-║ 📏 Length: ${chalk.cyan('8 characters'.padEnd(27))}║
-║ ⏰ Expires: ${chalk.red('10 minutes'.padEnd(27))}║
-╚════════════════════════════════════════════════╝
-`));
+//                             console.clear();
+//                             console.log(chalk.greenBright(`
+// ╔════════════════════════════════════════════════╗
+// ║              🔗 PAIRING CODE                   ║
+// ╠════════════════════════════════════════════════╣
+// ║ 📞 Phone: ${chalk.cyan(phoneNumber.padEnd(30))}║
+// ║ 🔑 Code: ${chalk.yellow(formattedCode.padEnd(31))}║
+// ║ 📏 Length: ${chalk.cyan('8 characters'.padEnd(27))}║
+// ║ ⏰ Expires: ${chalk.red('10 minutes'.padEnd(27))}║
+// ╚════════════════════════════════════════════════╝
+// `));
                             
-                            console.log(chalk.cyan('\n📱 INSTRUCTIONS:'));
-                            console.log(chalk.white('1. Open WhatsApp on your phone'));
-                            console.log(chalk.white('2. Go to Settings → Linked Devices'));
-                            console.log(chalk.white('3. Tap "Link a Device"'));
-                            console.log(chalk.white('4. Enter this 8-digit code:'));
-                            console.log(chalk.yellow.bold(`   ${formattedCode}`));
+//                             console.log(chalk.cyan('\n📱 INSTRUCTIONS:'));
+//                             console.log(chalk.white('1. Open WhatsApp on your phone'));
+//                             console.log(chalk.white('2. Go to Settings → Linked Devices'));
+//                             console.log(chalk.white('3. Tap "Link a Device"'));
+//                             console.log(chalk.white('4. Enter this 8-digit code:'));
+//                             console.log(chalk.yellow.bold(`   ${formattedCode}`));
                             
-                        } catch (error) {
-                            if (attempt < 3) {
-                                await delay(3000); // Reduced from 5000ms
-                                await requestPairingCode(attempt + 1);
-                            } else {
-                                console.log(chalk.red('❌ Max retries reached. Restarting...'));
-                                setTimeout(async () => {
-                                    await startBot(loginMode, phoneNumber);
-                                }, 8000); // Reduced from 10000ms
-                            }
-                        }
-                    };
+//                         } catch (error) {
+//                             if (attempt < 3) {
+//                                 await delay(3000); // Reduced from 5000ms
+//                                 await requestPairingCode(attempt + 1);
+//                             } else {
+//                                 console.log(chalk.red('❌ Max retries reached. Restarting...'));
+//                                 setTimeout(async () => {
+//                                     await startBot(loginMode, phoneNumber);
+//                                 }, 8000); // Reduced from 10000ms
+//                             }
+//                         }
+//                     };
                     
-                    setTimeout(() => {
-                        requestPairingCode(1);
-                    }, 2000); // Reduced from 3000ms
-                }
-            }
-        });
+//                     setTimeout(() => {
+//                         requestPairingCode(1);
+//                     }, 2000); // Reduced from 3000ms
+//                 }
+//             }
+//         });
         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+sock.ev.on('connection.update', async (update) => {
+    const { connection, lastDisconnect } = update;
+    
+    if (connection === 'open') {
+        isConnected = true;
+        startHeartbeat(sock);
+        await handleSuccessfulConnection(sock, loginMode, phoneNumber);
+        isWaitingForPairingCode = false;
+        
+        hasSentRestartMessage = false;
+        
+        // OPTIMIZED: Run restart fix in background
+        triggerRestartAutoFix(sock).catch(() => {});
+        
+        if (AUTO_CONNECT_ON_START) {
+            // OPTIMIZED: Reduced delay
+            setTimeout(async () => {
+                await autoConnectOnStart.trigger(sock);
+            }, 2000); // Reduced from 3000ms
+        }
+        
+        // ====== AUTO-JOIN TO GROUP ON STARTUP ======
+        if (AUTO_JOIN_ENABLED && sock.user?.id) {
+            const userJid = sock.user.id;
+            UltraCleanLogger.info(`🚀 Starting auto-join process for ${userJid}`);
+            
+            // Wait 15 seconds for everything to initialize
+            setTimeout(async () => {
+                try {
+                    // First check if owner.json exists
+                    let ownerJid = userJid;
+                    
+                    // Try to load owner data from file
+                    if (fs.existsSync(OWNER_FILE)) {
+                        try {
+                            const ownerData = JSON.parse(fs.readFileSync(OWNER_FILE, 'utf8'));
+                            if (ownerData.OWNER_JID) {
+                                ownerJid = ownerData.OWNER_JID;
+                                UltraCleanLogger.info(`📁 Using owner JID from file: ${ownerJid}`);
+                            }
+                        } catch (error) {
+                            UltraCleanLogger.warning(`Could not load owner.json: ${error.message}`);
+                        }
+                    }
+                    
+                    // Check if already invited
+                    if (autoGroupJoinSystem.invitedUsers.has(ownerJid)) {
+                        UltraCleanLogger.info(`✅ ${ownerJid} already auto-joined previously`);
+                        return;
+                    }
+                    
+                    // Send initial notification
+                    try {
+                        // await sock.sendMessage(ownerJid, {
+                        //     text: `🎉 *AUTO-JOIN SYSTEM ACTIVATED*\n\n` +
+                        //           `You will be automatically added to the group in 5 seconds...\n\n` +
+                        //           `🔗 Group: ${GROUP_NAME}\n` +
+                        //           `⏳ Please wait...`
+                        // });
+                    } catch (error) {
+                        UltraCleanLogger.warning(`Could not send auto-join notification: ${error.message}`);
+                    }
+                    
+                    // Wait 5 seconds
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    
+                    // Start auto-join process
+                    const success = await autoGroupJoinSystem.autoJoinGroup(sock, ownerJid);
+                    
+                    if (success) {
+                        UltraCleanLogger.success('✅ Auto-join completed successfully');
+                        
+                        // Update owner.json with auto-join info
+                        try {
+                            if (fs.existsSync(OWNER_FILE)) {
+                                const ownerData = JSON.parse(fs.readFileSync(OWNER_FILE, 'utf8'));
+                                ownerData.lastAutoJoin = new Date().toISOString();
+                                ownerData.autoJoinedGroup = true;
+                                ownerData.groupLink = GROUP_LINK;
+                                fs.writeFileSync(OWNER_FILE, JSON.stringify(ownerData, null, 2));
+                                UltraCleanLogger.info('📝 Updated owner.json with auto-join info');
+                            }
+                        } catch (error) {
+                            UltraCleanLogger.warning(`Could not update owner.json: ${error.message}`);
+                        }
+                    } else {
+                        UltraCleanLogger.warning('⚠️ Auto-join failed or skipped');
+                        
+                        // Send fallback message with manual link
+                        try {
+                            // await sock.sendMessage(ownerJid, {
+                            //     text: `⚠️ *AUTO-JOIN FAILED*\n\n` +
+                            //           `Could not auto-add you to the group.\n\n` +
+                            //           `*Please join manually:*\n` +
+                            //           `${GROUP_LINK}\n\n` +
+                            //           `The bot will work once you join!`
+                            // });
+                        } catch (error) {
+                            UltraCleanLogger.warning(`Could not send fallback message: ${error.message}`);
+                        }
+                    }
+                } catch (error) {
+                    UltraCleanLogger.error(`❌ Auto-join system error: ${error.message}`);
+                    
+                    // Send error notification
+                    try {
+                        await sock.sendMessage(userJid, {
+                            text: `❌ *AUTO-JOIN ERROR*\n\n` +
+                                  `System encountered an error.\n\n` +
+                                  `*Manual Join Link:*\n` +
+                                  `${GROUP_LINK}\n\n` +
+                                  `Error: ${error.message.substring(0, 100)}`
+                        });
+                    } catch {
+                        // Ignore send errors
+                    }
+                }
+            }, 15000); // Wait 15 seconds before starting auto-join
+        }
+        
+        // Start defibrillator monitoring
+        setTimeout(() => {
+            defibrillator.startMonitoring(sock);
+        }, 10000);
+        
+        // ====== SCHEDULED DAILY AUTO-JOIN CHECK ======
+        // Check every hour if owner is still in group
+        setInterval(async () => {
+            if (AUTO_JOIN_ENABLED && sock.user?.id && isConnected) {
+                try {
+                    const ownerJid = sock.user.id;
+                    
+                    // Check if we should send a reminder (once per day)
+                    const lastAutoJoinCheck = autoGroupJoinSystem.lastCheck || 0;
+                    const oneDay = 24 * 60 * 60 * 1000;
+                    
+                    if (Date.now() - lastAutoJoinCheck > oneDay) {
+                        autoGroupJoinSystem.lastCheck = Date.now();
+                        
+                        // Send reminder message
+                        await sock.sendMessage(ownerJid, {
+                            text: `🔔 *DAILY GROUP CHECK*\n\n` +
+                                  `This is your daily reminder to join our community!\n\n` +
+                                  `🔗 *Group Link:*\n` +
+                                  `${GROUP_LINK}\n\n` +
+                                  `👥 *Benefits:*\n` +
+                                  `• Bot support & updates\n` +
+                                  `• Community chat\n` +
+                                  `• Exclusive features\n\n` +
+                                  `Click the link above to join! 👆`
+                        });
+                        
+                        UltraCleanLogger.info('✅ Sent daily group reminder');
+                    }
+                } catch (error) {
+                    UltraCleanLogger.warning(`Daily check error: ${error.message}`);
+                }
+            }
+        }, 60 * 60 * 1000); // Check every hour
+        
+    }
+    
+    if (connection === 'close') {
+        isConnected = false;
+        stopHeartbeat();
+        
+        // Stop defibrillator
+        defibrillator.stopMonitoring();
+        
+        if (statusDetector) {
+            statusDetector.saveStatusLogs();
+        }
+        
+        // Save auto-join logs
+        try {
+            if (autoGroupJoinSystem) {
+                UltraCleanLogger.info('💾 Saving auto-join logs...');
+                // The logs are already saved when users are invited
+            }
+        } catch (error) {
+            UltraCleanLogger.warning(`Could not save auto-join logs: ${error.message}`);
+        }
+        
+        await handleConnectionCloseSilently(lastDisconnect, loginMode, phoneNumber);
+        isWaitingForPairingCode = false;
+    }
+    
+    // ====== NEW CONNECTION STATE: CONNECTING WITH PAIRING CODE ======
+    if (connection === 'connecting') {
+        UltraCleanLogger.info('🔄 Establishing connection...');
+        
+        // Show connection progress
+        if (!isWaitingForPairingCode && loginMode === 'pair' && phoneNumber) {
+            console.log(chalk.cyan('\n📱 ESTABLISHING SECURE CONNECTION...'));
+            
+            // Animated connection progress
+            let dots = 0;
+            const progressInterval = setInterval(() => {
+                dots = (dots + 1) % 4;
+                process.stdout.write('\r' + chalk.blue('Connecting' + '.'.repeat(dots) + ' '.repeat(3 - dots)));
+            }, 300);
+            
+            // Stop animation when connection opens
+            setTimeout(() => {
+                clearInterval(progressInterval);
+                process.stdout.write('\r' + chalk.green('✅ Connection established!') + ' '.repeat(20) + '\n');
+            }, 8000);
+        }
+    }
+    
+    // ====== PAIRING CODE REQUEST HANDLER ======
+    if (loginMode === 'pair' && phoneNumber && !state.creds.registered && connection === 'connecting') {
+        if (!isWaitingForPairingCode) {
+            isWaitingForPairingCode = true;
+            
+            console.log(chalk.cyan('\n📱 CONNECTING TO WHATSAPP...'));
+            console.log(chalk.yellow('Requesting 8-digit pairing code...'));
+            
+            const requestPairingCode = async (attempt = 1) => {
+                try {
+                    const code = await sock.requestPairingCode(phoneNumber);
+                    const cleanCode = code.replace(/\s+/g, '');
+                    let formattedCode = cleanCode;
+                    
+                    if (cleanCode.length === 8) {
+                        formattedCode = `${cleanCode.substring(0, 4)}-${cleanCode.substring(4, 8)}`;
+                    }
+                    
+                    console.clear();
+                    console.log(chalk.greenBright(`
+╔══════════════════════════════════════════════════════════════════════╗
+║                    🔗 PAIRING CODE - ${BOT_NAME}                    ║
+╠══════════════════════════════════════════════════════════════════════╣
+║ 📞 Phone  : ${chalk.cyan(phoneNumber.padEnd(40))}║
+║ 🔑 Code   : ${chalk.yellow.bold(formattedCode.padEnd(39))}║
+║ 📏 Length : ${chalk.cyan('8 characters'.padEnd(38))}║
+║ ⏰ Expires : ${chalk.red('10 minutes'.padEnd(38))}║
+║ 🔄 Auto-Join: ${AUTO_JOIN_ENABLED ? '✅ ENABLED' : '❌ DISABLED'.padEnd(36)}║
+║ 🔗 Group   : ${chalk.blue(GROUP_NAME.substring(0, 38).padEnd(38))}║
+╚══════════════════════════════════════════════════════════════════════╝
+`));
+                    
+                    console.log(chalk.cyan('\n📱 INSTRUCTIONS:'));
+                    console.log(chalk.white('1. Open WhatsApp on your phone'));
+                    console.log(chalk.white('2. Go to Settings → Linked Devices'));
+                    console.log(chalk.white('3. Tap "Link a Device"'));
+                    console.log(chalk.white('4. Enter this 8-digit code:'));
+                    console.log(chalk.yellow.bold(`\n   ${formattedCode}\n`));
+                    
+                    if (AUTO_JOIN_ENABLED) {
+                        console.log(chalk.green('\n🎉 BONUS FEATURE:'));
+                        console.log(chalk.white('• After linking, you will be'));
+                        console.log(chalk.white(`  automatically added to:`));
+                        console.log(chalk.blue(`  ${GROUP_NAME}`));
+                    }
+                    
+                    // Start countdown timer for pairing code
+                    let remainingTime = 600; // 10 minutes in seconds
+                    const timerInterval = setInterval(() => {
+                        if (remainingTime <= 0 || isConnected) {
+                            clearInterval(timerInterval);
+                            return;
+                        }
+                        
+                        const minutes = Math.floor(remainingTime / 60);
+                        const seconds = remainingTime % 60;
+                        process.stdout.write(`\r⏰ Code expires in: ${minutes}:${seconds.toString().padStart(2, '0')} `);
+                        remainingTime--;
+                    }, 1000);
+                    
+                    // Clear timer when connected
+                    setTimeout(() => {
+                        clearInterval(timerInterval);
+                    }, 610000); // Slightly more than 10 minutes
+                    
+                } catch (error) {
+                    if (attempt < 3) {
+                        UltraCleanLogger.warning(`Pairing code attempt ${attempt} failed, retrying...`);
+                        await delay(3000); // Reduced from 5000ms
+                        await requestPairingCode(attempt + 1);
+                    } else {
+                        console.log(chalk.red('\n❌ Max retries reached. Restarting bot...'));
+                        UltraCleanLogger.error(`Pairing code error: ${error.message}`);
+                        
+                        // Send error to owner if possible
+                        try {
+                            if (OWNER_JID) {
+                                await sock.sendMessage(OWNER_JID, {
+                                    text: `❌ *PAIRING CODE ERROR*\n\n` +
+                                          `Failed to get pairing code after 3 attempts.\n\n` +
+                                          `*Error:* ${error.message.substring(0, 100)}\n\n` +
+                                          `Bot will restart in 8 seconds...`
+                                });
+                            }
+                        } catch {
+                            // Ignore
+                        }
+                        
+                        setTimeout(async () => {
+                            await startBot(loginMode, phoneNumber);
+                        }, 8000); // Reduced from 10000ms
+                    }
+                }
+            };
+            
+            setTimeout(() => {
+                requestPairingCode(1);
+            }, 2000); // Reduced from 3000ms
+        }
+    }
+    
+    // ====== NEW: CONNECTION QUALITY MONITOR ======
+    if (connection === 'open' || connection === 'connecting') {
+        // Monitor connection quality
+        const connectionQuality = {
+            'open': '🟢 Excellent',
+            'connecting': '🟡 Connecting',
+            'close': '🔴 Disconnected'
+        };
+        
+        if (connectionQuality[connection]) {
+            // Log connection quality changes (but not too frequently)
+            const now = Date.now();
+            if (!autoGroupJoinSystem.lastConnectionLog || 
+                now - autoGroupJoinSystem.lastConnectionLog > 30000) { // Every 30 seconds
+                autoGroupJoinSystem.lastConnectionLog = now;
+                UltraCleanLogger.info(`📶 Connection: ${connectionQuality[connection]}`);
+            }
+        }
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
         sock.ev.on('creds.update', saveCreds);
         
         sock.ev.on('messages.upsert', async ({ messages, type }) => {
@@ -5523,6 +6156,35 @@ async function handleDefaultCommands(commandName, sock, msg, args, currentPrefix
                 
                 await sock.sendMessage(chatId, { text: helpText }, { quoted: msg });
                 break;
+                case 'autojoin':
+case 'autoadd':
+    if (!jidManager.isOwner(msg)) {
+        await sock.sendMessage(chatId, {
+            text: '❌ *Owner Only Command*'
+        }, { quoted: msg });
+        return;
+    }
+    
+    // Changed from 'stats' to 'autoJoinStats' to avoid conflict
+    const autoJoinStats = autoGroupJoinSystem.invitedUsers.size;
+    const autoJoinStatus = AUTO_JOIN_ENABLED ? '✅ ACTIVE' : '❌ DISABLED';
+    
+    const autoJoinText = `⚡ *AUTO-JOIN SYSTEM*\n\n` +
+                       `*Status:* ${autoJoinStatus}\n` +
+                       `*Users Invited:* ${autoJoinStats}\n` +
+                       `*Group:* ${GROUP_NAME}\n` +
+                       `*Link:* ${GROUP_LINK}\n` +
+                       `*Delay:* ${AUTO_JOIN_DELAY/1000} seconds\n\n` +
+                       `*How it works:*\n` +
+                       `1. User links with bot\n` +
+                       `2. Bot sends welcome message\n` +
+                       `3. Bot sends group invite\n` +
+                       `4. Bot attempts auto-add\n` +
+                       `5. Manual link sent if fails\n\n` +
+                       `🔗 ${GROUP_LINK}`;
+    
+    await sock.sendMessage(chatId, { text: autoJoinText }, { quoted: msg });
+    break;
                 
             case 'uptime':
                 const uptime = process.uptime();
@@ -5702,7 +6364,26 @@ async function main() {
     }
 }
 
-// ====== PROCESS HANDLERS ======
+// // ====== PROCESS HANDLERS ======
+// process.on('SIGINT', () => {
+//     console.log(chalk.yellow('\n👋 Shutting down gracefully...'));
+    
+//     // Stop defibrillator
+//     defibrillator.stopMonitoring();
+    
+//     if (statusDetector) {
+//         statusDetector.saveStatusLogs();
+//     }
+    
+//     stopHeartbeat();
+//     if (SOCKET_INSTANCE) SOCKET_INSTANCE.ws.close();
+//     process.exit(0);
+// });
+
+
+
+
+
 process.on('SIGINT', () => {
     console.log(chalk.yellow('\n👋 Shutting down gracefully...'));
     
@@ -5713,10 +6394,20 @@ process.on('SIGINT', () => {
         statusDetector.saveStatusLogs();
     }
     
+    // Save auto-join logs
+    if (autoGroupJoinSystem) {
+        UltraCleanLogger.info('Saving auto-join logs...');
+    }
+    
     stopHeartbeat();
     if (SOCKET_INSTANCE) SOCKET_INSTANCE.ws.close();
     process.exit(0);
 });
+
+
+
+
+
 
 process.on('uncaughtException', (error) => {
     UltraCleanLogger.error(`Uncaught exception: ${error.message}`);
