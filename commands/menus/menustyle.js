@@ -74,7 +74,7 @@ const stylePath = path.join(__dirname, "current_style.json");
 
 export default {
   name: "menustyle",
-  alias: ["setmenustyle", "changemenustyle", "style"],
+  alias: ["setmenustyle", "sm", "changemenustyle","cm", "style"],
   description: "Switch between Wolf menu styles (1–7)",
   category: "owner",
   ownerOnly: true,
