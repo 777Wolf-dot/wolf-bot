@@ -2283,7 +2283,7 @@ case 5: {
 > │ • yeet
 > └────────────────
 
-> 🐺🌕*POWERED BY WOLF TECH*🌕🐺
+> 🐺*POWERED BY WOLF TECH*🐺
 `;
 
   // ========== APPLY "READ MORE" EFFECT ==========
