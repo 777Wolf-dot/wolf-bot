@@ -3,479 +3,14 @@ import { promisify } from "util";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import os from "os";
 
 const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Enhanced exec with timeout
-async function run(cmd, timeout = 30000) {
-  try {
-    const { stdout, stderr } = await execAsync(cmd, { timeout });
-    if (stderr && !stderr.includes('warning')) {
-      console.warn(`Command stderr: ${stderr}`);
-    }
-    return stdout.trim();
-  } catch (error) {
-    console.error(`Command failed: ${cmd}`, error.message);
-    throw error;
-  }
-}
-
-// Load settings
-async function loadSettings() {
-  const possiblePaths = [
-    path.join(process.cwd(), "settings.js"),
-    path.join(process.cwd(), "config", "settings.js"),
-    path.join(__dirname, "..", "settings.js"),
-    path.join(__dirname, "..", "..", "settings.js"),
-  ];
-  
-  for (const settingsPath of possiblePaths) {
-    try {
-      if (fs.existsSync(settingsPath)) {
-        console.log(`Loading settings from: ${settingsPath}`);
-        const module = await import(`file://${settingsPath}`);
-        return module.default || module;
-      }
-    } catch (error) {
-      console.warn(`Failed to load settings from ${settingsPath}:`, error.message);
-      continue;
-    }
-  }
-  
-  console.warn("No settings file found, using empty settings");
-  return {};
-}
-
-// Check if process manager is available
-async function detectProcessManager() {
-  try {
-    if (await run("which pm2").then(() => true).catch(() => false)) {
-      return "pm2";
-    } else if (await run("which forever").then(() => true).catch(() => false)) {
-      return "forever";
-    } else if (await run("which nodemon").then(() => true).catch(() => false)) {
-      return "nodemon";
-    } else {
-      return "node";
-    }
-  } catch (error) {
-    return "node";
-  }
-}
-
-// Check if bot is already running
-async function checkBotStatus() {
-  try {
-    const pm = await detectProcessManager();
-    
-    switch (pm) {
-      case "pm2":
-        try {
-          const pm2List = await run("pm2 jlist");
-          const processes = JSON.parse(pm2List);
-          
-          // Look for bot processes
-          const botProcesses = processes.filter(p => 
-            p.name && (p.name.includes("wolf") || 
-                      p.name.includes("bot") || 
-                      p.name.includes("whatsapp") ||
-                      p.pm2_env.PWD === process.cwd())
-          );
-          
-          return {
-            isRunning: botProcesses.length > 0,
-            manager: "pm2",
-            processes: botProcesses,
-            allProcesses: processes.length,
-            botProcessCount: botProcesses.length
-          };
-        } catch (error) {
-          return { isRunning: false, manager: "pm2", error: error.message };
-        }
-        
-      case "forever":
-        try {
-          const foreverList = await run("forever list");
-          // Parse forever output to find our bot
-          const lines = foreverList.split('\n');
-          const botProcesses = lines.filter(line => 
-            line.includes(process.cwd()) || 
-            line.includes("wolf") ||
-            line.includes("bot")
-          );
-          
-          return {
-            isRunning: botProcesses.length > 0,
-            manager: "forever",
-            processes: botProcesses,
-            processCount: lines.filter(l => l.includes('pid')).length
-          };
-        } catch (error) {
-          return { isRunning: false, manager: "forever", error: error.message };
-        }
-        
-      default:
-        // Check if process is already running by looking for node processes
-        try {
-          const nodeProcesses = await run(`ps aux | grep -E "node.*(${process.cwd()}|index.js|main.js|app.js)" | grep -v grep`);
-          return {
-            isRunning: nodeProcesses.length > 0,
-            manager: "direct",
-            processes: nodeProcesses.split('\n').filter(Boolean),
-            processCount: nodeProcesses.split('\n').filter(Boolean).length
-          };
-        } catch (error) {
-          return { isRunning: false, manager: "direct" };
-        }
-    }
-  } catch (error) {
-    return { isRunning: false, manager: "unknown", error: error.message };
-  }
-}
-
-// Get system information
-async function getSystemInfo() {
-  const info = {
-    platform: os.platform(),
-    arch: os.arch(),
-    uptime: formatUptime(os.uptime()),
-    totalMemory: formatBytes(os.totalmem()),
-    freeMemory: formatBytes(os.freemem()),
-    loadAvg: os.loadavg().map(n => n.toFixed(2)).join(', '),
-    cpus: os.cpus().length,
-    nodeVersion: process.version,
-    cwd: process.cwd()
-  };
-
-  // Get bot package info
-  try {
-    const packagePath = path.join(process.cwd(), 'package.json');
-    if (fs.existsSync(packagePath)) {
-      const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-      info.botName = packageJson.name || "WolfBot";
-      info.botVersion = packageJson.version || "Unknown";
-      info.mainFile = packageJson.main || "index.js";
-      info.scripts = packageJson.scripts || {};
-    } else {
-      info.botName = "WolfBot";
-      info.botVersion = "Unknown";
-      info.mainFile = "index.js";
-    }
-  } catch (error) {
-    info.botName = "WolfBot";
-    info.botVersion = "Unknown";
-    info.mainFile = "index.js";
-  }
-
-  return info;
-}
-
-// Find the main bot file
-function findMainBotFile() {
-  const possibleFiles = [
-    "index.js",
-    "main.js",
-    "app.js",
-    "bot.js",
-    "start.js",
-    "server.js"
-  ];
-
-  for (const file of possibleFiles) {
-    const filePath = path.join(process.cwd(), file);
-    if (fs.existsSync(filePath)) {
-      return file;
-    }
-  }
-
-  // Check package.json for main file
-  try {
-    const packagePath = path.join(process.cwd(), 'package.json');
-    if (fs.existsSync(packagePath)) {
-      const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-      if (packageJson.main && fs.existsSync(path.join(process.cwd(), packageJson.main))) {
-        return packageJson.main;
-      }
-    }
-  } catch (error) {
-    console.warn("Could not read package.json:", error.message);
-  }
-
-  return "index.js";
-}
-
-// Check dependencies
-async function checkDependencies() {
-  try {
-    const packagePath = path.join(process.cwd(), 'package.json');
-    if (!fs.existsSync(packagePath)) {
-      return { hasPackageJson: false, message: "No package.json found" };
-    }
-
-    const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-    const nodeModulesPath = path.join(process.cwd(), 'node_modules');
-    
-    if (!fs.existsSync(nodeModulesPath)) {
-      return { 
-        installed: false, 
-        dependencies: Object.keys(packageJson.dependencies || {}).length,
-        devDependencies: Object.keys(packageJson.devDependencies || {}).length,
-        message: "node_modules not found - dependencies need to be installed"
-      };
-    }
-
-    // Check if node_modules is empty
-    const nodeModulesContent = fs.readdirSync(nodeModulesPath);
-    if (nodeModulesContent.length === 0) {
-      return { 
-        installed: false, 
-        dependencies: Object.keys(packageJson.dependencies || {}).length,
-        message: "node_modules is empty"
-      };
-    }
-
-    return { 
-      installed: true, 
-      dependencies: Object.keys(packageJson.dependencies || {}).length,
-      devDependencies: Object.keys(packageJson.devDependencies || {}).length,
-      message: "Dependencies are installed"
-    };
-  } catch (error) {
-    return { installed: false, message: `Error checking dependencies: ${error.message}` };
-  }
-}
-
-// Install dependencies
-async function installDependencies() {
-  try {
-    const packagePath = path.join(process.cwd(), 'package.json');
-    if (!fs.existsSync(packagePath)) {
-      return { success: false, message: "No package.json found" };
-    }
-
-    console.log("📦 Installing dependencies...");
-    
-    // Check if we should use npm or yarn
-    let packageManager = "npm";
-    if (await run("which yarn").then(() => true).catch(() => false)) {
-      packageManager = "yarn";
-    }
-
-    let installCmd;
-    if (packageManager === "yarn") {
-      installCmd = "yarn install --silent --no-progress";
-    } else {
-      installCmd = "npm install --no-audit --no-fund --loglevel=error --no-progress";
-    }
-
-    console.log(`Using ${packageManager} to install dependencies...`);
-    const result = await run(installCmd, 300000); // 5 minute timeout for npm install
-    
-    return { 
-      success: true, 
-      packageManager,
-      message: `Dependencies installed successfully using ${packageManager}`
-    };
-  } catch (error) {
-    return { success: false, message: `Failed to install dependencies: ${error.message}` };
-  }
-}
-
-// Start the bot
-async function startBot(options = {}) {
-  const {
-    manager = "auto",
-    installDeps = false,
-    force = false,
-    mode = "production"
-  } = options;
-
-  try {
-    console.log(`🚀 Starting bot with options:`, options);
-    
-    // Check current status first
-    const status = await checkBotStatus();
-    if (status.isRunning && !force) {
-      return { 
-        success: false, 
-        alreadyRunning: true,
-        manager: status.manager,
-        message: "Bot is already running. Use --force to start anyway."
-      };
-    }
-    
-    // Check and install dependencies if needed
-    if (installDeps) {
-      const depsStatus = await checkDependencies();
-      if (!depsStatus.installed) {
-        console.log("Installing dependencies...");
-        const installResult = await installDependencies();
-        if (!installResult.success) {
-          return { 
-            success: false, 
-            message: `Failed to install dependencies: ${installResult.message}` 
-          };
-        }
-      }
-    }
-    
-    // Determine process manager
-    let actualManager = manager;
-    if (manager === "auto") {
-      actualManager = await detectProcessManager();
-    }
-    
-    // Find main file
-    const mainFile = findMainBotFile();
-    console.log(`Using main file: ${mainFile}`);
-    
-    let startCmd;
-    let startMethod;
-    
-    switch (actualManager) {
-      case "pm2":
-        // Check if bot is already in pm2 list
-        try {
-          const pm2List = await run("pm2 jlist").catch(() => "[]");
-          const processes = JSON.parse(pm2List);
-          const botProcess = processes.find(p => 
-            p.pm2_env.PWD === process.cwd() || 
-            p.name === "wolf-bot" ||
-            p.name === "whatsapp-bot"
-          );
-          
-          const botName = "wolf-bot-" + Date.now();
-          
-          if (botProcess && !force) {
-            startCmd = `pm2 restart ${botProcess.name}`;
-            startMethod = "pm2-restart";
-          } else {
-            // Start new process
-            const envVars = mode === "development" ? "NODE_ENV=development" : "NODE_ENV=production";
-            startCmd = `pm2 start ${mainFile} --name "${botName}" --time -- ${envVars}`;
-            startMethod = "pm2-start";
-          }
-        } catch (error) {
-          // Fallback to simple start
-          const botName = "wolf-bot-" + Date.now();
-          const envVars = mode === "development" ? "NODE_ENV=development" : "NODE_ENV=production";
-          startCmd = `pm2 start ${mainFile} --name "${botName}" --time -- ${envVars}`;
-          startMethod = "pm2-start-fallback";
-        }
-        break;
-        
-      case "forever":
-        startCmd = `forever start -a -l ${path.join(process.cwd(), 'logs/forever.log')} ${mainFile}`;
-        startMethod = "forever-start";
-        break;
-        
-      case "nodemon":
-        if (mode === "development") {
-          startCmd = `nodemon ${mainFile}`;
-        } else {
-          startCmd = `nodemon --exitcrash ${mainFile}`;
-        }
-        startMethod = "nodemon";
-        break;
-        
-      case "node":
-      default:
-        // Start directly with node
-        const envPrefix = mode === "development" ? "NODE_ENV=development " : "NODE_ENV=production ";
-        startCmd = `${envPrefix}node ${mainFile}`;
-        startMethod = "node-direct";
-        break;
-    }
-    
-    console.log(`Starting bot with: ${startCmd}`);
-    console.log(`Method: ${startMethod}, Manager: ${actualManager}`);
-    
-    // Execute start command
-    let result;
-    if (startMethod.includes("nodemon") || startMethod === "node-direct") {
-      // These need to run in background
-      const backgroundCmd = `nohup ${startCmd} > ${path.join(process.cwd(), 'logs/start.log')} 2>&1 & echo $!`;
-      result = await run(backgroundCmd);
-    } else {
-      result = await run(startCmd);
-    }
-    
-    // Wait a bit for process to start
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Verify it's running
-    const newStatus = await checkBotStatus();
-    
-    if (newStatus.isRunning) {
-      return {
-        success: true,
-        manager: actualManager,
-        method: startMethod,
-        command: startCmd,
-        result: result.substring(0, 500), // Limit result length
-        status: newStatus,
-        message: `✅ Bot started successfully using ${actualManager}`
-      };
-    } else {
-      return {
-        success: false,
-        manager: actualManager,
-        method: startMethod,
-        command: startCmd,
-        result,
-        message: "Bot may have failed to start. Check logs for details."
-      };
-    }
-    
-  } catch (error) {
-    console.error("Start bot error:", error);
-    return {
-      success: false,
-      error: error.message,
-      message: `Failed to start bot: ${error.message}`
-    };
-  }
-}
-
-// Format uptime
-function formatUptime(seconds) {
-  const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-  
-  const parts = [];
-  if (days > 0) parts.push(`${days}d`);
-  if (hours > 0) parts.push(`${hours}h`);
-  if (minutes > 0) parts.push(`${minutes}m`);
-  if (secs > 0 || parts.length === 0) parts.push(`${secs}s`);
-  
-  return parts.join(' ');
-}
-
-// Format bytes
-function formatBytes(bytes) {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-// Progress bar
-function getProgressBar(percentage, length = 10) {
-  const filled = Math.round((percentage / 100) * length);
-  const empty = length - filled;
-  return '█'.repeat(filled) + '▒'.repeat(empty);
-}
-
-// Main start command
 export default {
   name: "start",
-  description: "Start the bot with various options",
+  description: "Start or restart the bot",
   category: "owner",
   ownerOnly: true,
 
@@ -483,281 +18,448 @@ export default {
     const jid = m.key.remoteJid;
     const sender = m.key.participant || m.key.remoteJid;
     
-    // Send initial message
-    const initialMessage = await sock.sendMessage(jid, { 
-      text: "🚀 WolfBot Start System\nInitializing startup process..."
-    }, { quoted: m });
+    // Check if owner
+    const isOwner = m.key.fromMe || sender.includes("947") || sender.includes("owner-number");
+    if (!isOwner) {
+      return sock.sendMessage(jid, {
+        text: '❌ Only bot owner can use .start command'
+      }, { quoted: m });
+    }
     
-    let messageKey = initialMessage.key;
-    
-    // Edit message helper
-    const editMessage = async (text) => {
-      try {
-        await sock.sendMessage(jid, { 
-          text,
-          edit: messageKey
-        }, { quoted: m });
-      } catch (error) {
-        console.log("Could not edit message:", error.message);
-        const newMsg = await sock.sendMessage(jid, { text }, { quoted: m });
-        messageKey = newMsg.key;
-      }
-    };
-
+    let statusMessage;
     try {
-      // Load settings
-      await editMessage("🔍 Loading bot settings...");
-      const settings = await loadSettings();
+      // Send initial message
+      statusMessage = await sock.sendMessage(jid, {
+        text: '🚀 **WolfBot Start/Restart**\nInitializing...'
+      }, { quoted: m });
       
-      // Check if owner
-      const isOwner = m.key.fromMe || 
-        (settings.ownerNumber && sender.includes(settings.ownerNumber)) ||
-        (settings.botOwner && sender.includes(settings.botOwner));
-      
-      if (!isOwner) {
-        await editMessage("❌ Permission Denied\nOnly the bot owner can start the bot.");
-        return;
-      }
+      const editStatus = async (text) => {
+        try {
+          await sock.sendMessage(jid, {
+            text,
+            edit: statusMessage.key
+          });
+        } catch {
+          // If editing fails, send new message
+          const newMsg = await sock.sendMessage(jid, { text }, { quoted: m });
+          statusMessage = newMsg;
+        }
+      };
       
       // Parse arguments
-      const manager = args.find(arg => arg.startsWith('manager='))?.split('=')[1] || "auto";
-      const mode = args.includes('dev') || args.includes('development') ? "development" : "production";
-      const installDeps = args.includes('install') || args.includes('--install');
-      const force = args.includes('force') || args.includes('--force');
-      const checkOnly = args.includes('check') || args.includes('--check');
+      const action = args[0]?.toLowerCase();
+      const forceRestart = args.includes('force');
+      const noDeps = args.includes('no-deps');
+      const delay = parseInt(args.find(arg => arg.startsWith('delay='))?.split('=')[1]) || 3;
       
-      // Get system info
-      await editMessage("📊 Checking system status...");
-      const systemInfo = await getSystemInfo();
+      // Check current bot status
+      await editStatus('📊 **Checking bot status...**');
       
-      // Check current status
-      const status = await checkBotStatus();
+      let isRunning = false;
+      let pm2Info = null;
       
-      // Show status information
-      let statusText = `🤖 *Bot Status*\n`;
-      statusText += `• Running: ${status.isRunning ? '✅ Yes' : '❌ No'}\n`;
-      statusText += `• Process Manager: ${status.manager}\n`;
+      try {
+        const pm2List = await execAsync('pm2 jlist');
+        const processes = JSON.parse(pm2List.stdout);
+        pm2Info = processes.find(p => 
+          p.name && (p.name.includes('wolf') || p.name.includes('bot') || p.name.includes('index'))
+        );
+        isRunning = pm2Info && pm2Info.pm2_env?.status === 'online';
+        
+        if (pm2Info) {
+          await editStatus(`📊 **Bot Status: ${isRunning ? '🟢 RUNNING' : '🔴 STOPPED'}**\nName: ${pm2Info.name}\nPID: ${pm2Info.pid || 'N/A'}\nUptime: ${formatUptime(pm2Info.pm2_env?.pm_uptime)}`);
+        } else {
+          await editStatus('📊 **Bot Status: 🔍 NOT FOUND IN PM2**\nBot not registered with PM2');
+        }
+      } catch (error) {
+        await editStatus('⚠️ **PM2 not available or error**\nWill start bot directly');
+      }
       
-      if (status.isRunning) {
-        statusText += `• Processes: ${status.botProcessCount || status.processCount || 0}\n`;
-        if (status.processes && Array.isArray(status.processes)) {
-          statusText += `• Details: ${status.processes.length} process(es) detected\n`;
+      // Determine action based on arguments or current state
+      let finalAction = action;
+      if (!finalAction) {
+        if (isRunning) {
+          finalAction = 'restart';
+        } else {
+          finalAction = 'start';
         }
       }
       
-      statusText += `\n🖥️ *System Information*\n`;
-      statusText += `• Bot: ${systemInfo.botName} v${systemInfo.botVersion}\n`;
-      statusText += `• Node.js: ${systemInfo.nodeVersion}\n`;
-      statusText += `• OS: ${systemInfo.platform} ${systemInfo.arch}\n`;
-      statusText += `• CPUs: ${systemInfo.cpus}\n`;
-      statusText += `• Memory: ${systemInfo.freeMemory} free of ${systemInfo.totalMemory}\n`;
-      statusText += `• Load Average: ${systemInfo.loadAvg}\n`;
-      statusText += `• System Uptime: ${systemInfo.uptime}\n`;
-      
-      // Check dependencies
-      await editMessage("📦 Checking dependencies...");
-      const depsStatus = await checkDependencies();
-      
-      statusText += `\n📦 *Dependencies*\n`;
-      statusText += `• Status: ${depsStatus.installed ? '✅ Installed' : '❌ Not installed'}\n`;
-      statusText += `• Dependencies: ${depsStatus.dependencies || 0}\n`;
-      if (depsStatus.devDependencies) {
-        statusText += `• Dev Dependencies: ${depsStatus.devDependencies}\n`;
-      }
-      statusText += `• Message: ${depsStatus.message}\n`;
-      
-      // Find main file
-      const mainFile = findMainBotFile();
-      statusText += `\n📁 *Bot Configuration*\n`;
-      statusText += `• Main File: ${mainFile}\n`;
-      statusText += `• Working Directory: ${systemInfo.cwd}\n`;
-      statusText += `• Mode: ${mode.toUpperCase()}\n`;
-      
-      await editMessage(statusText);
-      
-      // If just checking, stop here
-      if (checkOnly) {
-        await editMessage(statusText + "\n\n✅ Status check completed.");
-        return;
-      }
-      
-      // If already running and not forced
-      if (status.isRunning && !force) {
-        const confirmText = 
-          `⚠️ *Bot Already Running*\n\n` +
-          `The bot is currently running with ${status.manager}.\n\n` +
-          `Options:\n` +
-          `• Use \`!restart\` to restart the bot\n` +
-          `• Use \`!stop\` to stop the bot first\n` +
-          `• Add \`force\` to start anyway (may cause conflicts)\n\n` +
-          `To force start, reply with \`force\` within 30 seconds.`;
-        
-        await editMessage(confirmText);
-        
-        // Wait for force confirmation
-        let forceConfirmed = false;
-        const listener = async ({ messages }) => {
-          for (const msg of messages) {
-            if (msg.key.remoteJid !== jid) continue;
-            const msgSender = msg.key.participant || msg.key.remoteJid;
-            if (msgSender !== sender) continue;
-            
-            const text = msg.message?.conversation || 
-                        msg.message?.extendedTextMessage?.text || "";
-            
-            if (text.toLowerCase() === 'force') {
-              forceConfirmed = true;
-              sock.ev.off('messages.upsert', listener);
-            }
+      // Handle different actions
+      switch (finalAction) {
+        case 'start':
+          if (isRunning && !forceRestart) {
+            await editStatus('✅ **Bot is already running!**\nUse `.start restart` to restart\nUse `.start stop` to stop');
+            return;
           }
-        };
-        
-        sock.ev.on('messages.upsert', listener);
-        
-        for (let i = 0; i < 30; i++) {
-          if (forceConfirmed) break;
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-        
-        sock.ev.off('messages.upsert', listener);
-        
-        if (!forceConfirmed) {
-          await editMessage("⏰ Force start not confirmed. Operation cancelled.");
-          return;
-        }
-      }
-      
-      // Show start configuration
-      const startConfigText = 
-        `⚙️ *Start Configuration*\n\n` +
-        `• Manager: ${manager}\n` +
-        `• Mode: ${mode}\n` +
-        `• Install Dependencies: ${installDeps ? 'Yes' : 'No'}\n` +
-        `• Force Start: ${force || forceConfirmed ? 'Yes' : 'No'}\n` +
-        `• Main File: ${mainFile}\n\n` +
-        `Reply with \`start\` within 30 seconds to begin or \`cancel\` to abort.`;
-      
-      await editMessage(startConfigText);
-      
-      // Wait for start confirmation
-      let startConfirmed = false;
-      let cancelled = false;
-      
-      const startListener = async ({ messages }) => {
-        for (const msg of messages) {
-          if (msg.key.remoteJid !== jid) continue;
-          const msgSender = msg.key.participant || msg.key.remoteJid;
-          if (msgSender !== sender) continue;
+          await startBot(editStatus, noDeps, delay);
+          break;
           
-          const text = msg.message?.conversation || 
-                      msg.message?.extendedTextMessage?.text || "";
+        case 'restart':
+          await restartBot(editStatus, noDeps, delay, forceRestart);
+          break;
           
-          if (text.toLowerCase() === 'start') {
-            startConfirmed = true;
-            sock.ev.off('messages.upsert', startListener);
-          } else if (text.toLowerCase() === 'cancel') {
-            cancelled = true;
-            sock.ev.off('messages.upsert', startListener);
-          }
-        }
-      };
-      
-      sock.ev.on('messages.upsert', startListener);
-      
-      for (let i = 0; i < 30; i++) {
-        if (startConfirmed || cancelled) break;
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      
-      sock.ev.off('messages.upsert', startListener);
-      
-      if (cancelled) {
-        await editMessage("❌ Start cancelled by user.");
-        return;
-      }
-      
-      if (!startConfirmed) {
-        await editMessage("⏰ Start confirmation timeout. Operation cancelled.");
-        return;
-      }
-      
-      // Start the bot
-      await editMessage("🚀 Starting bot...\nPlease wait, this may take a moment.");
-      
-      // Install dependencies if needed
-      if (installDeps && !depsStatus.installed) {
-        await editMessage("📦 Installing dependencies...\nThis may take a few minutes.");
-        const installResult = await installDependencies();
-        
-        if (!installResult.success) {
-          await editMessage(`❌ Failed to install dependencies:\n${installResult.message}`);
+        case 'stop':
+          await stopBot(editStatus);
+          break;
+          
+        case 'status':
+          await showStatus(editStatus, pm2Info, isRunning);
           return;
-        }
-        
-        await editMessage(`✅ Dependencies installed successfully!\nUsing ${installResult.packageManager}`);
+          
+        case 'log':
+          await showLogs(editStatus, args);
+          return;
+          
+        case 'kill':
+          await killBot(editStatus);
+          break;
+          
+        default:
+          await editStatus(`❓ **Unknown action: ${finalAction}**\n\n**Available actions:**\n• start - Start the bot\n• restart - Restart the bot\n• stop - Stop the bot\n• status - Check bot status\n• log - Show recent logs\n• kill - Force kill bot\n\n**Options:**\n• no-deps - Skip dependency check\n• force - Force action\n• delay=N - Delay in seconds (default: 3)`);
+          return;
       }
       
-      // Actually start the bot
-      const startOptions = {
-        manager: manager === "auto" ? "auto" : manager,
-        installDeps: false, // Already handled if needed
-        force: force || forceConfirmed,
-        mode
-      };
+    } catch (err) {
+      console.error('Start command failed:', err);
       
-      const startResult = await startBot(startOptions);
+      let errorText = `❌ **Start Command Failed**\nError: ${err.message || err}\n\n`;
       
-      if (startResult.success) {
-        // Success message
-        let successText = `✅ *Bot Started Successfully!*\n\n`;
-        successText += `• Manager: ${startResult.manager}\n`;
-        successText += `• Method: ${startResult.method}\n`;
-        successText += `• Status: Running ✅\n`;
-        
-        if (startResult.status && startResult.status.processes) {
-          successText += `• Processes: ${startResult.status.botProcessCount || startResult.status.processes.length}\n`;
-        }
-        
-        successText += `\n📊 *Quick Stats*\n`;
-        successText += `• Uptime: Just started\n`;
-        successText += `• Memory: ${systemInfo.freeMemory} free\n`;
-        successText += `• Mode: ${mode.toUpperCase()}\n`;
-        
-        successText += `\n🔧 *Next Steps*\n`;
-        successText += `• Use \`!status\` to check bot status\n`;
-        successText += `• Use \`!restart\` to restart if needed\n`;
-        successText += `• Use \`!stop\` to stop the bot\n`;
-        successText += `• Check logs for startup messages\n`;
-        
-        await editMessage(successText);
-      } else {
-        // Error message
-        let errorText = `❌ *Failed to Start Bot*\n\n`;
-        errorText += `• Manager: ${startResult.manager || 'Unknown'}\n`;
-        errorText += `• Error: ${startResult.message || 'Unknown error'}\n`;
-        
-        if (startResult.error) {
-          errorText += `• Details: ${startResult.error.substring(0, 200)}\n`;
-        }
-        
-        errorText += `\n🔧 *Troubleshooting Tips*\n`;
-        errorText += `1. Check if port is already in use\n`;
-        errorText += `2. Verify dependencies are installed\n`;
-        errorText += `3. Check bot configuration files\n`;
-        errorText += `4. Look at logs in the logs/ directory\n`;
-        errorText += `5. Try different manager: \`!start manager=node\`\n`;
-        errorText += `6. Run in dev mode: \`!start dev\`\n`;
-        
-        await editMessage(errorText);
+      if (err.message.includes('timeout')) {
+        errorText += '**Reason:** Operation timed out\n';
+        errorText += '**Solution:** Try `.start kill` then `.start`\n';
+      } else if (err.message.includes('ENOENT') || err.message.includes('not found')) {
+        errorText += '**Reason:** Required files not found\n';
+        errorText += '**Solution:** Check if bot files exist\n';
+      } else if (err.message.includes('EADDRINUSE')) {
+        errorText += '**Reason:** Port already in use\n';
+        errorText += '**Solution:** Use `.start kill` to free port\n';
       }
       
-    } catch (error) {
-      console.error("Start command error:", error);
-      await editMessage(
-        `❌ Start Command Error\n` +
-        `Error: ${error.message}\n` +
-        "Please check logs for details."
-      );
+      try {
+        if (statusMessage?.key) {
+          await sock.sendMessage(jid, { text: errorText, edit: statusMessage.key });
+        } else {
+          await sock.sendMessage(jid, { text: errorText }, { quoted: m });
+        }
+      } catch {
+        // Ignore if can't send error
+      }
     }
   }
 };
+
+/* -------------------- Action Functions -------------------- */
+
+async function startBot(editStatus, noDeps, delay) {
+  await editStatus('🚀 **Starting WolfBot...**\nChecking system requirements...');
+  
+  // Check Node.js version
+  try {
+    const nodeVersion = await execAsync('node --version');
+    await editStatus(`✅ **Node.js:** ${nodeVersion.stdout.trim()}`);
+  } catch {
+    await editStatus('⚠️ **Warning:** Node.js not found or version issue');
+  }
+  
+  // Check main file exists
+  const mainFiles = ['index.js', 'main.js', 'bot.js', 'app.js'];
+  let mainFile = null;
+  
+  for (const file of mainFiles) {
+    if (fs.existsSync(path.join(process.cwd(), file))) {
+      mainFile = file;
+      break;
+    }
+  }
+  
+  if (!mainFile) {
+    throw new Error('No main bot file found (index.js, main.js, bot.js, app.js)');
+  }
+  
+  await editStatus(`✅ **Main file:** ${mainFile}`);
+  
+  // Check and install dependencies if needed
+  if (!noDeps) {
+    await editStatus('📦 **Checking dependencies...**');
+    
+    if (!fs.existsSync(path.join(process.cwd(), 'node_modules'))) {
+      await editStatus('📦 **Installing dependencies...**\nThis may take a minute...');
+      
+      try {
+        // Check if package.json exists
+        if (fs.existsSync(path.join(process.cwd(), 'package.json'))) {
+          // Use npm ci for clean install
+          await execAsync('npm ci --no-audit --no-fund --silent', { timeout: 180000 });
+          await editStatus('✅ **Dependencies installed successfully**');
+        } else {
+          await editStatus('⚠️ **No package.json found**\nSkipping dependency installation');
+        }
+      } catch (npmError) {
+        console.warn('Dependency install failed:', npmError);
+        await editStatus('⚠️ **Dependency installation failed**\nTrying alternative method...');
+        
+        try {
+          await execAsync('npm install --no-audit --no-fund --loglevel=error', { timeout: 180000 });
+          await editStatus('✅ **Dependencies installed with fallback method**');
+        } catch {
+          await editStatus('⚠️ **Could not install dependencies**\nBot may fail to start');
+        }
+      }
+    } else {
+      await editStatus('✅ **Dependencies already installed**');
+    }
+  } else {
+    await editStatus('⏭️ **Skipping dependency check**');
+  }
+  
+  // Check PM2
+  await editStatus('⚙️ **Checking PM2...**');
+  
+  try {
+    await execAsync('pm2 --version');
+    await editStatus('✅ **PM2 is installed**');
+  } catch {
+    await editStatus('⚠️ **PM2 not found**\nWill start without PM2');
+  }
+  
+  // Start bot with PM2 if available
+  try {
+    await editStatus(`⏳ **Starting bot in ${delay} seconds...**\nPreparing startup...`);
+    
+    // Countdown
+    for (let i = delay; i > 0; i--) {
+      await editStatus(`⏳ **Starting in ${i} seconds...**\nPreparing startup...`);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    await editStatus('🚀 **Launching bot now!**');
+    
+    // Try to start with PM2
+    try {
+      // Check if already registered
+      const pm2List = await execAsync('pm2 jlist');
+      const processes = JSON.parse(pm2List.stdout);
+      const botProcess = processes.find(p => 
+        p.name && (p.name.includes('wolf') || p.name.includes('bot'))
+      );
+      
+      if (botProcess) {
+        await editStatus('🔄 **Restarting existing PM2 process...**');
+        await execAsync(`pm2 restart ${botProcess.name} --update-env`);
+      } else {
+        await editStatus('📝 **Registering new PM2 process...**');
+        await execAsync(`pm2 start ${mainFile} --name "wolf-bot" --time`);
+      }
+      
+      // Save PM2 process list
+      await execAsync('pm2 save');
+      
+      await editStatus('✅ **Bot started successfully with PM2!**\n\n**Useful commands:**\n`.start status` - Check status\n`.start log` - View logs\n`.start stop` - Stop bot\n\nBot should be online shortly...');
+      
+    } catch (pm2Error) {
+      console.warn('PM2 start failed, trying direct start:', pm2Error);
+      
+      // Fallback: Start directly with Node.js
+      await editStatus('⚠️ **PM2 start failed, starting directly...**');
+      
+      // Start in background
+      const startCmd = process.platform === 'win32' 
+        ? `start cmd /c "node ${mainFile}"`
+        : `node ${mainFile} > bot.log 2>&1 &`;
+      
+      await execAsync(startCmd);
+      
+      await editStatus('✅ **Bot started directly!**\n\n**Note:** Running without PM2\nUse Ctrl+C in terminal to stop\n\nBot should be online shortly...');
+    }
+    
+    // Optional: Send follow-up status after 10 seconds
+    setTimeout(async () => {
+      try {
+        const pm2List = await execAsync('pm2 jlist');
+        const processes = JSON.parse(pm2List.stdout);
+        const botProcess = processes.find(p => 
+          p.name && (p.name.includes('wolf') || p.name.includes('bot'))
+        );
+        
+        if (botProcess && botProcess.pm2_env?.status === 'online') {
+          await editStatus('🟢 **Bot is now ONLINE!**\nStatus: Running\nPID: ' + botProcess.pid);
+        }
+      } catch {
+        // Ignore if can't check status
+      }
+    }, 10000);
+    
+  } catch (error) {
+    throw new Error(`Failed to start bot: ${error.message}`);
+  }
+}
+
+async function restartBot(editStatus, noDeps, delay, force) {
+  await editStatus('🔄 **Restarting WolfBot...**');
+  
+  // Stop first
+  try {
+    await execAsync('pm2 stop wolf-bot --silent');
+    await editStatus('⏸️ **Bot stopped**\nWaiting for cleanup...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  } catch {
+    // Ignore if stop fails
+  }
+  
+  // Start again
+  await startBot(editStatus, noDeps, delay);
+}
+
+async function stopBot(editStatus) {
+  await editStatus('🛑 **Stopping WolfBot...**');
+  
+  try {
+    await execAsync('pm2 stop wolf-bot --silent');
+    await editStatus('✅ **Bot stopped successfully**\n\nTo start again: `.start`');
+  } catch (error) {
+    // Try force stop
+    try {
+      await execAsync('pm2 delete wolf-bot --silent');
+      await editStatus('✅ **Bot removed from PM2**\n\nTo start again: `.start`');
+    } catch {
+      // Try killing by port or process
+      await editStatus('⚠️ **Could not stop via PM2**\nTrying alternative methods...');
+      
+      try {
+        // Find and kill Node processes
+        if (process.platform === 'win32') {
+          await execAsync('taskkill /F /IM node.exe');
+        } else {
+          await execAsync('pkill -f "node.*(index|main|bot|app).js"');
+        }
+        await editStatus('✅ **Bot processes killed**\n\nTo start again: `.start`');
+      } catch {
+        throw new Error('Could not stop bot processes');
+      }
+    }
+  }
+}
+
+async function showStatus(editStatus, pm2Info, isRunning) {
+  if (!pm2Info) {
+    await editStatus('🔍 **No PM2 process found**\nBot may not be running via PM2\n\nTry: `.start` to start the bot');
+    return;
+  }
+  
+  const status = pm2Info.pm2_env?.status || 'unknown';
+  const uptime = formatUptime(pm2Info.pm2_env?.pm_uptime);
+  const memory = formatBytes(pm2Info.monit?.memory || 0);
+  const cpu = pm2Info.monit?.cpu || 0;
+  
+  let statusText = `📊 **WolfBot Status**\n\n`;
+  statusText += `**Status:** ${status === 'online' ? '🟢 RUNNING' : '🔴 STOPPED'}\n`;
+  statusText += `**Name:** ${pm2Info.name || 'N/A'}\n`;
+  statusText += `**PID:** ${pm2Info.pid || 'N/A'}\n`;
+  statusText += `**Uptime:** ${uptime}\n`;
+  statusText += `**Memory:** ${memory}\n`;
+  statusText += `**CPU:** ${cpu}%\n`;
+  statusText += `**Restarts:** ${pm2Info.pm2_env?.restart_time || 0}\n`;
+  
+  if (pm2Info.pm2_env?.pm_exec_path) {
+    const execPath = pm2Info.pm2_env.pm_exec_path;
+    const fileName = path.basename(execPath);
+    statusText += `**File:** ${fileName}\n`;
+  }
+  
+  statusText += `\n**Commands:**\n`;
+  statusText += `• \`.start restart\` - Restart bot\n`;
+  statusText += `• \`.start stop\` - Stop bot\n`;
+  statusText += `• \`.start log\` - View logs\n`;
+  statusText += `• \`.start kill\` - Force kill\n`;
+  
+  await editStatus(statusText);
+}
+
+async function showLogs(editStatus, args) {
+  const lines = parseInt(args.find(arg => arg.startsWith('lines='))?.split('=')[1]) || 50;
+  const follow = args.includes('follow');
+  
+  await editStatus(`📋 **Fetching last ${lines} lines of logs...**`);
+  
+  try {
+    let logs;
+    if (follow) {
+      // For following logs, we can't show in chat - give instructions
+      await editStatus(`🔍 **To follow logs in real-time:**\n\n1. SSH into your server\n2. Run: \`pm2 logs wolf-bot\`\n3. Or: \`tail -f bot.log\`\n\nFor last ${lines} lines: \`.start log lines=${lines}\``);
+      return;
+    } else {
+      // Get last N lines from PM2
+      logs = await execAsync(`pm2 logs wolf-bot --lines ${lines} --nostream`);
+    }
+    
+    const logText = logs.stdout || logs;
+    
+    // Truncate if too long for WhatsApp
+    if (logText.length > 4000) {
+      const truncated = logText.slice(-4000);
+      const linesArray = truncated.split('\n');
+      // Keep last 40 lines
+      const recentLines = linesArray.slice(Math.max(linesArray.length - 40, 0)).join('\n');
+      
+      await editStatus(`📋 **Last 40 lines of logs:**\n\`\`\`\n${recentLines}\n\`\`\`\n\n**Full logs are too long for chat**\nView with: \`pm2 logs wolf-bot\``);
+    } else {
+      await editStatus(`📋 **Bot Logs (last ${lines} lines):**\n\`\`\`\n${logText}\n\`\`\``);
+    }
+    
+  } catch (error) {
+    // Try to read from log file directly
+    try {
+      const logFile = path.join(process.cwd(), 'bot.log');
+      if (fs.existsSync(logFile)) {
+        const logContent = fs.readFileSync(logFile, 'utf8');
+        const linesArray = logContent.split('\n');
+        const lastLines = linesArray.slice(Math.max(linesArray.length - lines, 0)).join('\n');
+        
+        await editStatus(`📋 **Bot Logs from file:**\n\`\`\`\n${lastLines}\n\`\`\``);
+      } else {
+        throw new Error('No logs available');
+      }
+    } catch {
+      await editStatus('❌ **Could not retrieve logs**\n\nTry:\n1. \`pm2 logs wolf-bot\` on server\n2. Check bot.log file\n3. Bot may not be running');
+    }
+  }
+}
+
+async function killBot(editStatus) {
+  await editStatus('💀 **Force killing all bot processes...**\nThis will stop ALL Node.js processes!');
+  
+  try {
+    if (process.platform === 'win32') {
+      await execAsync('taskkill /F /IM node.exe');
+      await editStatus('✅ **All Node.js processes killed**\n\n**Warning:** This may affect other Node apps\n\nStart bot with: `.start`');
+    } else {
+      await execAsync('pkill -9 -f node');
+      await editStatus('✅ **All Node.js processes killed**\n\n**Warning:** This may affect other Node apps\n\nStart bot with: `.start`');
+    }
+  } catch (error) {
+    await editStatus('⚠️ **Some processes may still be running**\n\nTry manually:\n• Linux: `pkill -9 node`\n• Windows: Close terminal\n\nThen: `.start`');
+  }
+}
+
+/* -------------------- Utility Functions -------------------- */
+
+function formatUptime(uptimeMs) {
+  if (!uptimeMs) return '0s';
+  
+  const seconds = Math.floor((Date.now() - uptimeMs) / 1000);
+  
+  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
+  
+  return `${Math.floor(seconds / 86400)}d ${Math.floor((seconds % 86400) / 3600)}h`;
+}
+
+function formatBytes(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
