@@ -187,13 +187,13 @@ export default {
       //successMsg += `📝 ${styleDescriptions[styleNum]}\n\n`;
       //successMsg += `🔧 Changes applied immediately.\n`;
       
-      if (cleaned.isLid) {
-        successMsg += `📱 *Note:* Changed from linked device\n`;
-      }
+      // if (cleaned.isLid) {
+      //   successMsg += `📱 *Note:* Changed from linked device\n`;
+      // }
       
-      if (jid.includes('@g.us')) {
-        successMsg += `👥 *Note:* Changed in group chat`;
-      }
+      // if (jid.includes('@g.us')) {
+      //   successMsg += `👥 *Note:* Changed in group chat`;
+      // }
       
       await sock.sendMessage(jid, { 
         text: successMsg 
